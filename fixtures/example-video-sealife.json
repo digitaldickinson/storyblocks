@@ -1,0 +1,86 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "GV",
+        "x": 0,
+        "len": 4
+      },
+      {
+        "code": "WS",
+        "x": 4,
+        "len": 6
+      },
+      {
+        "code": "MS",
+        "x": 10,
+        "len": 4
+      },
+      {
+        "code": "MS",
+        "x": 14,
+        "len": 4
+      },
+      {
+        "code": "MS",
+        "x": 18,
+        "len": 4
+      },
+      {
+        "code": "MCU",
+        "x": 22,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "NAT",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 10,
+        "len": 12
+      },
+      {
+        "code": "SOT",
+        "x": 22,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 22
+      },
+      {
+        "code": "RUN",
+        "x": 22,
+        "len": 10
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "BECAUSE",
+        "x": 10,
+        "len": 12
+      },
+      {
+        "code": "PERSON",
+        "x": 22,
+        "len": 10
+      }
+    ]
+  },
+  "_about": "The Sea Life example (basic structure). Three mid shots cut together."
+}

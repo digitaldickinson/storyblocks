@@ -1,0 +1,146 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 4
+      },
+      {
+        "code": "CU",
+        "x": 4,
+        "len": 4
+      },
+      {
+        "code": "GV",
+        "x": 8,
+        "len": 4
+      },
+      {
+        "code": "CU",
+        "x": 12,
+        "len": 4
+      },
+      {
+        "code": "MCU",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "WS",
+        "x": 26,
+        "len": 5
+      },
+      {
+        "code": "DET",
+        "x": 31,
+        "len": 5
+      },
+      {
+        "code": "MCU",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "WS",
+        "x": 46,
+        "len": 6
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 16
+      },
+      {
+        "code": "SOT",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "NAT",
+        "x": 26,
+        "len": 10
+      },
+      {
+        "code": "SOT",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 46,
+        "len": 6
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 16
+      },
+      {
+        "code": "RUN",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 26,
+        "len": 10
+      },
+      {
+        "code": "RUN",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 46,
+        "len": 8
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "BECAUSE",
+        "x": 8,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "AND",
+        "x": 26,
+        "len": 2
+      },
+      {
+        "code": "DEVELOP",
+        "x": 28,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "NEXT",
+        "x": 46,
+        "len": 6
+      }
+    ]
+  },
+  "_about": "The Pumpkins example (with a pivot). The last line runs past the pictures."
+}

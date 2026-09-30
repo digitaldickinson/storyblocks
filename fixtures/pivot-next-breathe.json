@@ -1,0 +1,121 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "MCU",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "WS",
+        "x": 18,
+        "len": 4
+      },
+      {
+        "code": "MCU",
+        "x": 22,
+        "len": 10
+      },
+      {
+        "code": "WS",
+        "x": 32,
+        "len": 6
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "SOT",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "NAT",
+        "x": 18,
+        "len": 4
+      },
+      {
+        "code": "SOT",
+        "x": 22,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 32,
+        "len": 6
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "RUN",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 18,
+        "len": 4
+      },
+      {
+        "code": "RUN",
+        "x": 22,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 32,
+        "len": 6
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "AND",
+        "x": 18,
+        "len": 4
+      },
+      {
+        "code": "PERSON",
+        "x": 22,
+        "len": 10
+      },
+      {
+        "code": "NEXT",
+        "x": 32,
+        "len": 4
+      },
+      {
+        "code": "BREATHE",
+        "x": 36,
+        "len": 2
+      }
+    ]
+  },
+  "_about": "An AND, then NEXT, then BREATHE at the very end: Where it ends doesn't fire, because a NEXT comes after the pivot."
+}

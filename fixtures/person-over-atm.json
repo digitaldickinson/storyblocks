@@ -1,0 +1,36 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "editorial": [
+      {
+        "code": "PERSON",
+        "x": 0,
+        "len": 10
+      }
+    ]
+  },
+  "_about": "A PERSON beat over atmos, with no voice under it: Who explains?"
+}

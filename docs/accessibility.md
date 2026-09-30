@@ -59,7 +59,7 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 - **The dimmed layer key.** When a brick is selected, the other key rows drop to opacity 0.4, which puts their text at **2.55:1**. This is axe's only failure. (1.4.3)
 - **Brick labels inside the SVG**, which axe can't check:
   - editorial plate labels are 7 to 10px;
-  - white on teal (MUS) and on pink (BREATHE) is just under 4.5:1.
+  - white on teal (MUS) is just under 4.5:1. (The BREATHE pink was darkened to 4.75:1 with the Structure layer.)
 
 **Fix.**
 

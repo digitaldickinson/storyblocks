@@ -38,7 +38,7 @@ Good:
 
 > **The place itself.** Nothing in the sound layer is natural sound, actuality or atmos. What would the viewer hear if they were standing there?
 
-> **Claim.** Nothing labelled challenge comes after this claim in the meaning layer. Does it need challenging?
+> **Claim.** Nothing labelled challenge comes after this claim in the structure layer. Does it need challenging?
 
 Avoid:
 

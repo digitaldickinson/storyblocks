@@ -1,0 +1,71 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "GV",
+        "x": 8,
+        "len": 8
+      },
+      {
+        "code": "MCU",
+        "x": 16,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "NAT",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "ATM",
+        "x": 8,
+        "len": 8
+      },
+      {
+        "code": "SOT",
+        "x": 16,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 16
+      },
+      {
+        "code": "RUN",
+        "x": 16,
+        "len": 10
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "BECAUSE",
+        "x": 8,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 16,
+        "len": 10
+      }
+    ]
+  },
+  "_about": "The basic structure, ending on PERSON with no pivot: none of the structure rules fire."
+}

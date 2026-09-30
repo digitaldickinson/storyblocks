@@ -4,9 +4,13 @@
     "audio-dry-cue.json": [
       "nothing-to-hear"
     ],
+    "basic-ends-on-person.json": [],
     "claim-challenged.json": [],
     "cue-over-gvs.json": [
       "in-or-out"
+    ],
+    "example-audio-pumpkins.json": [
+      "the-place"
     ],
     "example-audio-rcue.json": [
       "the-place"
@@ -25,13 +29,33 @@
       "claim",
       "the-place"
     ],
+    "example-video-pumpkins.json": [
+      "words-past-pictures",
+      "the-place"
+    ],
+    "example-video-sealife.json": [
+      "shot-sizes"
+    ],
     "mcus-under-sot.json": [
       "shot-sizes",
       "the-place"
     ],
     "old-export-iv.json": [],
+    "person-over-atm.json": [
+      "who-explains"
+    ],
+    "person-over-silent-run.json": [
+      "whose-voice"
+    ],
     "picture-gaps.json": [
       "nothing-to-see"
+    ],
+    "pivot-ends-on-develop.json": [
+      "where-it-ends"
+    ],
+    "pivot-next-breathe.json": [],
+    "pivot-no-new-voice.json": [
+      "after-the-turn"
     ],
     "placed-silence.json": [],
     "run-half-voiced.json": [
@@ -42,6 +66,9 @@
     ],
     "silent-gap.json": [
       "nothing-to-hear"
+    ],
+    "two-persons-no-pivot.json": [
+      "no-pivot"
     ],
     "two-voices.json": [
       "two-voices"

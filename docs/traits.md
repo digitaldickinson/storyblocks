@@ -55,16 +55,26 @@ What is read out, who reads it, and (video only) whether the reader should be on
 | SIGN | Sign-off | Both | words, reporter | Writing to pictures; Two voices; The place itself (audio only) |
 | RUN | Clip runs | Both | no-words | Whose voice? |
 
-## Editorial bricks
+## Structure bricks
 
-Both media. Only two of these carry traits a rule reads, so the meaning layer is where the Notice logic is thinnest.
+Both media. The story's beats, from the lectures: the basic structure (NEWS, BECAUSE, PERSON), then a pivot (AND or BUT), a related second-half beat, another PERSON, and NEXT. The layer's internal key is still `editorial`, so saves and exports keep working.
 
-| Brick | Name | Traits | Read by |
-|---|---|---|---|
-| CLAIM | Claim | claim | Claim |
-| CHALLENGE | Challenge | challenge | Claim |
-| UNSET (shown as ?) | Unlabelled | unlabelled | nothing yet |
-| CONTEXT, EVIDENCE, CONSEQ, EXPLAIN, BREATHE | | none | nothing |
+| Brick | Label | Name | Colour | Traits | Read by |
+|---|---|---|---|---|---|
+| NEWS | NEWS | A thing is happening | purple | beat-news | nothing yet |
+| BECAUSE | BECAUSE | Because… | purple | beat-because | nothing yet |
+| PERSON | PERSON | A person explains | purple | beat-person | Who explains?; One person to the next |
+| AND | AND | AND | cyan | pivot | One person to the next; After the turn; Where it ends |
+| BUT | BUT | BUT | coral | pivot | One person to the next; After the turn; Where it ends |
+| MORE | CONTEXT | More context | indigo | beat-more | nothing yet |
+| ILLUS | ILLUSTRATE | Illustrates it | indigo | beat-more | nothing yet |
+| DEVELOP | DEVELOP | Develops a theme | indigo | beat-more | nothing yet |
+| CHALLENGE | CHALLENGE | Challenges it | indigo | beat-more, challenge | Claim |
+| NEXT | NEXT | What next | dark violet | beat-next | Where it ends |
+| BREATHE | BREATHE | Breathe | pink | none | nothing |
+| UNSET | ? | Not decided yet | grey, dashed | unlabelled | nothing yet |
+
+**Retired bricks.** CONTEXT, CLAIM, EVIDENCE, CONSEQ and EXPLAIN are no longer in the brick box (the `RETIRED` set), but stay in `BRICK_ROWS` so older saves and exports open and draw. CLAIM keeps its `claim` trait, so the Claim rule still works on older work; the others have none. The new "More context" beat has the code `MORE`, not `CONTEXT`: old CONTEXT meant "what the viewer needs to know first", so reusing the code would have changed what older work shows.
 
 ## Trait vocabulary
 
@@ -83,12 +93,16 @@ Both media. Only two of these carry traits a rule reads, so the meaning layer is
 | inviz | Script | Read on screen: the reader should be in the picture below | In or out of vision? |
 | oov | Script | Read over pictures, reader not on screen | In or out of vision?; The place itself (video) |
 | no-words | Script | Nothing read: a clip carries it | Whose voice? |
-| claim, challenge | Editorial | The student's own labels | Claim |
-| unlabelled | Editorial | A span not yet decided | unused |
+| beat-person | Structure | A person explains | Who explains?; One person to the next |
+| pivot | Structure | AND or BUT: where the story moves on | One person to the next; After the turn; Where it ends |
+| beat-next | Structure | What it all means, what happens next | Where it ends |
+| beat-news, beat-because, beat-more | Structure | The other beats | unused (there so future rules don't need new traits) |
+| claim, challenge | Structure | Claim (retired, older work) and Challenges it | Claim |
+| unlabelled | Structure | A span not yet decided | unused |
 
 ## The Notice rules
 
-Nine rules. "Look" rules state a measurable relationship; "Question" rules read the student's labels or a whole layer and only ask. Notice shows up to three: Look before Question, each group left to right along the build.
+Thirteen rules. "Look" rules state a measurable relationship; "Question" rules read the student's labels or a whole layer and only ask. Notice shows up to three: Look before Question, each group left to right along the build.
 
 | Rule (id) | Type | Medium | Fires when | Reads |
 |---|---|---|---|---|
@@ -100,11 +114,16 @@ Nine rules. "Look" rules state a measurable relationship; "Question" rules read 
 | In or out of vision? (`in-or-out`) | Look | Video | On-screen words over pictures that aren't the reader, or out-of-vision words over pictures that are | inviz, oov, presenter, reporter |
 | Shot sizes (`shot-sizes`) | Look | Video | Three shots of one size family cut straight into each other, unless each sits mostly under a matching repeat-* sound | wide, mid, close, repeat-* |
 | The place itself (`the-place`) | Question | Both | No sound brick is place sound; or voice-over has nothing under it (video: oov words; audio: reporter words) | place, words, oov, reporter |
-| Claim (`claim`) | Question | Both | Nothing labelled challenge starts after a claim ends | claim, challenge |
+| Who explains? (`who-explains`) | Look | Both | A PERSON beat has no voice under any of its studs, unless a RUN sits under it (Whose voice? already says so) | beat-person, voice, no-words |
+| One person to the next (`no-pivot`) | Question | Both | Two PERSON beats in a row with no pivot starting between them. PERSON beats only, never voice bricks, so a build without them never sees it | beat-person, pivot |
+| After the turn (`after-the-turn`) | Question | Both | No voice in the sound layer starts at or after a pivot | pivot, voice |
+| Where it ends (`where-it-ends`) | Question | Both | There's a pivot and no NEXT starts after the last one. Never without a pivot: the basic structure ends on the person | pivot, beat-next |
+| Claim (`claim`) | Question | Both | Nothing labelled challenge starts after a claim ends (older work only: CLAIM is retired) | claim, challenge |
 
 ## Worth checking
 
-- **Four traits have no rule yet:** graphic, music, silence and unlabelled. Five editorial bricks carry no traits at all.
+- **Seven traits have no rule yet:** graphic, music, silence, unlabelled, beat-news, beat-because and beat-more. BREATHE and four retired bricks carry no traits at all.
+- **No rule prescribes a sequence of beats.** The structure rules look at what's under a PERSON beat, what lies between two of them, and what comes after a pivot.
 - **LINK and SIGN are neither on screen nor out of vision,** so In or out of vision? ignores them. A sign-off over the wrong picture will never be noticed.
 - **CUE is always on screen.** A presenter reading over pictures should use OOV; if students use CUE instead, the tool asks "which is it?".
 - **Radio bricks carry no on-screen or out-of-vision traits,** because there are no pictures to check them against.

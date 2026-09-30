@@ -1,6 +1,6 @@
 # StoryBlocks
 
-A browser toy for teaching broadcast story structure. Students build a story as courses of isometric bricks: picture, sound, script and editorial meaning (video), or sound, script and meaning (audio). Brick length is relative (studs), never time. A **Notice** button surfaces observations about the build when the student asks for them.
+A browser toy for teaching broadcast story structure. Students build a story as courses of isometric bricks: picture, sound, script and the story's structure (video), or sound, script and structure (audio). The structure layer holds the course's story beats; its internal key is still `editorial`. Brick length is relative (studs), never time. A **Notice** button surfaces observations about the build when the student asks for them.
 
 It's a teaching tool for journalism students at MMU. It is **not** a video editor, a marker or an AI tutor.
 

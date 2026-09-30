@@ -1,0 +1,76 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "MCU",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "WS",
+        "x": 10,
+        "len": 4
+      },
+      {
+        "code": "MCU",
+        "x": 14,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "SOT",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "NAT",
+        "x": 10,
+        "len": 4
+      },
+      {
+        "code": "SOT",
+        "x": 14,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "RUN",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 10,
+        "len": 4
+      },
+      {
+        "code": "RUN",
+        "x": 14,
+        "len": 10
+      }
+    ],
+    "editorial": [
+      {
+        "code": "PERSON",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "BECAUSE",
+        "x": 10,
+        "len": 4
+      },
+      {
+        "code": "PERSON",
+        "x": 14,
+        "len": 10
+      }
+    ]
+  },
+  "_about": "Two PERSON beats with only BECAUSE between them, no AND or BUT: One person to the next."
+}

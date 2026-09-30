@@ -1,0 +1,114 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "audio",
+  "layers": {
+    "sound": [
+      {
+        "code": "ACT",
+        "x": 4,
+        "len": 6
+      },
+      {
+        "code": "ATM",
+        "x": 10,
+        "len": 6
+      },
+      {
+        "code": "CLIP",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "ACT",
+        "x": 26,
+        "len": 10
+      },
+      {
+        "code": "CLIP",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 46,
+        "len": 6
+      }
+    ],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 4
+      },
+      {
+        "code": "TRK",
+        "x": 4,
+        "len": 12
+      },
+      {
+        "code": "RUN",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "TRK",
+        "x": 26,
+        "len": 10
+      },
+      {
+        "code": "RUN",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "TRK",
+        "x": 46,
+        "len": 6
+      },
+      {
+        "code": "SIGN",
+        "x": 52,
+        "len": 3
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "BECAUSE",
+        "x": 8,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 16,
+        "len": 10
+      },
+      {
+        "code": "AND",
+        "x": 26,
+        "len": 2
+      },
+      {
+        "code": "DEVELOP",
+        "x": 28,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 36,
+        "len": 10
+      },
+      {
+        "code": "NEXT",
+        "x": 46,
+        "len": 6
+      }
+    ]
+  },
+  "_about": "The radio Pumpkins example (with a pivot). Ends on a dry sign-off."
+}

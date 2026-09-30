@@ -37,6 +37,8 @@ header .tbtn{padding:0 13px;white-space:nowrap;flex-shrink:0}
 .hsep{width:1px;height:28px;background:var(--line2)}
 .tbtn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .tbtn.primary:hover{background:#2c2b28}
+/* three example buttons: tighten up below 1360px so the header still fits */
+@media (max-width:1360px){header{gap:7px;padding:0 14px} header .tbtn{padding:0 10px} .medium{margin-left:4px}}
 
 /* layout */
 .main{display:grid;grid-template-columns:360px minmax(0,1fr);min-height:0}
@@ -71,6 +73,10 @@ aside{display:flex;flex-direction:column;min-height:0;background:var(--paper)}
 h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
 
 /* palette */
+.starts{display:flex;align-items:center;gap:6px;margin:0 0 8px;flex-wrap:wrap}
+.starts span{font-size:12px;color:var(--faint);margin-right:2px}
+.sbtn{height:32px;padding:0 10px;border-radius:8px;border:1px solid var(--line2);background:#fff;font-size:12.5px;font-weight:600;cursor:pointer}
+.sbtn:hover{background:#EFEBE1}
 .palette{flex:1;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px}
 .ghead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
 .chip{width:10px;height:10px;border-radius:2px;align-self:center;flex-shrink:0}
@@ -178,7 +184,7 @@ body.moving,body.moving *{cursor:grabbing!important}
    StoryBlocks — layers edition.
    Four layers stacked as courses: picture at the bottom, then
    sound (actuality), then script (the reporter's words),
-   with editorial plates on top.
+   with structure plates (the story's beats) on top.
    Each layer is a packed row; order is position.
    A stud is relative length, not a second.
    ============================================================ */
@@ -194,7 +200,11 @@ const PAL = {
   teal:   { top:'#45C1B8', front:'#1E8A84', end:'#136560', ink:'#FFFFFF' },
   white:  { top:'#FFFFFF', front:'#EAE6DB', end:'#C9C3B6', ink:'#3A3833' },
   purple: { top:'#A274DB', front:'#7440B0', end:'#552E85', ink:'#FFFFFF' },
-  pink:   { top:'#F59AC0', front:'#C95388', end:'#963A63', ink:'#FFFFFF' },
+  pink:   { top:'#F59AC0', front:'#C4427C', end:'#963A63', ink:'#FFFFFF' },
+  cyan:   { top:'#7FE3F0', front:'#1FA0B3', end:'#157A89', ink:'#06262B' },   // AND: the story widens
+  coral:  { top:'#FF9A85', front:'#CD3D26', end:'#A33521', ink:'#FFFFFF' },   // BUT: the story turns
+  indigo: { top:'#8C9CF2', front:'#4A5BC7', end:'#34409A', ink:'#FFFFFF' },   // the second half, after the pivot
+  violet: { top:'#7B6A9A', front:'#43345F', end:'#2B2140', ink:'#FFFFFF' },   // what next
   wine:   { top:'#C24561', front:'#8E1B3A', end:'#62102A', ink:'#FFFFFF' },   // presenter's words
   gold:   { top:'#FFE88A', front:'#E5C73A', end:'#B39618', ink:'#2E2200' },   // studio shots
   grey:   { top:'#F1EEE7', front:'#DAD5CA', end:'#BDB7AA', ink:'#4A473F', dash:true }
@@ -205,7 +215,7 @@ const ALL_LAYERS = [
   { key:'picture',   name:'Picture',   blurb:'What the audience sees', chip:PAL.yellow.front },
   { key:'sound',     name:'Sound',     blurb:'Everything but the reporter', chip:PAL.blue.front },
   { key:'script',    name:'Script',    blurb:'Words read from a script', chip:PAL.red.front },
-  { key:'editorial', name:'Editorial', blurb:'What it means',          chip:PAL.purple.front }
+  { key:'editorial', name:'Structure', blurb:'How the story is built', chip:PAL.purple.front }   // key kept: saves and exports use it
 ];
 
 // [code, layer, label on brick, name, default studs, colour, description, medium]
@@ -242,47 +252,72 @@ const BRICK_ROWS = [
   ['SIGN','script','SIGN','Sign-off',3,'red','Name, programme, place. On radio, the standard out-cue.'],
   ['RUN','script','RUN','Clip runs',10,'grey','No reporter words here: an interview or the sound carries it. Note the in-words and out-words.'],
 
+  ['NEWS','editorial','NEWS','A thing is happening',8,'purple','A thing is, or was, happening that we think is news. Why now?'],
+  ['BECAUSE','editorial','BECAUSE','Because…',8,'purple','It\'s happening because of a thing, place or person, and it affects a thing, place or person. Maybe you. Who cares?'],
+  ['PERSON','editorial','PERSON','A person explains',10,'purple','Here\'s a person to explain that.'],
+  ['AND','editorial','AND','AND',2,'cyan','The pivot: the story widens. Here\'s something related to that.'],
+  ['BUT','editorial','BUT','BUT',2,'coral','The pivot: the story turns. Here\'s something that pulls the other way.'],
+  ['MORE','editorial','CONTEXT','More context',8,'indigo','A related thing that gives more context.'],
+  ['ILLUS','editorial','ILLUSTRATE','Illustrates it',8,'indigo','A related thing that illustrates a core point.'],
+  ['DEVELOP','editorial','DEVELOP','Develops a theme',8,'indigo','A related thing that develops a theme.'],
+  ['CHALLENGE','editorial','CHALLENGE','Challenges it',8,'indigo','A related thing that challenges the view.'],
+  ['NEXT','editorial','NEXT','What next',6,'violet','What all of that means, and what might happen next.'],
+  ['BREATHE','editorial','BREATHE','Breathe',5,'pink','A pause to let something land.'],
+  ['UNSET','editorial','?','Not decided yet',5,'grey','A span you haven\'t decided on yet.'],
+
+  // retired from the brick box (see RETIRED), kept so older saves and exports still open and draw
   ['CONTEXT','editorial','CONTEXT','Context',5,'purple','What the viewer needs to know first.'],
   ['CLAIM','editorial','CLAIM','Claim',5,'purple','Someone asserts that something is true.'],
   ['EVIDENCE','editorial','EVIDENCE','Evidence',5,'purple','What shows the claim is, or is not, true.'],
-  ['CHALLENGE','editorial','CHALLENGE','Challenge',5,'purple','Testing a claim against another view or fact.'],
   ['CONSEQ','editorial','CONSEQ','Consequence',5,'purple','What happens to people as a result.'],
-  ['EXPLAIN','editorial','EXPLAIN','Explanation',5,'purple','How or why it works.'],
-  ['BREATHE','editorial','BREATHE','Breathe',5,'pink','A pause to let something land.'],
-  ['UNSET','editorial','?','Unlabelled',5,'grey','A span you haven\'t decided on yet.']
+  ['EXPLAIN','editorial','EXPLAIN','Explanation',5,'purple','How or why it works.']
 ];
+
+// no longer offered in the brick box; old work containing them still opens
+const RETIRED = new Set(['CONTEXT','CLAIM','EVIDENCE','CONSEQ','EXPLAIN']);
+
+/* Starting structures: lay the lecture beats on the structure layer, replacing only that layer. */
+const STRUCTURES = {
+  basic: { label:'Basic', said:'a basic structure', beats:[['NEWS',8],['BECAUSE',10],['PERSON',10]] },
+  pivot: { label:'With a pivot', said:'a structure with a pivot', beats:[['NEWS',8],['BECAUSE',8],['PERSON',10],['AND',2],['UNSET',8],['PERSON',10],['NEXT',6]] }
+};
 
 /* Media: which layers, which examples, and the brick that stands for each layer in the key.
    ['GAP', n] in an example leaves n empty studs. */
 const MEDIA = {
   video: { name:'Video', layers:['picture','sound','script','editorial'],
-    rep: { picture:'WS', sound:'SOT', script:'VO', editorial:'CLAIM' },
-    how: 'Four layers, stacked like courses of bricks: pictures at the bottom, then sound, then the script (reporter in red, presenter in dark red), with meaning on top.',
-    empty: ['Start with the pictures', 'Lay down some shots, put sound and script on top of them, then label what each part means. Watch where the layers don\'t line up.'],
+    rep: { picture:'WS', sound:'SOT', script:'VO', editorial:'NEWS' },
+    how: 'Four layers, stacked like courses of bricks: pictures at the bottom, then sound, then the script (reporter in red, presenter in dark red), with the story\'s structure on top.',
+    empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down some shots and build up. Then watch where the layers don\'t line up.'],
     examples: {
-      pkg: { label:'Package', name:'Package: council housing backlog',     // deliberately imperfect
-        picture:   [['WS',6],['CU',5],['MCU',12],['CU',5],['WS',5],['MCU',5],['CU',5],['DET',5]],
-        sound:     [['ATM',11],['SOT',12],['ATM',10],['SOT',10],['ATM',5]],
-        script:    [['VO',11],['RUN',12],['VO',10],['RUN',10],['VO',9]],
-        editorial: [['CONTEXT',6],['EVIDENCE',5],['CLAIM',12],['EXPLAIN',10],['CONSEQ',10],['UNSET',5]] },
+      sea: { label:'Sea Life', name:'Basic package: Sea Life stocktake',          // three mid shots cut together
+        picture:   [['GV',4],['WS',6],['MS',4],['MS',4],['MS',4],['MCU',10]],
+        sound:     [['NAT',10],['ATM',12],['SOT',10]],
+        script:    [['VO',22],['RUN',10]],
+        editorial: [['NEWS',10],['BECAUSE',12],['PERSON',10]] },
+      pump: { label:'Pumpkins', name:'Package with a pivot: small pumpkins',       // the last line runs past the pictures
+        picture:   [['WS',4],['CU',4],['GV',4],['CU',4],['MCU',10],['WS',5],['DET',5],['MCU',10],['WS',6]],
+        sound:     [['ATM',16],['SOT',10],['NAT',10],['SOT',10],['ATM',6]],
+        script:    [['VO',16],['RUN',10],['VO',10],['RUN',10],['VO',8]],
+        editorial: [['NEWS',8],['BECAUSE',8],['PERSON',10],['AND',2],['DEVELOP',8],['PERSON',10],['NEXT',6]] },
       oov: { label:'OOV/SOT', name:'OOV/SOT: bus route cut',               // the OOV is written a touch long
         picture:   [['INVIZ',6],['GV',5],['CU',4],['WS',5],['MCU',10],['INVIZ',4]],
         sound:     [['GAP',6],['NAT',14],['SOT',10]],
         script:    [['CUE',6],['OOV',16],['RUN',10],['BACK',4]],
-        editorial: [['CONTEXT',6],['EXPLAIN',14],['CONSEQ',10],['UNSET',4]] } } },
+        editorial: [['NEWS',6],['BECAUSE',14],['PERSON',10],['UNSET',4]] } } },
   audio: { name:'Audio', layers:['sound','script','editorial'],
-    rep: { sound:'CLIP', script:'TRK', editorial:'CLAIM' },
-    how: 'Three layers, stacked like courses of bricks: the sound of the world at the bottom, then the script (reporter in red, presenter in dark red), with meaning on top. No pictures: the sound has to do that job.',
-    empty: ['Start with the sound', 'Lay down the sound of the story: clips, actuality, atmos. Put the script on top of it, then label what each part means. Watch where the layers don\'t line up.'],
+    rep: { sound:'CLIP', script:'TRK', editorial:'NEWS' },
+    how: 'Three layers, stacked like courses of bricks: the sound of the world at the bottom, then the script (reporter in red, presenter in dark red), with the story\'s structure on top. No pictures: the sound has to do that job.',
+    empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down the sound of the story and build up. Then watch where the layers don\'t line up.'],
     examples: {
-      rpkg: { label:'Package', name:'Radio package: council housing backlog',   // ends on a dry sign-off, over nothing
-        sound:     [['GAP',6],['ATM',10],['CLIP',8],['ACT',8],['CLIP',10],['ATM',6]],
-        script:    [['CUE',6],['TRK',10],['RUN',8],['TRK',8],['RUN',10],['TRK',6],['SIGN',3]],
-        editorial: [['CONTEXT',6],['EXPLAIN',10],['CLAIM',8],['EVIDENCE',8],['CONSEQ',10],['UNSET',9]] },
+      rpump: { label:'Pumpkins', name:'Radio package with a pivot: small pumpkins',   // ends on a dry sign-off, over nothing
+        sound:     [['GAP',4],['ACT',6],['ATM',6],['CLIP',10],['ACT',10],['CLIP',10],['ATM',6]],
+        script:    [['CUE',4],['TRK',12],['RUN',10],['TRK',10],['RUN',10],['TRK',6],['SIGN',3]],
+        editorial: [['NEWS',8],['BECAUSE',8],['PERSON',10],['AND',2],['DEVELOP',8],['PERSON',10],['NEXT',6]] },
       rcue: { label:'Cue + clip', name:'Cue and clip: bus route cut',
         sound:     [['GAP',8],['CLIP',12]],
         script:    [['CUE',8],['RUN',12],['BACK',4]],
-        editorial: [['CONTEXT',8],['CONSEQ',12],['UNSET',4]] } } }
+        editorial: [['NEWS',8],['PERSON',12],['UNSET',4]] } } }
 };
 
 const B = {};
@@ -311,7 +346,13 @@ const inMedium = (code, m) => B[code].media.includes(m === 'audio' ? 'a' : 'v');
                 inviz                read on screen: the reader should be in the picture underneath
                 oov                  read over pictures, the reader not on screen
                 no-words             nothing read here: a clip carries it
-     editorial  claim | challenge | unlabelled
+     structure  beat-news | beat-because | beat-person   the basic beats
+                pivot                AND or BUT: where the story moves on
+                beat-more            the second half's related thing (context, illustrate, develop, challenge)
+                beat-next            what it all means, what happens next
+                challenge | unlabelled
+                claim                retired CLAIM brick, in older work
+     (beat-news, beat-because and beat-more aren't read by any rule yet.)
    A brick with no traits is simply ignored by every rule. */
 const TRAITS = {
   WS:'wide', GV:'wide', MS:'mid', MCU:'mid', CU:'close', DET:'close', GFX:'graphic',
@@ -320,7 +361,9 @@ const TRAITS = {
   CUE:'words presenter inviz', OOV:'words presenter oov', BACK:'words presenter inviz',
   VO:'words reporter oov', TRK:'words reporter', PTM:'words reporter', LINK:'words reporter', PTCW:'words reporter inviz', SIGN:'words reporter',
   RUN:'no-words',
-  CLAIM:'claim', CHALLENGE:'challenge', UNSET:'unlabelled'
+  NEWS:'beat-news', BECAUSE:'beat-because', PERSON:'beat-person', AND:'pivot', BUT:'pivot',
+  MORE:'beat-more', ILLUS:'beat-more', DEVELOP:'beat-more', CHALLENGE:'beat-more challenge', NEXT:'beat-next',
+  CLAIM:'claim', UNSET:'unlabelled'
 };
 Object.keys(B).forEach(c => B[c].traits = new Set((TRAITS[c] || '').split(/\s+/).filter(Boolean)));
 const is = (b, t) => B[b.code].traits.has(t);
@@ -472,6 +515,13 @@ const actions = {
     commit(s); focusBrick(ui.sel);
   },
   deselect() { ui.sel = null; render(); },
+  structure(key) {   // replaces the structure layer only: one undo step
+    const S = STRUCTURES[key], s = cloneStory(story); let x = 0;
+    s.editorial = S.beats.map(([c, l]) => { const b = newBlock(c, l, x); x += l; return b; });
+    if (ui.sel && !find(ui.sel, s)) ui.sel = null;
+    commit(s);
+    say(`Laid ${S.said}. Now build ${MEDIUM === 'audio' ? 'the sound and script' : 'the pictures and sound'} underneath it. Undo takes it back.`);
+  },
   example(key) { ui.sel = null; ui.notice = null; ui.npin = null; commit(exampleStory(key)); say(`${EXAMPLES[key].name}. Someone built this. Explore it: what do you notice? Then press Notice.`); },
   clear() { ui.sel = null; ui.notice = null; ui.npin = null; commit(emptyStory()); },
   exportFile() {
@@ -683,17 +733,23 @@ function renderHeader() {
 
 function renderPalette() {
   return LAYERS.slice().reverse().map(L => {
-    const cards = BRICK_ROWS.filter(r => r[1] === L.key && inMedium(r[0], MEDIUM)).map(r => {
+    const cards = BRICK_ROWS.filter(r => r[1] === L.key && inMedium(r[0], MEDIUM) && !RETIRED.has(r[0])).map(r => {
       const b = B[r[0]], ed = L.key === 'editorial';
       const g = geom(Math.min(b.len, 4), 2, ed ? 4 : 9, true, 8, 2);
       return `<button class="pcard" data-act="add" data-arg="${b.code}" data-hover="${b.code}" aria-label="Add ${esc(b.name)} to the ${L.name.toLowerCase()} layer">
         ${svgBox(g, {...colours(b.code), sw:.6, ssw:.5}, 'aria-hidden="true"')}<b>${esc(b.label === '?' ? 'UNSET' : b.label)}</b></button>`;
     }).join('');
-    return `<section><div class="ghead"><span class="chip" style="background:${L.chip}"></span><h2>${L.name}</h2><span class="b">${L.blurb}</span></div><div class="cards">${cards}</div></section>`;
+    const starts = L.key !== 'editorial' ? '' : `<div class="starts" role="group" aria-labelledby="startsLabel"><span id="startsLabel">Starting structure</span>
+      ${Object.entries(STRUCTURES).map(([k, S]) => `<button class="sbtn" data-act="structure" data-arg="${k}" data-hover="@${k}">${esc(S.label)}</button>`).join('')}</div>`;
+    return `<section><div class="ghead"><span class="chip" style="background:${L.chip}"></span><h2>${L.name}</h2><span class="b">${L.blurb}</span></div>${starts}<div class="cards">${cards}</div></section>`;
   }).join('');
 }
 
 function infoHTML() {
+  const S = ui.hover && ui.hover[0] === '@' && STRUCTURES[ui.hover.slice(1)];
+  if (S) return `<div style="font-weight:700;font-size:14px;margin-bottom:6px">Starting structure: ${esc(S.label)}</div>
+    <p>${S.beats.map(([c]) => esc(B[c].name)).join(' → ')}</p>
+    <p class="meta" style="margin-top:6px">Replaces the structure layer only. Undo takes it back.</p>`;
   const b = ui.hover && B[ui.hover];
   if (!b) return `<div style="font-weight:700;font-size:14px;margin-bottom:6px">How it works</div>
     <p>${MEDIA[MEDIUM].how} Studs are relative length, not seconds. Click a brick to add it; select one on the stage to add or take away studs.</p>`;
@@ -948,11 +1004,52 @@ const NOTICE_RULES = [
       return { title:'The place itself', text:`For ${pl(n)}${places(dry.length)}, ${c.video ? 'words read out of vision have' : 'the reporter\'s words have'} nothing under them in the sound layer. What would the ${ear} hear of the place there?`,
                spans: dry, layers:['sound','script'], bricks: vo.filter(w => dry.some(([a,b]) => w.x < b && a < w.x + w.len)).map(w => w.id) }; } },
 
+  /* The structure layer's beats. None of these checks a sequence of beats: they look at what's under
+     a PERSON beat, what lies between two of them, and what comes after a pivot. */
+  /* A person explains, but nobody speaks under it. Skipped where a RUN sits under it: Whose voice? already says so. */
+  { id:'who-explains', kind:'see', find(c) {
+      for (const p of c.lay('editorial')) if (is(p, 'beat-person')) {
+        if (c.lay('sound').some(v => is(v, 'voice') && c.overlap(p, v))) continue;
+        if (c.lay('script').some(r => is(r, 'no-words') && c.overlap(p, r))) continue;
+        return { title:'Who explains?', text:'The structure says a person explains here, but nothing in the sound layer underneath is a voice. Who is speaking?',
+                 spans:[[p.x, p.x + p.len]], layers:['sound','editorial'], bricks:[p.id] };
+      }
+      return null; } },
+
+  /* Two PERSON beats in a row with no AND or BUT between them. Only PERSON beats count, so it never fires on a build without them. */
+  { id:'no-pivot', kind:'ask', find(c) {
+      const e = c.lay('editorial'), ps = e.filter(b => is(b, 'beat-person'));
+      for (let i = 0; i + 1 < ps.length; i++) {
+        const a = ps[i], b = ps[i+1], from = a.x + a.len;
+        if (e.some(q => is(q, 'pivot') && q.x >= from && q.x < b.x)) continue;
+        return { title:'One person to the next', text:'Two people explain, with no AND or BUT between them. What moves the story from one to the other?',
+                 spans:[[a.x, from], [b.x, b.x + b.len]], layers:['editorial'], bricks:[a.id, b.id] };
+      }
+      return null; } },
+
+  /* After a pivot, does anyone new speak? */
+  { id:'after-the-turn', kind:'ask', find(c) {
+      const end = Math.max(c.pieceEnd, c.end('editorial'));
+      for (const q of c.lay('editorial')) if (is(q, 'pivot')) {
+        if (c.lay('sound').some(v => is(v, 'voice') && v.x >= q.x)) continue;
+        return { title:'After the turn', text:`After the ${B[q.code].label}, no new voice starts in the sound layer. Who could speak to the second part?`,
+                 spans:[[q.x, Math.max(end, q.x + q.len)]], layers:['sound','editorial'], bricks:[q.id] };
+      }
+      return null; } },
+
+  /* The extended structure turns, then nothing says what it all means. Only with a pivot: the basic structure ends on the person. */
+  { id:'where-it-ends', kind:'ask', find(c) {
+      const e = c.lay('editorial'), pv = e.filter(b => is(b, 'pivot')); if (!pv.length) return null;
+      const last = pv[pv.length - 1], from = last.x + last.len;
+      if (e.some(b => is(b, 'beat-next') && b.x >= from)) return null;
+      return { title:'Where it ends', text:`The structure turns at the ${B[last.code].label}, but there's no NEXT after it. What does it all mean, and what happens next?`,
+               spans:[[last.x, Math.max(from, c.end('editorial'))]], layers:['editorial'], bricks:[last.id] }; } },
+
   /* Reads the student's own labels, nothing more: it can't know whether the journalism challenges the claim. */
   { id:'claim', kind:'ask', find(c) {
       const e = c.lay('editorial');
       for (const b of e) if (is(b, 'claim') && !e.some(x => is(x, 'challenge') && x.x >= b.x + b.len))
-        return { title:'Claim', text:'Nothing labelled challenge comes after this claim in the meaning layer. Does it need challenging?',
+        return { title:'Claim', text:'Nothing labelled challenge comes after this claim in the structure layer. Does it need challenging?',
                  spans:[[b.x, b.x + b.len]], layers:['editorial'], bricks:[b.id] };
       return null; } }
 ];

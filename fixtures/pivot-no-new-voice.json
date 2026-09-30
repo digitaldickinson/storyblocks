@@ -1,0 +1,86 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "MCU",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "WS",
+        "x": 18,
+        "len": 12
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "SOT",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "NAT",
+        "x": 18,
+        "len": 12
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "RUN",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 18,
+        "len": 12
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "PERSON",
+        "x": 8,
+        "len": 10
+      },
+      {
+        "code": "AND",
+        "x": 18,
+        "len": 2
+      },
+      {
+        "code": "DEVELOP",
+        "x": 20,
+        "len": 4
+      },
+      {
+        "code": "NEXT",
+        "x": 24,
+        "len": 6
+      }
+    ]
+  },
+  "_about": "An AND with no new voice starting after it: After the turn. Ends on NEXT, so Where it ends stays quiet."
+}

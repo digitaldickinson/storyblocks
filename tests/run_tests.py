@@ -4,6 +4,7 @@ Opens storyblocks.html in a headless browser and checks:
   1. every fixture in fixtures/ imports, and produces exactly the notices in fixtures/expected.json
   2. invalid files are refused with the right message and change nothing
   3. an old export (brick 'IV', app 'storystack') opens with the brick as INVIZ
+  3a. starting structures replace only the structure layer, as one undo step
   4. export then import gives back the same build
   5. the build can be read and edited without dragging or sight (hidden running order, toolbar, arrows)
   6. the page throws no JavaScript errors
@@ -54,8 +55,21 @@ with sync_playwright() as p:
     page.set_input_files("#importInput", os.path.join(FX, "old-export-iv.json")); page.wait_for_timeout(150)
     check(page.evaluate("story.picture.map(b => b.code)") == ["INVIZ"], "IV becomes INVIZ")
 
+    print("\nStarting structures")
+    for medium, key in [("video", "sea"), ("audio", "rpump")]:
+        for s, beats in [("basic", ["NEWS", "BECAUSE", "PERSON"]), ("pivot", ["NEWS", "BECAUSE", "PERSON", "AND", "UNSET", "PERSON", "NEXT"])]:
+            page.evaluate(f"setMedium('{medium}'); actions.example('{key}')")
+            lower = "LAYERS.filter(L => L.key !== 'editorial').map(L => story[L.key].map(b => b.code + '@' + b.x + '+' + b.len).join(',')).join(' | ')"
+            before, all_before = page.evaluate(lower), page.evaluate(LAYERS_NOW)
+            page.click(f'.sbtn[data-arg="{s}"]')
+            laid = page.evaluate("story.editorial.map(b => b.code)")
+            check(laid == beats and page.evaluate(lower) == before, f"{medium}: {s} lays its beats and leaves the other layers alone", f"laid {laid}")
+            page.evaluate("actions.undo()")
+            check(page.evaluate(LAYERS_NOW) == all_before, f"{medium}: {s} is one undo step")
+    check("seconds" not in page.evaluate("document.body.innerText.replace('not seconds', '')").lower(), "nothing on screen mentions seconds")
+
     print("\nExport then import round trip")
-    for medium, key in [("video", "pkg"), ("audio", "rpkg")]:
+    for medium, key in [("video", "pump"), ("audio", "rpump")]:
         page.evaluate(f"setMedium('{medium}')"); page.evaluate(f"actions.example('{key}')")
         before = page.evaluate(LAYERS_NOW)
         with page.expect_download() as d: page.click('[data-act="exportFile"]')
@@ -81,7 +95,7 @@ with sync_playwright() as p:
     label = lambda: page.evaluate("document.activeElement.getAttribute('aria-label') || ''")
     page.keyboard.press("ArrowDown"); down = label()
     page.keyboard.press("ArrowUp"); page.keyboard.press("ArrowUp"); up = label()
-    check(down.startswith("Natural sound") and up.startswith("Explanation"), "up and down arrows move between layers", f"down: {down!r}, up: {up!r}")
+    check(down.startswith("Natural sound") and up.startswith("Because"), "up and down arrows move between layers", f"down: {down!r}, up: {up!r}")
     page.evaluate("focusBrick(story.script[0].id)"); page.keyboard.press("ArrowDown")
     check(page.evaluate("ui.msg") == "Nothing in the sound layer below this brick.", "a gap below is announced", page.evaluate("ui.msg"))
 

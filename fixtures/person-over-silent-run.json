@@ -1,0 +1,56 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "MCU",
+        "x": 10,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 10,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "RUN",
+        "x": 10,
+        "len": 10
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "PERSON",
+        "x": 10,
+        "len": 10
+      }
+    ]
+  },
+  "_about": "A PERSON beat over a RUN with atmos under it: Whose voice? says it, and Who explains? stays quiet so it isn't said twice."
+}

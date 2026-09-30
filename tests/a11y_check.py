@@ -43,7 +43,7 @@ with sync_playwright() as p:
     page.evaluate(f"ui.sel = '{brick}'; render()"); page.click('[data-act="notice"]'); page.wait_for_timeout(200)
     run(page, "Brick selected, Notice open")
 
-    page.evaluate("ui.sel = null; ui.notice = null; setMedium('audio'); actions.example('rpkg'); ui.msg = ''; render()")
+    page.evaluate("ui.sel = null; ui.notice = null; setMedium('audio'); actions.example('rpump'); ui.msg = ''; render()")
     run(page, "Audio example")
     browser.close()
 
