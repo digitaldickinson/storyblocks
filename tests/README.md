@@ -39,3 +39,21 @@ It prints `ok` or `FAIL` for each check, and exits with 1 if anything failed.
 1. Build it in StoryBlocks and use **Export**, or write the JSON by hand. The fixtures show the format, and an `_about` field is ignored on import, so use it to say what the case is for.
 2. Save it in `fixtures/`.
 3. Add its expected rule ids under `"valid"` in `expected.json`.
+
+## Accessibility check
+
+`a11y_check.py` runs axe-core (WCAG 2.2 A/AA plus best practice) against three states: nothing selected, a brick selected with Notice open, and audio mode.
+
+One-off setup, from the project folder (needs Node, no admin):
+
+```
+npm install axe-core@4
+```
+
+This makes a `node_modules/` folder. It's only for testing and never ships, and `.gitignore` excludes it. Then:
+
+```
+python tests/a11y_check.py
+```
+
+At the time of the audit it reports two known problems, both listed in `docs/accessibility.md`: the dimmed layer key's contrast and the resize grip's size. axe can't judge whether the build makes sense without sight, or check text inside the bricks. `docs/accessibility.md` lists the manual checks for those.
