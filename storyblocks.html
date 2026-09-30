@@ -1187,7 +1187,8 @@ window.addEventListener('pointermove', e => {
 window.addEventListener('pointerup', () => {
   if (!drag) return;
   document.body.classList.remove('resizing', 'moving', 'orbiting');
-  if (drag.kind === 'orbit') { drag.kind = 'done'; setTimeout(() => { drag = null; }, 0); redrawStage(); return; }
+  // only redraw if the view actually turned: replacing the stage under a plain click would swallow the click
+  if (drag.kind === 'orbit') { const turned = drag.moved; drag.kind = 'done'; setTimeout(() => { drag = null; }, 0); if (turned) redrawStage(); return; }
   const changed = drag.moved && JSON.stringify(story) !== JSON.stringify(drag.base);
   if (changed) { past.push(drag.base); if (past.length > 60) past.shift(); future = []; save(); }
   const id = drag.id, moved = drag.moved;

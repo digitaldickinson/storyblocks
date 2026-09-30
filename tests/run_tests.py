@@ -85,6 +85,13 @@ with sync_playwright() as p:
     page.evaluate("focusBrick(story.script[0].id)"); page.keyboard.press("ArrowDown")
     check(page.evaluate("ui.msg") == "Nothing in the sound layer below this brick.", "a gap below is announced", page.evaluate("ui.msg"))
 
+    page.evaluate("ui.sel = null; render()"); page.click('.pcard[data-arg="WS"]'); page.wait_for_timeout(300)
+    spot = page.evaluate("""(() => { const plate = document.getElementById('world').firstElementChild, r = plate.getBoundingClientRect();
+      for (let y = r.bottom - 5; y > r.top; y -= 7) for (let x = r.left + 5; x < r.right; x += 7) {
+        const e = document.elementFromPoint(x, y); if (e && plate.contains(e)) return [x, y]; } })()""")
+    page.mouse.click(*spot); page.wait_for_timeout(100)
+    check(page.evaluate("ui.sel") is None, "clicking the baseplate lets a new brick go")
+
     print("\nNo JavaScript errors")
     check(not errors, "page ran without errors", "; ".join(errors))
     browser.close()
