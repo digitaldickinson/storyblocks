@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Storystack</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141413; --muted:#5E5A50; --faint:#6B665A; --paper:#FAF9F5; --ground:#EDE9DF;
+  --line:#DCD6C8; --line2:#CFC8B8; --stage:#FFC72C; --ok:#1B7A43; --bad:#A51F16;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);background:var(--ground)}
+button{font-family:inherit;color:inherit}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.app{height:100vh;min-height:640px;display:grid;grid-template-rows:64px minmax(0,1fr)}
+/* header */
+header{display:flex;align-items:center;gap:24px;padding:0 20px;background:var(--paper);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:22px;line-height:1;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.targets{display:flex;align-items:center;gap:6px;margin-left:24px}
+.lbl{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.pill{height:36px;padding:0 12px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid var(--line2);background:#fff}
+.pill[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.pill .mono{font-size:12px;opacity:.75}
+.spacer{flex:1}
+.tbtn{height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line2);background:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.tbtn:hover{background:#EFEBE1}
+.tbtn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.tbtn.primary:hover{background:#2c2b28}
+/* body grid */
+.main{display:grid;grid-template-columns:360px minmax(0,1fr) 360px;min-height:0}
+aside{display:flex;flex-direction:column;min-height:0;background:var(--paper)}
+.left{border-right:1px solid var(--line)}
+.right{border-left:1px solid var(--line)}
+.scroll{overflow-y:auto}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+/* palette */
+.palette{flex:1;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px}
+.ghead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.chip{width:10px;height:10px;border-radius:2px;align-self:center;flex-shrink:0}
+.ghead span.b{font-size:12px;color:var(--faint)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pcard{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:84px;padding:6px 4px 8px;border-radius:10px;cursor:pointer;border:1px solid var(--line);background:#fff;transition:transform .12s,box-shadow .12s}
+.pcard:hover{transform:translateY(-2px);box-shadow:0 4px 0 #D8D2C3}
+.pcard[aria-pressed="true"]{border:2px solid #7440B0;background:#F3ECFB}
+.pcard b{font-size:12px;line-height:1}
+.pcard .mono{font-size:11px;color:var(--muted);line-height:1}
+.info{flex-shrink:0;margin:0 16px 16px;padding:14px;min-height:150px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.info p{margin:0;font-size:13px;line-height:1.45;color:#34322C}
+.info .row{display:flex;gap:14px;align-items:flex-start}
+.info .nm{font-weight:700;font-size:16px}
+.info .meta{font-size:12px;color:var(--muted)}
+/* stage */
+.stage{position:relative;overflow:hidden;background:var(--stage)}
+.world{position:absolute;left:50%;top:0;width:720px;height:100%;transform-origin:50% 100%}
+.brick{position:absolute;background:none;border:0;padding:0;margin:0;cursor:pointer;pointer-events:none;transition:top .18s ease-out}
+.brick svg{display:block}
+.brick path{pointer-events:visiblePainted}
+.brick text{pointer-events:none}
+.brick:focus-visible{outline:none}
+.brick:focus-visible path{stroke:var(--ink);stroke-width:2.5}
+.brick:hover path.face{filter:brightness(1.06)}
+.world.focus .brick.story:not(.sel){opacity:.28}
+.world.focus .brick.story.sel{opacity:1}
+.brick.story{transition:top .18s ease-out, opacity .18s}
+.ro.sel .at{display:none}
+.drop{animation:drop .32s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes drop{from{transform:translateY(-60px);opacity:0}to{transform:none;opacity:1}}
+.hud{position:absolute;left:24px;top:20px;right:24px;display:flex;justify-content:space-between;align-items:flex-start;pointer-events:none}
+.card{background:rgba(250,249,245,.92);border:1px solid rgba(20,20,19,.12);border-radius:14px}
+.timecard{display:flex;flex-direction:column;gap:6px;padding:12px 16px;min-width:240px}
+.timecard .big{font-weight:600;font-size:34px;line-height:1}
+.bar{position:relative;height:8px;background:rgba(20,20,19,.1);border-radius:4px;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;transition:width .2s}
+.count{padding:10px 14px;font-size:13px;font-weight:600}
+.empty{position:absolute;left:0;right:0;top:190px;display:flex;justify-content:center;pointer-events:none}
+.empty .card{max-width:380px;text-align:center;padding:16px 20px}
+.empty h3{margin:0 0 6px;font-family:'Archivo Black',sans-serif;font-size:20px;font-weight:400}
+.empty p{margin:0;font-size:14px;line-height:1.45;color:#34322C}
+.caption{position:absolute;left:24px;right:24px;bottom:18px;display:flex;justify-content:center;pointer-events:none}
+.caption div{padding:10px 16px;background:var(--ink);color:var(--paper);border-radius:12px;font-size:13px;font-weight:600;max-width:560px;text-align:center;line-height:1.4}
+/* running order */
+.rohead{display:flex;align-items:baseline;justify-content:space-between;padding:16px 16px 10px}
+.rohead .mono{font-size:12px;color:var(--muted)}
+.list{flex:1;min-height:0;padding:0 12px 12px;display:flex;flex-direction:column;gap:4px}
+.none{padding:20px 12px;border:1px dashed var(--line2);border-radius:12px;font-size:13px;color:var(--muted);text-align:center;line-height:1.45}
+.ro{display:flex;align-items:center;gap:2px;border-radius:10px;border:1px solid transparent}
+.ro.sel{background:#fff;border-color:var(--ink)}
+.ro .pick{flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 8px;background:none;border:0;border-radius:10px;cursor:pointer;text-align:left;font-size:13px}
+.ro .pick:hover{background:rgba(20,20,19,.04)}
+.ro .n{font-size:11px;color:var(--faint);width:18px;flex-shrink:0}
+.ro .sw{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.ro .code{font-weight:700;width:40px;flex-shrink:0}
+.ro .name{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ro .d{font-size:12px;flex-shrink:0}
+.ro .at{font-size:12px;color:var(--faint);width:34px;text-align:right;flex-shrink:0}
+.ibtn{width:36px;height:44px;border:0;background:none;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ibtn:hover{background:#EFEBE1}
+.ibtn.x{width:40px;color:var(--faint)}
+.checks{flex-shrink:0;border-top:1px solid var(--line);padding:14px 16px 16px;background:#fff}
+.checks .top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:8px}
+.checks ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.checks li{display:flex;gap:10px;align-items:flex-start}
+.checks li svg{flex-shrink:0;margin-top:1px}
+.checks .t{font-size:13px;font-weight:600;line-height:1.3}
+.checks .h{display:block;font-size:12px;color:var(--muted);line-height:1.35}
+:focus-visible{outline:2px solid #1D5FAE;outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+/* ============================================================
+   Storystack — build a broadcast story, brick by brick.
+   Single file, no dependencies. State lives in `state`;
+   render() redraws everything; clicks route via data-act.
+   ============================================================ */
+
+// ---------- CONFIG: edit these to change the brick set ----------
+const CATS = {
+  found:  { name:'Foundations', blurb:'What the story stands on', top:'#A274DB', front:'#7440B0', end:'#552E85', ink:'#FFFFFF' },
+  words:  { name:'Words',       blurb:'What we write and say',    top:'#F2493D', front:'#C8261B', end:'#931A12', ink:'#FFFFFF' },
+  voices: { name:'Voices',      blurb:'Who else speaks',          top:'#4A8FDF', front:'#1D5FAE', end:'#134580', ink:'#FFFFFF' },
+  pics:   { name:'Pictures',    blurb:'What the audience sees',   top:'#FFDB45', front:'#F0B700', end:'#C28F00', ink:'#2E2200' },
+  live:   { name:'Live',        blurb:'Real time, no safety net', top:'#44B874', front:'#1B7A43', end:'#125A30', ink:'#FFFFFF' }
+};
+
+// [code, category, name, seconds, studs, label, description]
+const BRICK_ROWS = [
+  ['ANGLE','found','Angle',0,3,'ANGLE','Why this story, why now, and what is new. Everything above it leans on this.'],
+  ['AUDIENCE','found','Audience',0,3,'AUDIENCE','Who is watching, what they already know, and what they need from you.'],
+  ['CHECKS','found','Verification & law',0,3,'CHECKS','Facts stood up, right of reply offered, defamation and contempt risks cleared.'],
+  ['ACCESS','found','Access & consent',0,3,'ACCESS','Permission to film, informed consent from contributors, risk assessed.'],
+  ['CUE','words','Studio cue',15,3,'CUE','The presenter sets the story up: top line first, then the hand-over to the reporter.'],
+  ['VO','words','Voiceover',10,2,'VO','Reporter script over pictures. Write to the pictures, not against them.'],
+  ['PTC','words','Piece to camera',10,2,'PTC','Reporter in vision on location. Earns its place when it shows something only being there can.'],
+  ['SIGN','words','Sign-off',5,1,'SIGN','Name, programme, place. The door closes on the package.'],
+  ['SOT','voices','Interview clip',15,3,'SOT','A contributor in sync. Pick the moment of feeling or first-hand fact, not the explanation you could write yourself.'],
+  ['VOX','voices','Vox pops',10,2,'VOX','Quick street views. Colour and texture, never evidence and never a poll.'],
+  ['EXP','voices','Expert',15,3,'EXP','Analysis or authority. Check who they are and who pays them.'],
+  ['STMT','voices','Statement',10,2,'STMT','The official response, read out or shown on screen, when nobody would come on camera.'],
+  ['GVS','pics','General views',10,2,'GVs','Wide, mid, close: the pictures that put the audience in the place.'],
+  ['NAT','pics','Natural sound',5,1,'NAT','Let it breathe: actuality with no voice over the top.'],
+  ['ARC','pics','Archive',10,2,'ARC','Footage from before. Caption it on screen and clear the rights.'],
+  ['GFX','pics','Graphic',10,2,'GFX','Data, a map or a quote made visual. One idea per graphic.'],
+  ['LIVE','live','Live two-way',30,6,'LIVE','The presenter questions the reporter live. Know your first line and your last.'],
+  ['DTL','live','Down-the-line',20,4,'DTL','A contributor interviewed live from somewhere else. Test the line before you need it.']
+];
+
+const TARGETS = { short:{label:'Short',secs:45}, pkg:{label:'Package',secs:90}, long:{label:'Long-form',secs:180} };
+const SLOTS = ['ANGLE','AUDIENCE','CHECKS','ACCESS'];      // foundation plate order, left to right
+const EXAMPLE = ['CUE','NAT','GVS','VO','SOT','VO','VOX','GFX','PTC'];
+const WALL_W = 12, MAX_COURSES = 8;
+
+// ---------- derived ----------
+const B = {};
+BRICK_ROWS.forEach(r => B[r[0]] = { code:r[0], cat:r[1], name:r[2], dur:r[3], len:r[4], label:r[5], desc:r[6] });
+
+// ---------- state ----------
+const STORE_KEY = 'storystack.v1';
+let state = { found:{}, story:[], sel:null, hover:null, target:'pkg', seq:1, msg:'' };
+try { const s = JSON.parse(localStorage.getItem(STORE_KEY)); if (s) Object.assign(state, s, { sel:null, hover:null, msg:'' }); } catch(e) {}
+let justAdded = null;
+
+function setState(patch) {
+  Object.assign(state, patch);
+  try { localStorage.setItem(STORE_KEY, JSON.stringify({ found:state.found, story:state.story, target:state.target, seq:state.seq })); } catch(e) {}
+  render();
+}
+
+// ---------- helpers ----------
+const fmt = s => Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Isometric box. len along x, depth along y, h = height in px.
+   Returns SVG path strings in the box's own local coordinates,
+   plus (ax, ay): where world-origin (0,0,0) of the box sits in that SVG. */
+function geom(len, depth, h, studs, U, hs) {
+  const C = 0.866, S = 0.5, r = 0.3;
+  const rx = r*U*1.2247, ry = r*U*0.7071;
+  const P = (x,y,z) => [(x-y)*C*U, (x+y)*S*U - z];
+  const pad = 3;
+  const minX = P(0,depth,0)[0]-pad, maxX = P(len,0,0)[0]+pad;
+  const minY = P(0,0,h)[1]-pad,     maxY = P(len,depth,0)[1]+pad;
+  const ax = -minX, ay = -minY, f = n => n.toFixed(1);
+  const q = (x,y,z) => { const p = P(x,y,z); return f(p[0]+ax)+' '+f(p[1]+ay); };
+  const top   = `M${q(0,0,h)}L${q(len,0,h)}L${q(len,depth,h)}L${q(0,depth,h)}Z`;
+  const front = `M${q(0,depth,0)}L${q(len,depth,0)}L${q(len,depth,h)}L${q(0,depth,h)}Z`;
+  const end   = `M${q(len,0,0)}L${q(len,depth,0)}L${q(len,depth,h)}L${q(len,0,h)}Z`;
+  let side = '', tops = '';
+  if (studs) for (let j=0;j<depth;j++) for (let i=0;i<len;i++) {
+    const p = P(i+.5, j+.5, h), cx = p[0]+ax, cy = p[1]+ay, t = cy-hs;
+    side += `M${f(cx-rx)} ${f(t)}L${f(cx-rx)} ${f(cy)}A${f(rx)} ${f(ry)} 0 0 0 ${f(cx+rx)} ${f(cy)}L${f(cx+rx)} ${f(t)}Z`;
+    tops += `M${f(cx-rx)} ${f(t)}A${f(rx)} ${f(ry)} 0 0 1 ${f(cx+rx)} ${f(t)}A${f(rx)} ${f(ry)} 0 0 1 ${f(cx-rx)} ${f(t)}Z`;
+  }
+  const o = P(0,depth,0);
+  return { w:Math.ceil(maxX-minX), h:Math.ceil(maxY-minY), ax, ay, top, front, end, side, tops,
+           tf:`matrix(0.866 0.5 0 1 ${f(o[0]+ax)} ${f(o[1]+ay)})`, tx:f(len*U/2) };
+}
+
+/* Render a box to an <svg> string. o = { top, front, end, stroke, sw, dash, label, ink, fs, ty } */
+function svgBox(g, o, extra='') {
+  const st = `stroke="${o.stroke}" stroke-width="${o.sw||1}" stroke-linejoin="round"${o.dash?` stroke-dasharray="${o.dash}"`:''}`;
+  return `<svg width="${g.w}" height="${g.h}" viewBox="0 0 ${g.w} ${g.h}" ${extra}>
+    <path class="face" d="${g.front}" fill="${o.front}" ${st}/>
+    <path class="face" d="${g.end}" fill="${o.end}" ${st}/>
+    <path class="face" d="${g.top}" fill="${o.top}" ${st}/>
+    ${g.side ? `<path d="${g.side}" fill="${o.front}" stroke="${o.stroke}" stroke-width="${o.ssw||1}"/><path d="${g.tops}" fill="${o.top}" stroke="${o.stroke}" stroke-width="${o.ssw||1}"/>` : ''}
+    ${o.label ? `<text x="${g.tx}" y="${o.ty}" transform="${g.tf}" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="${o.fs}" letter-spacing="0.6" fill="${o.ink}">${esc(o.label)}</text>` : ''}
+  </svg>`;
+}
+const catColours = c => ({ top:CATS[c].top, front:CATS[c].front, end:CATS[c].end, stroke:CATS[c].end });
+
+/* Lay story bricks into courses: fill left to right; a new course starts once x reaches WALL_W.
+   Overhang past WALL_W is allowed so every brick starts over the course below it. */
+function layout(story) {
+  const H = 40, PH = 14; let x = 0, k = 0;
+  const pos = story.map(s => { if (x >= WALL_W) { k++; x = 0; } const p = { x, z: PH + k*H }; x += B[s.code].len; return p; });
+  return { pos, courses: story.length ? k+1 : 0 };
+}
+
+// ---------- actions ----------
+const actions = {
+  add(code) {
+    const b = B[code];
+    if (b.cat === 'found') { setState({ found: { ...state.found, [code]: !state.found[code] }, msg:'' }); return; }
+    const story = state.story.concat([{ uid: state.seq, code }]);
+    if (layout(story).courses > MAX_COURSES) { setState({ msg:'The wall is full. Eight courses is the limit — something has to go. Welcome to editing.' }); return; }
+    justAdded = state.seq;
+    setState({ story, seq: state.seq+1, sel:null, msg:'' });
+  },
+  hover(code) { if (state.hover !== code) { state.hover = code; renderInfo(); } },
+  select(uid) { uid = +uid; setState({ sel: state.sel === uid ? null : uid }); },
+  up(uid)   { move(+uid, -1); },
+  down(uid) { move(+uid, 1); },
+  remove(uid) { uid = +uid; setState({ story: state.story.filter(s => s.uid !== uid), sel: state.sel === uid ? null : state.sel, msg:'' }); },
+  target(k) { setState({ target:k }); },
+  example() { setState({ found:{ANGLE:true,AUDIENCE:true,CHECKS:true,ACCESS:true}, story: EXAMPLE.map((c,i)=>({uid:1000+i, code:c})), seq:1100, sel:null, target:'pkg', msg:'' }); },
+  undo() { if (state.story.length) setState({ story: state.story.slice(0,-1), sel:null, msg:'' }); },
+  clear() { setState({ found:{}, story:[], sel:null, msg:'' }); }
+};
+function move(uid, dir) {
+  const s = state.story.slice(), i = s.findIndex(x => x.uid === uid), j = i+dir;
+  if (i < 0 || j < 0 || j >= s.length) return;
+  [s[i], s[j]] = [s[j], s[i]];
+  setState({ story: s });
+}
+
+// ---------- render ----------
+const ICON = {
+  up:   '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10l4-4 4 4"/></svg>',
+  down: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>',
+  x:    '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>',
+  ok:   '<svg width="18" height="18" viewBox="0 0 18 18" role="img" aria-label="Passed"><circle cx="9" cy="9" r="8" fill="#1B7A43"/><path d="M5.2 9.3l2.5 2.4 5-5.2" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  no:   '<svg width="18" height="18" viewBox="0 0 18 18" role="img" aria-label="Not yet"><circle cx="9" cy="9" r="7.2" fill="none" stroke="#8F897C" stroke-width="1.6" stroke-dasharray="3 2.4"/></svg>'
+};
+
+function renderHeader() {
+  const lg = geom(2,2,10,true,9,2);
+  const logo = `<div aria-hidden="true" style="position:relative;width:44px;height:44px">
+    <div style="position:absolute;left:2px;top:14px">${svgBox(lg, catColours('words'), '')}</div>
+    <div style="position:absolute;left:9px;top:0">${svgBox(lg, catColours('voices'), '')}</div></div>`;
+  const pills = Object.entries(TARGETS).map(([k,t]) =>
+    `<button class="pill" data-act="target" data-arg="${k}" aria-pressed="${k===state.target}">${t.label} <span class="mono">${fmt(t.secs)}</span></button>`).join('');
+  return `<header>
+    <div class="brand">${logo}<div><h1>Storystack</h1><p>Build a broadcast story, brick by brick</p></div></div>
+    <div class="targets" role="group" aria-label="Target duration"><span class="lbl">Target</span>${pills}</div>
+    <div class="spacer"></div>
+    <button class="tbtn primary" data-act="example">Load example package</button>
+    <button class="tbtn" data-act="undo">Undo</button>
+    <button class="tbtn" data-act="clear">Clear</button>
+  </header>`;
+}
+
+function renderPalette() {
+  return Object.entries(CATS).map(([ck,cat]) => {
+    const cards = BRICK_ROWS.filter(r => r[1]===ck).map(r => {
+      const b = B[r[0]], isF = ck==='found', laid = isF && !!state.found[b.code];
+      const g = geom(b.len, 2, isF?4:10, true, isF?10:8, 2);
+      const aria = isF ? `${laid?'Remove':'Lay'} ${b.name} foundation` : `Add ${b.name}, ${b.dur} seconds`;
+      return `<button class="pcard" data-act="add" data-arg="${b.code}" data-hover="${b.code}" aria-label="${esc(aria)}"${isF?` aria-pressed="${laid}"`:''}>
+        ${svgBox(g, {...catColours(ck), sw:.6, ssw:.5}, 'aria-hidden="true"')}
+        <b>${esc(b.label)}</b><span class="mono">${isF ? (laid?'laid':'plate') : fmt(b.dur)}</span></button>`;
+    }).join('');
+    return `<section><div class="ghead"><span class="chip" style="background:${cat.front}"></span><h2>${cat.name}</h2><span class="b">${cat.blurb}</span></div><div class="cards">${cards}</div></section>`;
+  }).join('');
+}
+
+function infoHTML() {
+  const b = state.hover && B[state.hover];
+  if (!b) return `<div style="font-weight:700;font-size:14px;margin-bottom:6px">How it works</div>
+    <p>Lay your foundation plates first, then click bricks to build your story in running order. Brick length is airtime: each stud is about five seconds. Hover a brick to see what it does.</p>`;
+  const isF = b.cat==='found';
+  const g = geom(b.len, 2, isF?7:20, true, 16, 3);
+  return `<div class="row">${svgBox(g, {...catColours(b.cat), sw:.8, ssw:.6}, 'aria-hidden="true" style="flex-shrink:0"')}
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <div><span class="nm">${esc(b.name)}</span> <span class="meta mono">${esc(b.label)} · ${isF?'foundation plate · no airtime':`${b.dur}s · ${b.len} stud${b.len===1?'':'s'}`}</span></div>
+      <p>${esc(b.desc)}</p></div></div>`;
+}
+function renderInfo() { const el = document.getElementById('info'); if (el) el.innerHTML = infoHTML(); }
+
+function renderStage() {
+  const U=34, H=40, PH=14, HS=6, C=.866, S=.5, OX=213, OY=470;
+  const P = (x,y,z) => [(x-y)*C*U, (x+y)*S*U - z];
+  const at = (g,x,y,z,lift=0) => { const p = P(x,y,z); return `left:${(OX+p[0]-g.ax).toFixed(1)}px;top:${(OY+p[1]-g.ay-lift).toFixed(1)}px`; };
+
+  // baseplate
+  const bg = geom(16,6,10,true,U,HS);
+  let html = `<div aria-hidden="true" style="position:absolute;${at(bg,-2,-2,-10)}">${svgBox(bg,{top:'#DAD5CA',front:'#BDB7AA',end:'#A39D90',stroke:'#8F897C',ssw:.8})}</div>`;
+
+  // foundation plates / ghosts
+  SLOTS.forEach((code,i) => {
+    const laid = !!state.found[code], c = CATS.found;
+    const g = geom(3,2,PH,laid,U,HS);
+    const o = laid ? { top:c.top, front:c.front, end:c.end, stroke:c.end, ink:'#fff', label:code }
+                   : { top:'rgba(116,64,176,.16)', front:'rgba(116,64,176,.28)', end:'rgba(85,46,133,.34)', stroke:'#552E85', sw:1.4, dash:'6 4', ink:'#3E1F66', label:code+'?' };
+    o.fs = 9; o.ty = (-PH/2+3.2).toFixed(1); o.ssw = .8;
+    html += `<button class="brick" style="${at(g,i*3,0,0)}" data-act="add" data-arg="${code}" aria-label="${laid?'Remove':'Lay'} ${esc(B[code].name)} foundation">${svgBox(g,o)}</button>`;
+  });
+
+  // story bricks
+  const L = layout(state.story);
+  state.story.forEach((s,i) => {
+    const b = B[s.code], c = CATS[b.cat], p = L.pos[i], sel = state.sel === s.uid;
+    const g = geom(b.len,2,H,true,U,HS), fs = b.len===1 ? 10 : 12;
+    const o = { top:c.top, front:c.front, end:c.end, stroke: sel?'#141413':c.end, sw: sel?2.5:1, ink:c.ink, label:b.label, fs, ty:(-H/2+fs*.36).toFixed(1) };
+    html += `<button class="brick story${sel?' sel':''}${s.uid===justAdded?' drop':''}" style="${at(g,p.x,0,p.z,sel?12:0)}" data-act="select" data-arg="${s.uid}" aria-pressed="${sel}" aria-label="${i+1}. ${esc(b.name)}">${svgBox(g,o)}</button>`;
+  });
+  justAdded = null;
+  return { html, courses: L.courses };
+}
+
+function render() {
+  const target = TARGETS[state.target].secs;
+  const seq = state.story.map(s => B[s.code]);
+  const has = seq.length > 0;
+
+  // running order
+  let cum = 0;
+  const rows = state.story.map((s,i) => {
+    const b = B[s.code], sel = state.sel === s.uid, inAt = cum; cum += b.dur;
+    return `<div class="ro${sel?' sel':''}">
+      <button class="pick" data-act="select" data-arg="${s.uid}" aria-pressed="${sel}" aria-label="${esc(b.name)}, ${b.dur} seconds, in at ${fmt(inAt)}">
+        <span class="n mono">${i+1}</span><span class="sw" style="background:${CATS[b.cat].front}"></span>
+        <span class="code">${esc(b.label)}</span><span class="name">${esc(b.name)}</span>
+        <span class="d mono">${b.dur}s</span><span class="at mono">${fmt(inAt)}</span></button>
+      ${sel ? `<button class="ibtn" data-act="up" data-arg="${s.uid}" aria-label="Move earlier">${ICON.up}</button><button class="ibtn" data-act="down" data-arg="${s.uid}" aria-label="Move later">${ICON.down}</button>` : ''}
+      <button class="ibtn x" data-act="remove" data-arg="${s.uid}" aria-label="Remove ${esc(b.name)}">${ICON.x}</button></div>`;
+  }).join('');
+  const total = cum;
+
+  // time
+  const lo = Math.round(target*.9), hi = Math.round(target*1.1);
+  const onTime = total >= lo && total <= hi, over = total > hi;
+  const pct = Math.min(100, total/target*100);
+  const barColour = onTime ? '#1B7A43' : over ? '#C8261B' : '#141413';
+  const timeNote = !has ? 'Nothing on air yet.' : onTime ? 'On time. The editor might even smile.'
+                  : over ? `Over by ${fmt(total-target)}. The editor will cut it for you.` : `Short by ${fmt(target-total)}.`;
+  const timeColour = onTime ? 'var(--ok)' : over ? 'var(--bad)' : 'var(--muted)';
+
+  // checks
+  let backToBack = false;
+  for (let i=0;i<seq.length-1;i++) if (seq[i].cat==='voices' && seq[i+1].cat==='voices') backToBack = true;
+  const picSecs = seq.filter(b => b.cat==='pics').reduce((a,b) => a+b.dur, 0);
+  const last = has ? seq[seq.length-1].code : '';
+  const checks = [
+    [!!state.found.ANGLE, 'Standing on an angle', 'Lay the ANGLE plate: why this, why now?'],
+    [!!state.found.CHECKS, 'Checked and legally safe', 'Lay the CHECKS plate before anything goes near air.'],
+    [has && seq[0].code==='CUE', 'Opens in the studio', 'Start with a CUE so the presenter can set it up.'],
+    [has && !backToBack, 'No clips back-to-back', has ? 'Two voices touching. Put words or pictures between them.' : 'Add some voices, then keep them apart.'],
+    [has && total>0 && picSecs/total >= .25, 'Shows as well as tells', 'Pictures need at least a quarter of your running time.'],
+    [last==='PTC' || last==='SIGN', 'Lands the ending', 'Finish on a PTC or a SIGN-off.'],
+    [has && onTime, 'On time', `Within ten per cent of ${fmt(target)}.`]
+  ];
+  const score = checks.filter(c => c[0]).length;
+
+  // caption
+  const missing = SLOTS.filter(c => !state.found[c]);
+  const caption = state.msg || (has && missing.length ? `Floating over thin air: ${missing.join(', ')}. Lay the foundations under your story.` : '');
+
+  const stage = renderStage();
+  const scrollPos = [...document.querySelectorAll('.scroll')].map(el => el.scrollTop);
+
+  document.getElementById('app').innerHTML = `
+    ${renderHeader()}
+    <div class="main">
+      <aside class="left" aria-label="Brick box">
+        <div class="palette scroll">${renderPalette()}</div>
+        <div class="info" id="info">${infoHTML()}</div>
+      </aside>
+
+      <main class="stage" aria-label="Build area">
+        <div class="world${state.sel!=null?' focus':''}" id="world">${stage.html}</div>
+        <div class="hud">
+          <div class="card timecard">
+            <span class="lbl" style="font-size:11px;letter-spacing:.1em">Running time</span>
+            <div><span class="big mono">${fmt(total)}</span> <span class="mono" style="font-size:14px;color:var(--muted)">/ ${fmt(target)}</span></div>
+            <div class="bar"><i style="width:${pct.toFixed(1)}%;background:${barColour}"></i></div>
+            <div style="font-size:12px;font-weight:600;color:${timeColour}">${timeNote}</div>
+          </div>
+          <div class="card count">${seq.length} brick${seq.length===1?'':'s'} · ${stage.courses} course${stage.courses===1?'':'s'}</div>
+        </div>
+        ${!has ? `<div class="empty"><div class="card"><h3>Start with the ground</h3><p>Click the dashed slots, or the purple plates, to lay your foundations. Then stack story bricks on top in running order.</p></div></div>` : ''}
+        ${caption ? `<div class="caption" role="status"><div>${esc(caption)}</div></div>` : ''}
+      </main>
+
+      <aside class="right" aria-label="Running order and checks">
+        <div class="rohead"><h2>Running order</h2><span class="mono">dur · in at</span></div>
+        <div class="list scroll">${rows || '<div class="none">Nothing in the running order yet. Each brick you add appears here with its time.</div>'}</div>
+        <div class="checks">
+          <div class="top"><h2>Build checks</h2><span class="mono" style="font-size:12px;font-weight:600">${score} of ${checks.length}</span></div>
+          <ul>${checks.map(([ok,t,h]) => `<li>${ok?ICON.ok:ICON.no}<div><span class="t">${t}</span>${ok?'':`<span class="h">${h}</span>`}</div></li>`).join('')}</ul>
+        </div>
+      </aside>
+    </div>`;
+
+  document.querySelectorAll('.scroll').forEach((el,i) => { if (scrollPos[i] != null) el.scrollTop = scrollPos[i]; });
+  fitStage();
+}
+
+/* Scale the 720x836 world to whatever size the stage actually is. */
+function fitStage() {
+  const stage = document.querySelector('.stage'), world = document.getElementById('world');
+  if (!stage || !world) return;
+  const sw = stage.clientWidth, sh = stage.clientHeight;
+  const k = Math.min(1.25, sw/720, sh/836);
+  world.style.height = '836px';
+  world.style.top = (sh - 836) + 'px';
+  world.style.transform = `translateX(-50%) scale(${k.toFixed(3)})`;
+}
+
+// ---------- events ----------
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) return;
+  const fn = actions[el.dataset.act];
+  if (fn) fn(el.dataset.arg);
+});
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-hover]'); if (el) actions.hover(el.dataset.hover); });
+document.addEventListener('focusin',   e => { const el = e.target.closest('[data-hover]'); if (el) actions.hover(el.dataset.hover); });
+window.addEventListener('resize', fitStage);
+
+render();
+</script>
+</body>
+</html>

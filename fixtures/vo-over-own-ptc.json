@@ -1,0 +1,30 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "PTC",
+        "x": 0,
+        "len": 8
+      }
+    ],
+    "sound": [
+      {
+        "code": "NAT",
+        "x": 0,
+        "len": 8
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 8
+      }
+    ],
+    "editorial": []
+  },
+  "_about": "A voiceover over the reporter's own PTC shot: In or out of vision?"
+}

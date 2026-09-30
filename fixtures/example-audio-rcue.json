@@ -1,0 +1,48 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "audio",
+  "layers": {
+    "sound": [
+      {
+        "code": "CLIP",
+        "x": 8,
+        "len": 12
+      }
+    ],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "RUN",
+        "x": 8,
+        "len": 12
+      },
+      {
+        "code": "BACK",
+        "x": 20,
+        "len": 4
+      }
+    ],
+    "editorial": [
+      {
+        "code": "CONTEXT",
+        "x": 0,
+        "len": 8
+      },
+      {
+        "code": "CONSEQ",
+        "x": 8,
+        "len": 12
+      },
+      {
+        "code": "UNSET",
+        "x": 20,
+        "len": 4
+      }
+    ]
+  }
+}

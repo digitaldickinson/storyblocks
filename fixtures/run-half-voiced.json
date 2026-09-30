@@ -1,0 +1,45 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 20
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "SOT",
+        "x": 10,
+        "len": 4
+      },
+      {
+        "code": "ATM",
+        "x": 14,
+        "len": 6
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "RUN",
+        "x": 10,
+        "len": 10
+      }
+    ],
+    "editorial": []
+  },
+  "_about": "A RUN with a voice under only part of it: Whose voice?"
+}

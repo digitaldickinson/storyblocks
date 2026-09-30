@@ -1,0 +1,24 @@
+{
+  "app": "storystack",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "IV",
+        "x": 0,
+        "len": 6
+      }
+    ],
+    "sound": [],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 6
+      }
+    ],
+    "editorial": []
+  },
+  "_about": "An export from before the rename (app 'storystack', brick 'IV'): must still open, as INVIZ."
+}

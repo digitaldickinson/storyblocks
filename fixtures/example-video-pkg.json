@@ -1,0 +1,135 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "CU",
+        "x": 6,
+        "len": 5
+      },
+      {
+        "code": "MCU",
+        "x": 11,
+        "len": 12
+      },
+      {
+        "code": "CU",
+        "x": 23,
+        "len": 5
+      },
+      {
+        "code": "WS",
+        "x": 28,
+        "len": 5
+      },
+      {
+        "code": "MCU",
+        "x": 33,
+        "len": 5
+      },
+      {
+        "code": "CU",
+        "x": 38,
+        "len": 5
+      },
+      {
+        "code": "DET",
+        "x": 43,
+        "len": 5
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 11
+      },
+      {
+        "code": "SOT",
+        "x": 11,
+        "len": 12
+      },
+      {
+        "code": "ATM",
+        "x": 23,
+        "len": 10
+      },
+      {
+        "code": "SOT",
+        "x": 33,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 43,
+        "len": 5
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 11
+      },
+      {
+        "code": "RUN",
+        "x": 11,
+        "len": 12
+      },
+      {
+        "code": "VO",
+        "x": 23,
+        "len": 10
+      },
+      {
+        "code": "RUN",
+        "x": 33,
+        "len": 10
+      },
+      {
+        "code": "VO",
+        "x": 43,
+        "len": 9
+      }
+    ],
+    "editorial": [
+      {
+        "code": "CONTEXT",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "EVIDENCE",
+        "x": 6,
+        "len": 5
+      },
+      {
+        "code": "CLAIM",
+        "x": 11,
+        "len": 12
+      },
+      {
+        "code": "EXPLAIN",
+        "x": 23,
+        "len": 10
+      },
+      {
+        "code": "CONSEQ",
+        "x": 33,
+        "len": 10
+      },
+      {
+        "code": "UNSET",
+        "x": 43,
+        "len": 5
+      }
+    ]
+  }
+}

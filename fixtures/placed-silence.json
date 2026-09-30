@@ -1,0 +1,29 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 4
+      },
+      {
+        "code": "SIL",
+        "x": 4,
+        "len": 6
+      }
+    ],
+    "script": [],
+    "editorial": []
+  },
+  "_about": "A SIL brick means the silence is meant: no Nothing to hear."
+}

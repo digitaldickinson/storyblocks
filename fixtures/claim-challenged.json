@@ -1,0 +1,35 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "script": [],
+    "editorial": [
+      {
+        "code": "CLAIM",
+        "x": 0,
+        "len": 5
+      },
+      {
+        "code": "CHALLENGE",
+        "x": 5,
+        "len": 5
+      }
+    ]
+  },
+  "_about": "A claim followed by a challenge label: no Claim notice."
+}

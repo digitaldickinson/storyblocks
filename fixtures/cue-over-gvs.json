@@ -1,0 +1,35 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "INVIZ",
+        "x": 0,
+        "len": 3
+      },
+      {
+        "code": "GV",
+        "x": 3,
+        "len": 5
+      }
+    ],
+    "sound": [
+      {
+        "code": "NAT",
+        "x": 0,
+        "len": 8
+      }
+    ],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 8
+      }
+    ],
+    "editorial": []
+  },
+  "_about": "An in-vision cue over pictures that aren't the presenter: In or out of vision?"
+}

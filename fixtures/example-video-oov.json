@@ -1,0 +1,95 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "INVIZ",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "GV",
+        "x": 6,
+        "len": 5
+      },
+      {
+        "code": "CU",
+        "x": 11,
+        "len": 4
+      },
+      {
+        "code": "WS",
+        "x": 15,
+        "len": 5
+      },
+      {
+        "code": "MCU",
+        "x": 20,
+        "len": 10
+      },
+      {
+        "code": "INVIZ",
+        "x": 30,
+        "len": 4
+      }
+    ],
+    "sound": [
+      {
+        "code": "NAT",
+        "x": 6,
+        "len": 14
+      },
+      {
+        "code": "SOT",
+        "x": 20,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "OOV",
+        "x": 6,
+        "len": 16
+      },
+      {
+        "code": "RUN",
+        "x": 22,
+        "len": 10
+      },
+      {
+        "code": "BACK",
+        "x": 32,
+        "len": 4
+      }
+    ],
+    "editorial": [
+      {
+        "code": "CONTEXT",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "EXPLAIN",
+        "x": 6,
+        "len": 14
+      },
+      {
+        "code": "CONSEQ",
+        "x": 20,
+        "len": 10
+      },
+      {
+        "code": "UNSET",
+        "x": 30,
+        "len": 4
+      }
+    ]
+  }
+}

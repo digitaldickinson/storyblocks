@@ -1,0 +1,44 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "CU",
+        "x": 0,
+        "len": 4
+      },
+      {
+        "code": "WS",
+        "x": 4,
+        "len": 4
+      },
+      {
+        "code": "CU",
+        "x": 8,
+        "len": 4
+      },
+      {
+        "code": "CU",
+        "x": 13,
+        "len": 4
+      },
+      {
+        "code": "DET",
+        "x": 17,
+        "len": 4
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 21
+      }
+    ],
+    "script": [],
+    "editorial": []
+  },
+  "_about": "Three close shots, but with a gap between them: no Shot sizes."
+}

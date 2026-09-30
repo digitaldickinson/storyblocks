@@ -1,0 +1,31 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "TRK",
+        "x": 0,
+        "len": 5
+      },
+      {
+        "code": "WS",
+        "x": 2,
+        "len": 0
+      }
+    ],
+    "sound": [
+      {
+        "code": "SOT",
+        "x": 0,
+        "len": 5
+      },
+      {
+        "code": "SOT",
+        "x": 3,
+        "len": 5
+      }
+    ]
+  }
+}

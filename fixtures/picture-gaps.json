@@ -1,0 +1,29 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 5
+      },
+      {
+        "code": "CU",
+        "x": 8,
+        "len": 4
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 16
+      }
+    ],
+    "script": [],
+    "editorial": []
+  },
+  "_about": "Sound over a gap in the pictures and running on after them: Nothing to see."
+}

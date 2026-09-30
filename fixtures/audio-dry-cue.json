@@ -1,0 +1,38 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "audio",
+  "layers": {
+    "sound": [
+      {
+        "code": "CLIP",
+        "x": 6,
+        "len": 8
+      },
+      {
+        "code": "ATM",
+        "x": 17,
+        "len": 5
+      }
+    ],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "RUN",
+        "x": 6,
+        "len": 8
+      },
+      {
+        "code": "TRK",
+        "x": 17,
+        "len": 5
+      }
+    ],
+    "editorial": []
+  },
+  "_about": "Radio: a dry studio cue is not flagged; a silent gap is."
+}

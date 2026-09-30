@@ -1,0 +1,1209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Journalism Blocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#141413;--muted:#5E5A50;--faint:#6B665A;--paper:#FAF9F5;--ground:#EDE9DF;--line:#DCD6C8;--line2:#CFC8B8;--stage:#FFC72C;--warn:#A51F16}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);background:var(--ground)}
+button,input,select,textarea{font-family:inherit;color:inherit;font-size:inherit}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.app{height:100vh;min-height:640px;display:grid;grid-template-rows:60px auto minmax(0,1fr)}
+:focus-visible{outline:2px solid #1D5FAE;outline-offset:2px}
+
+/* header */
+header{display:flex;align-items:center;gap:16px;padding:0 16px;background:var(--paper);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;margin-right:8px}
+.brand h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:20px;line-height:1;font-weight:400}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.seg{display:flex;background:#fff;border:1px solid var(--line2);border-radius:999px;padding:3px;gap:2px}
+.seg button{height:34px;padding:0 14px;border:0;border-radius:999px;background:none;cursor:pointer;font-size:13px;font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.spacer{flex:1}
+.tbtn{height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+.tbtn:hover:not(:disabled){background:#EFEBE1}
+.tbtn:disabled{opacity:.4;cursor:default}
+.tbtn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.tbtn.danger{color:var(--warn)}
+.tgroup{display:flex;gap:6px}
+
+/* stage */
+.stagewrap{user-select:none;-webkit-user-select:none;display:grid;grid-template-columns:112px minmax(0,1fr);transition:height .4s cubic-bezier(.3,.8,.3,1);background:var(--stage);border-bottom:1px solid #D9A800;position:relative}
+.labels{position:relative;border-right:1px solid rgba(20,20,19,.12)}
+.tlabel{position:absolute;left:12px;right:6px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;transition:top .4s cubic-bezier(.3,.8,.3,1);display:flex;align-items:center;gap:6px;transform:translateY(-50%)}
+.tlabel i{width:9px;height:9px;border-radius:2px;display:inline-block;flex-shrink:0}
+.scroller{overflow-x:auto;overflow-y:hidden;position:relative}
+.world{position:relative;transition:transform .4s cubic-bezier(.3,.8,.3,1)}
+.layer{position:absolute;inset:0;pointer-events:none}
+.layer > *{pointer-events:auto}
+.brick{position:absolute;cursor:pointer;pointer-events:none!important;transition:top .4s cubic-bezier(.3,.8,.3,1),opacity .25s,filter .2s;outline:none}
+.brick svg{display:block;overflow:visible;pointer-events:none}
+.brick svg path.f{pointer-events:visiblePainted}
+.handle{z-index:3;pointer-events:auto}
+.brick:focus-visible path.f{stroke:#1D5FAE;stroke-width:2.5}
+.brick.hl{filter:drop-shadow(0 0 5px #fff) drop-shadow(0 0 3px #1D5FAE)}
+.brick.flash{animation:flash .9s ease-out}
+@keyframes flash{0%,60%{filter:drop-shadow(0 0 8px #fff) drop-shadow(0 0 4px #fff)}100%{filter:none}}
+.brick.pop{animation:pop .34s cubic-bezier(.2,.9,.3,1.25)}
+@keyframes pop{from{transform:translateY(-26px);opacity:0}to{transform:none;opacity:1}}
+.handle{position:absolute;width:10px;cursor:ew-resize;border-radius:3px;opacity:0;transition:opacity .15s;background:repeating-linear-gradient(0deg,rgba(255,255,255,.95) 0 2px,transparent 2px 4px);box-shadow:inset 0 0 0 1px rgba(20,20,19,.5)}
+.brick:hover .handle,.brick.sel .handle{opacity:1}
+body.resizing,body.resizing *{cursor:ew-resize!important}
+.hatch{position:absolute;border:1.5px dashed rgba(20,20,19,.5);border-radius:3px;background:repeating-linear-gradient(-45deg,rgba(20,20,19,.16) 0 3px,transparent 3px 8px);transition:top .4s cubic-bezier(.3,.8,.3,1)}
+.conn{position:absolute;width:4px;border-radius:2px;background:var(--ink);transition:top .4s cubic-bezier(.3,.8,.3,1),left .2s;pointer-events:none!important}
+.conn.drift{background:repeating-linear-gradient(180deg,#C8261B 0 4px,transparent 4px 7px)}
+.badge{position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;border:1.5px solid var(--ink);display:flex;align-items:center;justify-content:center;transition:top .4s cubic-bezier(.3,.8,.3,1);pointer-events:none!important}
+.badge.drift{background:#C8261B;border-color:#931A12;color:#fff}
+.badge.unlocking{animation:unlock .5s ease-out forwards}
+@keyframes unlock{to{transform:scale(1.8) rotate(-25deg);opacity:0}}
+.guide{position:absolute;width:0;border-left:1.5px dashed rgba(20,20,19,.35);transition:opacity .3s;pointer-events:none!important}
+.guide.shared{border-left:1.5px solid rgba(20,20,19,.55)}
+.drop{position:absolute;width:4px;background:#1D5FAE;border-radius:2px;box-shadow:0 0 0 3px rgba(255,255,255,.7);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+.dropbtn{position:absolute;transform:translateX(-50%);height:30px;padding:0 10px;border-radius:999px;border:0;background:#1D5FAE;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.rail{position:absolute;display:flex;gap:4px;transform:translateX(-50%);transition:left .2s}
+.rail button{width:36px;height:32px;border-radius:8px;border:1px solid var(--ink);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.rail button:hover{background:#EFEBE1}
+.rail span{align-self:center;font-size:11px;font-weight:700;padding:0 4px;white-space:nowrap}
+.toast{position:absolute;left:126px;top:12px;max-width:640px;padding:9px 14px;border-radius:10px;background:var(--ink);color:var(--paper);font-size:13px;font-weight:600;display:flex;gap:10px;align-items:center;z-index:5}
+.toast button{border:1px solid rgba(250,249,245,.5);background:none;color:var(--paper);border-radius:7px;height:28px;padding:0 10px;cursor:pointer;font-weight:600}
+/* views */
+.v-technical .brick[data-track=editorial]{opacity:.28}
+.v-editorial .brick[data-track=picture],.v-editorial .brick[data-track=sound]{opacity:.45}
+.guides{opacity:0}
+.v-xray .guides{opacity:1}
+
+/* panels */
+.panels{display:grid;grid-template-columns:400px minmax(0,1fr) 400px;min-height:0}
+.panel{background:var(--paper);min-height:0;display:flex;flex-direction:column;overflow:hidden}
+.panel + .panel{border-left:1px solid var(--line)}
+.phead{padding:12px 16px 8px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+h2{margin:0;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+h3{margin:0 0 6px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.pbody{overflow-y:auto;padding:0 16px 16px;flex:1}
+.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--line)}
+.tabs button{border:0;background:none;padding:8px 8px 9px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.lib{display:flex;flex-direction:column;gap:6px;padding-top:10px}
+.item{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid var(--line);background:#fff;border-radius:10px}
+.item svg{flex-shrink:0}
+.item .tx{flex:1;min-width:0}
+.item b{font-size:13px}
+.item small{display:block;font-size:12px;color:var(--muted);line-height:1.3}
+.add{height:32px;padding:0 12px;border-radius:8px;border:1px solid var(--ink);background:#fff;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0}
+.add:hover{background:var(--ink);color:var(--paper)}
+.note{font-size:13px;line-height:1.45;color:#34322C;margin:0 0 10px}
+.banner{font-size:13px;font-weight:600;padding:8px 10px;background:#fff;border:1px dashed var(--line2);border-radius:10px;margin-top:10px}
+/* inspector */
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+.field label{font-size:12px;font-weight:600;color:var(--muted)}
+.field input,.field select,.field textarea{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 10px;background:#fff}
+.field textarea{height:60px;padding:8px 10px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff;width:max-content}
+.stepper button{width:40px;height:36px;border:0;background:none;cursor:pointer;font-size:18px;font-weight:700}
+.stepper button:hover{background:#EFEBE1}
+.stepper span{min-width:84px;text-align:center;font-size:13px;font-weight:600}
+.status{padding:8px 10px;border-radius:10px;font-size:13px;line-height:1.4;margin-bottom:10px}
+.status.ok{background:#EAF4EC}
+.status.bad{background:#FBE9E7}
+.insp-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 16px}
+.under{font-size:13px;line-height:1.5;padding:8px 10px;background:#fff;border:1px solid var(--line);border-radius:10px;margin-bottom:10px}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;margin:0}
+.keys dt{font-family:'IBM Plex Mono',monospace;font-weight:600;white-space:nowrap}
+.keys dd{margin:0;color:#34322C}
+/* insights + overview */
+.ins{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:6px}
+.ins button{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;font-size:13px;line-height:1.4;display:flex;gap:8px}
+.ins button:hover,.ins button[aria-pressed="true"]{border-color:var(--ink)}
+.kind{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:5px;height:max-content;flex-shrink:0;margin-top:2px}
+.k-notice{background:#E6EEF8;color:#134580}.k-consider{background:#FFF3CC;color:#6B4F00}.k-question{background:#F1E8FA;color:#552E85}
+.bars{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.bar{display:grid;grid-template-columns:70px 1fr;align-items:center;gap:8px;font-size:12px;font-weight:600}
+.track{height:12px;background:rgba(20,20,19,.06);border-radius:3px;position:relative;overflow:hidden}
+.track i{position:absolute;top:0;bottom:0;left:0;border-radius:3px}
+.stack{display:flex;height:14px;border-radius:4px;overflow:hidden;margin-bottom:6px;background:rgba(20,20,19,.06)}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;margin-bottom:14px}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:1100px){.panels{grid-template-columns:1fr}.panel + .panel{border-left:0;border-top:1px solid var(--line)}header{flex-wrap:wrap;height:auto;padding:8px 16px}.app{height:auto;grid-template-rows:auto auto auto}.panel{max-height:none}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div class="brand" id="logo"></div>
+    <div class="seg" role="group" aria-label="View" id="views"></div>
+    <div class="spacer"></div>
+    <div class="tgroup">
+      <button class="tbtn" id="undo" title="Ctrl/Cmd+Z">Undo</button>
+      <button class="tbtn" id="redo" title="Ctrl/Cmd+Shift+Z">Redo</button>
+    </div>
+    <div class="tgroup">
+      <button class="tbtn" id="new">New</button>
+      <button class="tbtn" id="export">Export JSON</button>
+      <button class="tbtn" id="import">Import JSON</button>
+      <button class="tbtn" id="reset">Reset to example</button>
+      <input type="file" id="file" accept="application/json,.json" hidden>
+    </div>
+  </header>
+
+  <div class="stagewrap" id="stagewrap">
+    <div class="labels" id="labels" aria-hidden="true"></div>
+    <div class="scroller" id="scroller">
+      <div class="world" id="world" role="application" aria-label="Story build area. Three layers: picture, sound, editorial.">
+        <svg class="layer" id="base" aria-hidden="true" style="pointer-events:none"></svg>
+        <div class="layer guides" id="guides"></div>
+        <div class="layer" id="bricks"></div>
+        <div class="layer" id="overlays"></div>
+        <div class="layer" id="drops"></div>
+        <div class="layer" id="rail"></div>
+      </div>
+    </div>
+    <div id="toast"></div>
+  </div>
+
+  <div class="panels">
+    <section class="panel" aria-label="Library">
+      <div class="phead"><h2>Library</h2><span style="font-size:12px;color:var(--muted)">Click Add, or select a brick first</span></div>
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <div class="pbody" id="library"></div>
+    </section>
+    <section class="panel" aria-label="Inspector">
+      <div class="phead"><h2>Inspector</h2><span id="insp-sub" style="font-size:12px;color:var(--muted)"></span></div>
+      <div class="pbody" id="inspector"></div>
+    </section>
+    <section class="panel" aria-label="Insights and overview">
+      <div class="phead"><h2>Insights</h2><span id="ins-sub" style="font-size:12px;color:var(--muted)"></span></div>
+      <div class="pbody" id="insights"></div>
+    </section>
+  </div>
+</div>
+<div class="sr" aria-live="polite" id="live"></div>
+
+<script>
+/* =====================================================================
+   JOURNALISM BLOCKS
+   Tracks are packed arrays; array order is the only source of position.
+   A stud is relative length, never a second.
+   ===================================================================== */
+
+/* ============================== CONFIG =============================== */
+const PAL = {
+  yellow: { top:'#FFDB45', front:'#F0B700', end:'#C28F00', ink:'#2E2200' },
+  orange: { top:'#FFA95C', front:'#E8791A', end:'#B45A0E', ink:'#2A1200' },
+  red:    { top:'#F2493D', front:'#C8261B', end:'#931A12', ink:'#FFFFFF' },
+  blue:   { top:'#4A8FDF', front:'#1D5FAE', end:'#134580', ink:'#FFFFFF' },
+  green:  { top:'#44B874', front:'#1B7A43', end:'#125A30', ink:'#FFFFFF' },
+  purple: { top:'#A274DB', front:'#7440B0', end:'#552E85', ink:'#FFFFFF' },
+  white:  { top:'#FFFFFF', front:'#EAE6DB', end:'#C9C3B6', ink:'#3A3833' },
+  slate:  { top:'#5B5953', front:'#34322D', end:'#1C1B18', ink:'#FFFFFF' },
+  teal:   { top:'#45C1B8', front:'#1E8A84', end:'#136560', ink:'#FFFFFF' },
+  pink:   { top:'#F59AC0', front:'#C95388', end:'#963A63', ink:'#FFFFFF' },
+  grey:   { top:'#EEEBE4', front:'#DAD5CA', end:'#BDB7AA', ink:'#4A473F', dash:true }
+};
+
+const T = (key, short, label, defaultLength, colour, description, extra={}) => ({ key, short, label, defaultLength, colour, description, ...extra });
+
+const CONFIG = {
+  studUnit: null,          // hook for a future "1 stud = 1 second" toggle. Deliberately unused.
+  medium: 'video',
+  tracks: ['picture','sound','editorial'],   // bottom to top in the build
+  trackNames: { picture:'Picture', sound:'Sound', editorial:'Editorial' },
+  trackHeights: { picture:30, sound:30, editorial:12 },
+  media: {
+    video: {
+      picture: [
+        T('WS','WS','Wide shot',5,'yellow','Where we are. The whole scene.'),
+        T('MS','MS','Mid shot',5,'yellow','A person or action, waist up or equivalent.'),
+        T('MCU','MCU','Mid close-up',5,'yellow','Head and shoulders. The convention for interviews.'),
+        T('CU','CU','Close-up',4,'yellow','A face or an object filling the frame.'),
+        T('ECU','ECU','Extreme close-up',4,'yellow','Eyes, hands, a detail pushed right in.'),
+        T('OTS','OTS','Over the shoulder',4,'yellow','Seeing what they see.'),
+        T('Detail','DET','Detail',4,'yellow','The telling object that carries the story.'),
+        T('GV','GV','General view',5,'yellow','Scene-setting pictures of a place.'),
+        T('Graphic','GFX','Graphic',6,'orange','Data, a map or a quote made visual.'),
+        T('PTC','PTC','Piece to camera',8,'red','Reporter in vision on location.')
+      ],
+      sound: [
+        T('Reporter','REP','Reporter track',10,'red','The reporter\'s voice over pictures.', { voice:'reporter' }),
+        T('SOT','SOT','SOT (sync)',10,'blue','Someone speaking on camera, in sync.'),
+        T('Atmos','ATM','Atmos',3,'green','The background sound of a place.'),
+        T('Natural','NAT','Natural sound',3,'green','Actuality up full: a door, a crowd, a machine.'),
+        T('Music','MUS','Music bed',8,'purple','Music under the piece. Use with care.'),
+        T('Silence','SIL','Silence',2,'white','Deliberate quiet.')
+      ],
+      editorial: [
+        T('context','CONTEXT','Context',5,'slate','What the viewer needs to know first.', { lens:'argument' }),
+        T('claim','CLAIM','Claim',5,'slate','Someone asserts something is true.', { lens:'argument' }),
+        T('evidence','EVIDENCE','Evidence',5,'slate','What shows the claim is, or is not, true.', { lens:'argument' }),
+        T('explanation','EXPLAIN','Explanation',5,'slate','How or why it works.', { lens:'argument' }),
+        T('reaction','REACTION','Reaction',5,'slate','How people respond.', { lens:'argument' }),
+        T('challenge','CHALLENGE','Challenge',5,'slate','Testing a claim against another view or fact.', { lens:'argument' }),
+        T('consequence','CONSEQ','Consequence',5,'slate','What happens to people as a result.', { lens:'argument' }),
+        T('expertise','EXPERT','Expertise',5,'slate','Someone who knows, explaining.', { lens:'argument' }),
+        T('transition','TRANS','Transition',5,'teal','Moving the viewer from one idea to the next.', { lens:'structure' }),
+        T('open','OPEN','Open',5,'teal','How the piece begins.', { lens:'structure' }),
+        T('close','CLOSE','Close',5,'teal','How the piece ends.', { lens:'structure' }),
+        T('breathe','BREATHE','Breathe',5,'pink','A pause to let something land.', { lens:'pace' }),
+        T('unassigned','?','Unassigned',5,'grey','Not yet labelled. That\'s a state, not a function.', { lens:null })
+      ]
+    }
+    // audio, photo, slideshow: add here later as new vocabularies. Not implemented.
+  },
+  voices: ['reporter','authority','affected','expert','vox'],
+  voiceNames: { reporter:'Reporter', authority:'Authority', affected:'Affected', expert:'Expert', vox:'Vox' },
+  lenses: { argument:'Argument', structure:'Structure', pace:'Pace' },
+
+  compounds: {
+    interviewSOT: { label:'Interview SOT', description:'MCU + SOT + an unassigned span, locked together. The news convention.',
+      members: [ { track:'picture', type:'MCU' }, { track:'sound', type:'SOT' }, { track:'editorial', type:'unassigned' } ] },
+    ptc: { label:'PTC', description:'Piece to camera + reporter sound + an unassigned span, locked together.',
+      members: [ { track:'picture', type:'PTC' }, { track:'sound', type:'Reporter', voice:'reporter' }, { track:'editorial', type:'unassigned' } ] }
+  },
+
+  // Patterns: explicit length for every brick. g = group tag within the pattern.
+  patterns: {
+    basic: { label:'Basic package body', description:'Five segments: VO, SOT, VO, SOT, VO. Spans left for you to label.',
+      tracks: {
+        picture:   [['WS',5],['CU',5],['MCU',10,{g:'a'}],['GV',5],['CU',5],['MCU',10,{g:'b'}],['WS',5],['GV',5]],
+        sound:     [['Reporter',10],['SOT',10,{g:'a'}],['Reporter',10],['SOT',10,{g:'b'}],['Reporter',10]],
+        editorial: [['unassigned',10],['unassigned',10,{g:'a'}],['unassigned',10],['unassigned',10,{g:'b'}],['unassigned',10]]
+      } },
+    fiveShot: { label:'Five-shot coverage', description:'Coverage: what you need to shoot. Not an edit order.', pictureOnly:true,
+      tracks: { picture: [['CU',4,{notes:'action',role:'action'}],['CU',4,{notes:'face',role:'face'}],['WS',5,{role:'ws'}],['OTS',4,{role:'ots'}],['Detail',4,{notes:'creative angle',role:'detail'}]] } },
+    human: { label:'Human-interest sequence', description:'Establish, character, action, detail, close. The labels are the point.',
+      tracks: {
+        picture:   [['WS',5],['MCU',10,{g:'a'}],['MS',5],['Detail',5],['WS',5]],
+        sound:     [['Natural',5],['SOT',10,{g:'a'}],['Reporter',10],['Natural',5]],
+        editorial: [['context',5],['unassigned',10,{g:'a'}],['evidence',5],['breathe',5],['close',5]]
+      } },
+    explainer: { label:'Explainer', description:'Explanation, evidence, expert, consequence.',
+      tracks: {
+        picture:   [['GV',5],['MS',5],['Graphic',6],['CU',4],['MCU',10,{g:'a'}],['WS',5],['GV',5]],
+        sound:     [['Reporter',10],['Reporter',10],['SOT',10,{g:'a',voice:'expert'}],['Reporter',10]],
+        editorial: [['explanation',10],['evidence',10],['expertise',10,{g:'a'}],['consequence',10]]
+      } }
+  },
+
+  fiveShotOrders: [
+    { name:'As shot',      roles:['action','face','ws','ots','detail'] },
+    { name:'WS first',     roles:['ws','action','face','ots','detail'] },
+    { name:'Action first', roles:['action','ws','ots','face','detail'] },
+    { name:'Detail first', roles:['detail','face','ots','action','ws'] }
+  ],
+
+  // Editorial and technical rules. Data, not code in handlers. Phrased as noticing, never grading.
+  rules: [] // filled below, after ANALYSIS helpers exist
+};
+const VOCAB = () => CONFIG.media[CONFIG.medium];
+const typeOf = (track, key) => VOCAB()[track].find(t => t.key === key);
+
+/* =============================== MODEL =============================== */
+let idN = 1;
+const newId = p => (p||'b') + Date.now().toString(36).slice(-4) + (idN++).toString(36);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+function makeBlock(track, type, length, extra={}) {
+  const t = typeOf(track, type);
+  return { id:newId(), type, length: Math.max(1, Math.round(length ?? t.defaultLength)), groupId:null,
+           voice: track === 'sound' ? (extra.voice ?? t.voice ?? null) : null,
+           contributor: extra.contributor || '', notes: extra.notes || '', meta: extra.meta || {} };
+}
+function emptyStory(title='Untitled story') {
+  return { schema:1, medium:'video', title, mode:'build', tracks:{ picture:[], sound:[], editorial:[] }, groups:{} };
+}
+
+// --- queries used by operations
+function locate(s, id) {
+  for (const tr of CONFIG.tracks) { const i = s.tracks[tr].findIndex(b => b.id === id); if (i >= 0) return { track:tr, index:i, block:s.tracks[tr][i] }; }
+  return null;
+}
+function startsOf(arr) { const out = []; let x = 0; for (const b of arr) { out.push(x); x += b.length; } out.push(x); return out; } // last = end
+function startOf(s, id) { const L = locate(s, id); return startsOf(s.tracks[L.track])[L.index]; }
+function trackEnd(s, tr) { return s.tracks[tr].reduce((a,b) => a + b.length, 0); }
+function boundaries(s, tr) { return new Set(startsOf(s.tracks[tr])); }
+function sharedBoundaries(s) {
+  const [a,b,c] = CONFIG.tracks.map(tr => boundaries(s, tr));
+  return [...a].filter(x => b.has(x) && c.has(x)).sort((x,y) => x-y);
+}
+function members(s, gid) {
+  const out = [];
+  for (const tr of CONFIG.tracks) s.tracks[tr].forEach((b,i) => { if (b.groupId === gid) out.push({ track:tr, index:i, block:b, start:startsOf(s.tracks[tr])[i] }); });
+  return out;
+}
+function indexAtStud(arr, stud) { const st = startsOf(arr); return st.indexOf(stud); }
+
+// --- operations: each takes a story, returns { story } or { error }
+const OPS = {
+  insert(s, track, index, block) {
+    s = clone(s); s.tracks[track].splice(index, 0, block); return { story:s };
+  },
+  insertCompound(s, key, stud) {
+    if (!sharedBoundaries(s).includes(stud)) return { error:'That point is not a cut in all three tracks.' };
+    const c = CONFIG.compounds[key]; s = clone(s);
+    const soundDef = c.members.find(m => m.track === 'sound');
+    const len = typeOf('sound', soundDef.type).defaultLength;
+    const gid = newId('g'); let anchor = null; const ids = [];
+    c.members.forEach(m => {
+      const b = makeBlock(m.track, m.type, len, { voice:m.voice }); b.groupId = gid; ids.push(b.id);
+      if (m.track === 'picture') anchor = b.id;
+      s.tracks[m.track].splice(indexAtStud(s.tracks[m.track], stud), 0, b);
+    });
+    s.groups[gid] = { anchorId: anchor || ids[0] };
+    return { story:s, ids };
+  },
+  move(s, id, dir) {
+    s = clone(s); const L = locate(s, id); if (!L) return { error:'Not found' };
+    const gid = L.block.groupId;
+    const targets = gid ? members(s, gid) : [L];
+    let moved = false;
+    targets.forEach(m => {
+      const arr = s.tracks[m.track], j = m.index + dir;
+      if (j < 0 || j >= arr.length) return;
+      [arr[m.index], arr[j]] = [arr[j], arr[m.index]]; moved = true;
+    });
+    if (!moved) return { error:'Already at the end of the track.' };
+    if (gid) s.groups[gid].anchorId = id;
+    return { story:s };
+  },
+  moveTo(s, id, index) {
+    const L = locate(s, id); if (!L) return { error:'Not found' };
+    const delta = index - L.index; if (!delta) return { story:s };
+    s = clone(s); const gid = L.block.groupId;
+    const targets = gid ? members(s, gid) : [locate(s, id)];
+    targets.forEach(m => {
+      const arr = s.tracks[m.track]; const to = Math.max(0, Math.min(arr.length-1, m.index + delta));
+      const [b] = arr.splice(m.index, 1); arr.splice(to, 0, b);
+    });
+    if (gid) s.groups[gid].anchorId = id;
+    return { story:s };
+  },
+  resize(s, id, len) {
+    len = Math.max(1, Math.round(len)); s = clone(s); const L = locate(s, id); if (!L) return { error:'Not found' };
+    const targets = L.block.groupId ? members(s, L.block.groupId) : [L];
+    targets.forEach(m => m.block.length = len);
+    return { story:s };
+  },
+  duplicate(s, id) {
+    s = clone(s); const L = locate(s, id); if (!L) return { error:'Not found' };
+    const gid = L.block.groupId, ng = gid ? newId('g') : null; const ids = [];
+    const targets = gid ? members(s, gid) : [L];
+    let anchorCopy = null;
+    targets.forEach(m => {
+      const b = clone(m.block); b.id = newId(); b.groupId = ng; ids.push(b.id);
+      if (gid && s.groups[gid].anchorId === m.block.id) anchorCopy = b.id;
+      s.tracks[m.track].splice(m.index + 1, 0, b);
+    });
+    if (ng) s.groups[ng] = { anchorId: anchorCopy || ids[0] };
+    return { story:s, ids };
+  },
+  remove(s, id) {
+    s = clone(s); const L = locate(s, id); if (!L) return { error:'Not found' };
+    const gid = L.block.groupId;
+    if (gid) { CONFIG.tracks.forEach(tr => s.tracks[tr] = s.tracks[tr].filter(b => b.groupId !== gid)); delete s.groups[gid]; }
+    else s.tracks[L.track].splice(L.index, 1);
+    return { story:s };
+  },
+  setType(s, id, type) {
+    s = clone(s); const L = locate(s, id); if (!typeOf(L.track, type)) return { error:'Not a type for this track.' };
+    L.block.type = type; if (L.track === 'sound' && type === 'Reporter') L.block.voice = 'reporter';
+    return { story:s };
+  },
+  updateFields(s, id, fields) {
+    s = clone(s); const L = locate(s, id);
+    ['voice','contributor','notes'].forEach(k => { if (k in fields) L.block[k] = fields[k]; });
+    return { story:s };
+  },
+  lockSelection(s, ids) {
+    const why = ANALYSIS.lockProblem(s, ids); if (why) return { error:why };
+    s = clone(s); const gid = newId('g');
+    ids.forEach(id => locate(s, id).block.groupId = gid);
+    const pic = ids.find(id => locate(s, id).track === 'picture');
+    s.groups[gid] = { anchorId: pic || ids[0] };
+    return { story:s, gid };
+  },
+  unlock(s, gid) {
+    s = clone(s); CONFIG.tracks.forEach(tr => s.tracks[tr].forEach(b => { if (b.groupId === gid) b.groupId = null; }));
+    delete s.groups[gid]; return { story:s };
+  },
+  realign(s, gid) {
+    const ms = members(s, gid); const anchor = ANALYSIS.anchorOf(s, gid);
+    const a = ms.find(m => m.block.id === anchor); const target = a.start;
+    const plan = [];
+    for (const m of ms) {
+      if (m === a) continue;
+      const without = s.tracks[m.track].filter(b => b.id !== m.block.id);
+      const idx = indexAtStud(without, target);
+      if (idx < 0) {
+        return { error:`The ${m.track} track has no cut at the point where this ${a.track} starts, so these can't be lined up by reordering. You could unlock them instead.` };
+      }
+      plan.push({ m, idx });
+    }
+    s = clone(s);
+    plan.forEach(({ m, idx }) => {
+      const arr = s.tracks[m.track]; const i = arr.findIndex(b => b.id === m.block.id);
+      const [b] = arr.splice(i, 1); arr.splice(idx, 0, b);
+    });
+    return { story:s };
+  },
+  insertPattern(s, key, target) {
+    const p = CONFIG.patterns[key]; s = clone(s); const ids = []; const tags = {};
+    const build = (tr, row) => {
+      const [type, len, o={}] = row;
+      const meta = o.role ? { patternId: target.pid, role:o.role } : {};
+      const b = makeBlock(tr, type, len, { notes:o.notes, voice:o.voice, meta });
+      if (o.g) { tags[o.g] = tags[o.g] || newId('g'); b.groupId = tags[o.g]; }
+      ids.push(b.id); return b;
+    };
+    if (p.pictureOnly) {
+      const bl = p.tracks.picture.map(r => build('picture', r));
+      s.tracks.picture.splice(target.index, 0, ...bl);
+    } else {
+      if (!sharedBoundaries(s).includes(target.stud)) return { error:'That point is not a cut in all three tracks.' };
+      for (const tr of CONFIG.tracks) {
+        const bl = (p.tracks[tr] || []).map(r => build(tr, r));
+        s.tracks[tr].splice(indexAtStud(s.tracks[tr], target.stud), 0, ...bl);
+      }
+    }
+    Object.values(tags).forEach(gid => {
+      const pic = s.tracks.picture.find(b => b.groupId === gid);
+      s.groups[gid] = { anchorId: pic ? pic.id : ids.find(id => locate(s,id).block.groupId === gid) };
+    });
+    return { story:s, ids };
+  },
+  cycleFiveShot(s, pid) {
+    const info = ANALYSIS.fiveShot(s, pid); if (!info.consecutive) return { error:'These five shots are no longer next to each other.' };
+    s = clone(s); const arr = s.tracks.picture;
+    const blocks = arr.slice(info.from, info.from + 5);
+    const next = CONFIG.fiveShotOrders[info.nextIndex].roles;
+    const reordered = next.map(r => blocks.find(b => b.meta.role === r));
+    arr.splice(info.from, 5, ...reordered);
+    return { story:s, orderName: CONFIG.fiveShotOrders[info.nextIndex].name };
+  },
+  loadStory(_, story) { return { story: clone(story) }; }
+};
+
+/* ============================== ANALYSIS ============================= */
+const ANALYSIS = {
+  anchorOf(s, gid) {
+    const ms = members(s, gid); const g = s.groups[gid];
+    if (g && ms.some(m => m.block.id === g.anchorId)) return g.anchorId;
+    for (const tr of CONFIG.tracks) { const m = ms.find(x => x.track === tr); if (m) return m.block.id; }
+    return null;
+  },
+  isDrifted(s, gid) { const ms = members(s, gid); return new Set(ms.map(m => m.start)).size > 1; },
+  lockProblem(s, ids) {
+    if (ids.length < 2) return 'Select at least two bricks, in different layers, to lock them together.';
+    const L = ids.map(id => locate(s, id));
+    if (new Set(L.map(l => l.track)).size !== L.length) return 'You can lock only one brick from each layer.';
+    if (L.some(l => l.block.groupId)) return 'One of these is already locked. Unlock it first.';
+    const starts = ids.map(id => startOf(s, id));
+    if (new Set(starts).size > 1) return 'These don\'t start at the same point, so they can\'t move as one brick.';
+    if (new Set(L.map(l => l.block.length)).size > 1) return 'These are different lengths. Make them match first.';
+    return null;
+  },
+  ends(s) { const e = {}; CONFIG.tracks.forEach(tr => e[tr] = trackEnd(s, tr)); return e; },
+  under(s, id) {   // what sits in picture/sound under an editorial span
+    const st = startOf(s, id), en = st + locate(s, id).block.length; const out = {};
+    ['picture','sound'].forEach(tr => {
+      const S = startsOf(s.tracks[tr]);
+      out[tr] = s.tracks[tr].filter((b,i) => S[i] < en && S[i] + b.length > st);
+    });
+    return out;
+  },
+  fiveShot(s, pid) {
+    const arr = s.tracks.picture; const idx = arr.map((b,i) => b.meta && b.meta.patternId === pid ? i : -1).filter(i => i >= 0);
+    const consecutive = idx.length === 5 && idx[4] - idx[0] === 4;
+    const roles = idx.map(i => arr[i].meta.role).join();
+    const cur = CONFIG.fiveShotOrders.findIndex(o => o.roles.join() === roles);
+    return { consecutive, from: idx[0], current: cur, nextIndex: cur < 0 ? 0 : (cur + 1) % CONFIG.fiveShotOrders.length };
+  },
+  overlaps(s, trA, idA, trB) {
+    const st = startOf(s, idA), en = st + locate(s, idA).block.length; const S = startsOf(s.tracks[trB]);
+    return s.tracks[trB].filter((b,i) => S[i] < en && S[i] + b.length > st);
+  },
+  run(s) {
+    const out = [];
+    CONFIG.rules.forEach(r => {
+      let res; try { res = r.test(s); } catch(e) { res = null; }
+      (Array.isArray(res) ? res : res ? [res] : []).forEach(x => out.push({ id:r.id, lens:r.lens, kind:r.kind, blockIds:x.blockIds || [], message:r.message(x.vars || {}) }));
+    });
+    return out;
+  },
+  overview(s) {
+    const e = this.ends(s), max = Math.max(1, ...Object.values(e));
+    const comp = {}; let soundTotal = 0;
+    s.tracks.sound.forEach(b => {
+      let k = b.type === 'Atmos' || b.type === 'Natural' ? 'atmos' : b.type === 'Music' ? 'music' : b.type === 'Silence' ? 'silence' : (b.voice || 'unvoiced');
+      comp[k] = (comp[k] || 0) + b.length; soundTotal += b.length;
+    });
+    // coverage: proportion of the picture track under an assigned span
+    const picEnd = e.picture; let covered = 0; const lens = {}; let assigned = 0;
+    const ES = startsOf(s.tracks.editorial);
+    s.tracks.editorial.forEach((b,i) => {
+      const t = typeOf('editorial', b.type); if (!t.lens) return;
+      lens[t.lens] = (lens[t.lens] || 0) + b.length; assigned += b.length;
+      covered += Math.max(0, Math.min(ES[i] + b.length, picEnd) - Math.max(ES[i], 0));
+    });
+    return { ends:e, max, comp, soundTotal, coverage: picEnd ? covered / picEnd : 0, lens, assigned };
+  }
+};
+
+// helpers for rule messages
+const nameOf = (b, fallback) => (b && b.contributor) ? b.contributor.trim() : fallback;
+const the = str => str;
+
+CONFIG.rules = [
+  { id:'overhang', lens:'technical', kind:'notice', test: s => {
+      const e = ANALYSIS.ends(s); if (!e.picture && !e.sound) return null;
+      if (e.sound > e.picture) { const last = s.tracks.sound[s.tracks.sound.length-1]; return { blockIds:[last.id], vars:{ side:'sound' } }; }
+      if (e.picture > e.sound) { const last = s.tracks.picture[s.tracks.picture.length-1]; return { blockIds:[last.id], vars:{ side:'picture' } }; }
+      return null; },
+    message: v => v.side === 'sound' ? 'Notice your script is longer than the pictures it\'s written over. What would you cut, or what would you add to cover it?'
+                                     : 'Notice the pictures run on with nothing underneath. Is that a deliberate breath, or a gap?' },
+  { id:'no-atmos', lens:'technical', kind:'consider', test: s => s.tracks.sound.length && !s.tracks.sound.some(b => b.type === 'Atmos' || b.type === 'Natural') ? { blockIds:[] } : null,
+    message: () => 'Consider the sound of the place itself. There\'s no atmos or natural sound anywhere. What would the viewer hear if they were standing there?' },
+  { id:'long-track', lens:'technical', kind:'notice', test: s => {
+      const tot = trackEnd(s, 'sound'); const b = s.tracks.sound.find(b => b.type === 'Reporter' && b.length * 3 > tot && s.tracks.sound.length > 1);
+      return b ? { blockIds:[b.id] } : null; },
+    message: () => 'Notice one reporter track is more than a third of the whole sound track. Where could another voice, or the place itself, break it up?' },
+  { id:'same-framing', lens:'technical', kind:'consider', test: s => {
+      const a = s.tracks.picture;
+      for (let i = 0; i + 2 < a.length; i++) if (a[i].type === a[i+1].type && a[i].type === a[i+2].type) return { blockIds:[a[i].id,a[i+1].id,a[i+2].id], vars:{ t:typeOf('picture',a[i].type).label.toLowerCase() } };
+      return null; },
+    message: v => `Notice three ${v.t}s in a row. What would a change of size tell the viewer?` },
+  { id:'first-shot', lens:'technical', kind:'question', test: s => {
+      const f = s.tracks.picture[0]; return f && !['WS','GV'].includes(f.type) ? { blockIds:[f.id], vars:{ t:typeOf('picture', f.type).label.toLowerCase() } } : null; },
+    message: v => `Your piece opens on a ${v.t}. What does the viewer need first: where they are, or who they're looking at?` },
+  { id:'long-shot', lens:'technical', kind:'notice', test: s => {
+      const a = s.tracks.picture; if (a.length < 3) return null; const avg = trackEnd(s,'picture') / a.length;
+      const b = a.find(b => b.length > 2.5 * avg); return b ? { blockIds:[b.id], vars:{ t:typeOf('picture', b.type).label.toLowerCase() } } : null; },
+    message: v => `Notice this ${v.t} is far longer than your other shots, more than twice the average. What is holding the viewer there?` },
+  { id:'drift', lens:'technical', kind:'notice', test: s => Object.keys(s.groups).filter(g => ANALYSIS.isDrifted(s, g)).map(g => {
+      const ms = members(s, g); const snd = ms.find(m => m.track === 'sound');
+      return { blockIds: ms.map(m => m.block.id), vars:{ who: nameOf(snd && snd.block, 'the interviewee') } }; }),
+    message: v => `Notice ${v.who === 'the interviewee' ? 'the interviewee' : 'the ' + v.who.toLowerCase()}'s words and picture no longer start together. Is that deliberate?` },
+  { id:'talking-heads', lens:'technical', kind:'consider', test: s => {
+      const sots = s.tracks.sound.filter(b => b.type === 'SOT'); if (sots.length < 2) return null;
+      const all = sots.every(b => b.groupId && s.tracks.picture.some(p => p.groupId === b.groupId && p.type === 'MCU'));
+      return all ? { blockIds: sots.map(b => b.id) } : null; },
+    message: () => 'Notice every interview is seen as a talking head. What would the viewer see if one of these voices ran over what they\'re describing?' },
+  { id:'unchallenged', lens:'editorial', kind:'question', test: s => {
+      const e = s.tracks.editorial; return e.map((b,i) => b.type === 'claim' && !e.slice(i+1).some(x => x.type === 'challenge') ? { blockIds:[b.id] } : null).filter(Boolean); },
+    message: () => 'Nothing in the piece challenges this claim. Is it one that needs challenging?' },
+  { id:'balance', lens:'editorial', kind:'question', test: s => {
+      const snd = s.tracks.sound; const auth = snd.filter(b => b.voice === 'authority'), aff = snd.filter(b => b.voice === 'affected');
+      const A = auth.reduce((a,b) => a + b.length, 0), F = aff.reduce((a,b) => a + b.length, 0);
+      if (!A || !F || A <= 1.5 * F) return null;
+      return { blockIds:[...auth, ...aff].map(b => b.id), vars:{ a: nameOf(auth[0], 'authority voice'), f: nameOf(aff[0], 'affected voice') } }; },
+    message: v => `Compare the ${v.a.toLowerCase()}'s brick with the ${v.f.toLowerCase()}'s. Is that the balance you intend?` },
+  { id:'unlabelled', lens:'editorial', kind:'consider', test: s => {
+      const o = ANALYSIS.overview(s); if (!o.ends.picture || o.coverage > 0.6) return null;
+      return { blockIds: s.tracks.editorial.filter(b => b.type === 'unassigned').map(b => b.id), vars:{ much: o.coverage < 0.25 ? 'most' : 'a lot' } }; },
+    message: v => `Notice ${v.much} of the picture track has no editorial label yet. What is each of those shots doing for the story?` },
+  { id:'whose-consequence', lens:'editorial', kind:'question', test: s => s.tracks.editorial.filter(b => b.type === 'consequence').map(b => {
+      const rep = ANALYSIS.overlaps(s, 'editorial', b.id, 'sound').find(x => x.voice === 'reporter');
+      return rep ? { blockIds:[b.id, rep.id] } : null; }).filter(Boolean),
+    message: () => 'Whose consequence is this: yours or theirs?' },
+  { id:'evidence', lens:'editorial', kind:'question', test: s => { const b = s.tracks.editorial.find(b => b.type === 'evidence'); return b ? { blockIds:[b.id] } : null; },
+    message: () => 'You\'ve labelled this span evidence. What does the viewer actually see or hear that proves it?' }
+];
+
+/* =============================== STATE =============================== */
+let story = emptyStory();
+let past = [], future = [];
+const ui = { view:'build', sel:[], tab:'picture', placing:null, msg:'', msgAction:null, hl:[], hlRule:null, flash:[] };
+
+function commit(result, opts={}) {
+  if (!result || result.error) { if (result && result.error) say(result.error); return false; }
+  past.push(story); if (past.length > 50) past.shift(); future = [];
+  story = result.story;
+  if (result.ids && opts.flash !== false) ui.flash = result.ids;
+  ui.sel = ui.sel.filter(id => locate(story, id));
+  scheduleSave(); render(); return true;
+}
+function undo() { if (!past.length) return; future.push(story); story = past.pop(); ui.sel = ui.sel.filter(id => locate(story,id)); scheduleSave(); render(); say('Undone.'); }
+function redo() { if (!future.length) return; past.push(story); story = future.pop(); ui.sel = ui.sel.filter(id => locate(story,id)); scheduleSave(); render(); say('Redone.'); }
+function say(msg, action=null) { ui.msg = msg; ui.msgAction = action; document.getElementById('live').textContent = msg; renderToast(); }
+
+/* ============================== RENDER =============================== */
+const S = 24, DX = 10, DY = 7, DEPTH = 2, STUDH = 4, RX = 6.5, RY = 3.4;
+const TOPPAD = Math.ceil(DEPTH*DY + STUDH + RY + 3);
+const OX = 28, BY = 300, XGAP = 56;
+// Build views crop the empty sky above the wall; X-Ray needs the height to explode into.
+const stageTopCrop = () => ui.view === 'xray' ? 0 : 100;
+const STAGE_H = 380;
+const f1 = n => n.toFixed(1);
+
+function layerTop(tr) {
+  const g = ui.view === 'xray' ? XGAP : 0; const H = CONFIG.trackHeights;
+  if (tr === 'picture') return BY - H.picture;
+  if (tr === 'sound') return BY - H.picture - g - H.sound;
+  return BY - H.picture - H.sound - 2*g - H.editorial;
+}
+
+function studPaths(x0, y0, len, depth) {
+  let side = '', tops = '';
+  for (let j = depth-1; j >= 0; j--) for (let i = 0; i < len; i++) {
+    const cx = x0 + (i+.5)*S + (j+.5)*DX, cy = y0 - (j+.5)*DY, t = cy - STUDH;
+    side += `M${f1(cx-RX)} ${f1(t)}L${f1(cx-RX)} ${f1(cy)}A${RX} ${RY} 0 0 0 ${f1(cx+RX)} ${f1(cy)}L${f1(cx+RX)} ${f1(t)}Z`;
+    tops += `M${f1(cx-RX)} ${f1(t)}A${RX} ${RY} 0 0 1 ${f1(cx+RX)} ${f1(t)}A${RX} ${RY} 0 0 1 ${f1(cx-RX)} ${f1(t)}Z`;
+  }
+  return { side, tops };
+}
+
+/* One brick as SVG. Front face at (1, TOPPAD). Width is ALWAYS length × stud. */
+function brickSVG(len, H, pal, o={}) {
+  const x0 = 1, y0 = TOPPAD, x1 = x0 + len*S, dx = DEPTH*DX, dy = DEPTH*DY;
+  const w = len*S + dx + 3, h = TOPPAD + H + 2;
+  const stroke = o.sel ? '#141413' : pal.end, sw = o.sel ? 2.2 : 1;
+  const dash = pal.dash ? ' stroke-dasharray="4 3"' : '';
+  const st = `stroke="${stroke}" stroke-width="${sw}" stroke-linejoin="round"${dash}`;
+  const sp = studPaths(x0, y0, len, DEPTH);
+  let label = '';
+  if (o.label) {
+    const fs = H < 20 ? 9 : 12;
+    let text = o.label2 && (o.label + ' · ' + o.label2).length * fs * .62 < len*S - 10 ? o.label + ' · ' + o.label2 : o.label;
+    if (text.length * fs * .62 < len*S - 6) label = `<text x="${f1((x0+x1)/2)}" y="${f1(y0 + H/2 + fs*.36)}" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="${fs}" letter-spacing=".4" fill="${pal.ink}">${esc(text)}</text>`;
+  }
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <path class="f" d="M${x0} ${y0}L${x1} ${y0}L${x1} ${y0+H}L${x0} ${y0+H}Z" fill="${pal.front}" ${st}/>
+    <path class="f" d="M${x1} ${y0}L${x1+dx} ${y0-dy}L${x1+dx} ${y0-dy+H}L${x1} ${y0+H}Z" fill="${pal.end}" ${st}/>
+    <path class="f" d="M${x0} ${y0}L${x1} ${y0}L${x1+dx} ${y0-dy}L${x0+dx} ${y0-dy}Z" fill="${pal.top}" ${st}/>
+    <path d="${sp.side}" fill="${pal.front}" stroke="${pal.end}" stroke-width=".8"/>
+    <path d="${sp.tops}" fill="${pal.top}" stroke="${pal.end}" stroke-width=".8"/>
+    ${label}</svg>`;
+}
+function miniSVG(len, pal, h=10, s=9) {   // small library icon, same geometry at a smaller scale
+  const dx = 2*4, dy = 2*3, top = dy + 5, x1 = 1 + len*s, w = x1 + dx + 2, H = top + h + 2;
+  let studs = '';
+  for (let j = 1; j >= 0; j--) for (let i = 0; i < len; i++) { const cx = 1 + (i+.5)*s + (j+.5)*4, cy = top - (j+.5)*3; studs += `<ellipse cx="${cx}" cy="${cy-1.6}" rx="2.4" ry="1.3" fill="${pal.top}" stroke="${pal.end}" stroke-width=".6"/>`; }
+  return `<svg width="${w}" height="${H}" viewBox="0 0 ${w} ${H}" aria-hidden="true">
+    <path d="M1 ${top}L${x1} ${top}L${x1} ${top+h}L1 ${top+h}Z" fill="${pal.front}" stroke="${pal.end}" stroke-width=".8"${pal.dash?' stroke-dasharray="3 2"':''}/>
+    <path d="M${x1} ${top}L${x1+dx} ${top-dy}L${x1+dx} ${top-dy+h}L${x1} ${top+h}Z" fill="${pal.end}" stroke="${pal.end}" stroke-width=".8"/>
+    <path d="M1 ${top}L${x1} ${top}L${x1+dx} ${top-dy}L${1+dx} ${top-dy}Z" fill="${pal.top}" stroke="${pal.end}" stroke-width=".8"/>${studs}</svg>`;
+}
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* Keyed DOM reconciliation: reuse elements so CSS transitions (X-Ray) and focus survive re-renders. */
+function reconcile(container, items) {
+  const keys = new Set(items.map(i => i.key));
+  [...container.children].forEach(el => { if (!keys.has(el.dataset.key)) el.remove(); });
+  const byKey = new Map([...container.children].map(el => [el.dataset.key, el]));
+  let prev = null;
+  items.forEach(it => {
+    let el = byKey.get(it.key), fresh = false;
+    if (!el) { el = document.createElement(it.tag || 'div'); el.dataset.key = it.key; fresh = true; }
+    el.className = it.cls + (el._pop ? ' pop' : '') + (it.pop && fresh ? ' pop' : '');
+    if (it.pop && fresh) { el._pop = true; setTimeout(() => { el._pop = false; el.classList.remove('pop'); }, 400); }
+    if (it.attrs) for (const [k,v] of Object.entries(it.attrs)) { if (v === null) el.removeAttribute(k); else el.setAttribute(k, v); }
+    el.style.cssText = it.style;
+    if (el._html !== it.html) { el.innerHTML = it.html; el._html = it.html; }
+    const want = prev ? prev.nextSibling : container.firstChild;
+    if (el !== want) container.insertBefore(el, want);
+    prev = el;
+  });
+}
+
+let firstRender = true;
+function renderStage() {
+  const ends = ANALYSIS.ends(story), maxEnd = Math.max(...Object.values(ends));
+  const worldW = OX + (maxEnd + 8) * S + DX*DEPTH + 60;
+  const world = document.getElementById('world');
+  world.style.width = worldW + 'px'; world.style.height = (STAGE_H - stageTopCrop()) + 'px';
+  const crop = stageTopCrop();
+  document.getElementById('stagewrap').className = 'stagewrap v-' + ui.view;
+  document.getElementById('stagewrap').style.height = (STAGE_H - crop) + 'px';
+  world.style.transform = `translateY(${-crop}px)`;
+
+  // baseplate: runs a few studs past the longest track; faint tick every 5 studs, no numbers
+  const plateLen = maxEnd + 7, bx = OX - S, H = 10, x1 = bx + plateLen*S, dx = DEPTH*DX, dy = DEPTH*DY;
+  const sp = studPaths(bx, BY, plateLen, DEPTH);
+  let ticks = ''; for (let k = 0; k <= plateLen; k += 5) { const x = OX + k*S; ticks += `M${x} ${BY+2}L${x} ${BY+H-2}`; }
+  document.getElementById('base').innerHTML = `
+    <path d="M${bx} ${BY}L${x1} ${BY}L${x1} ${BY+H}L${bx} ${BY+H}Z" fill="#BDB7AA" stroke="#8F897C"/>
+    <path d="M${x1} ${BY}L${x1+dx} ${BY-dy}L${x1+dx} ${BY-dy+H}L${x1} ${BY+H}Z" fill="#A39D90" stroke="#8F897C"/>
+    <path d="M${bx} ${BY}L${x1} ${BY}L${x1+dx} ${BY-dy}L${bx+dx} ${BY-dy}Z" fill="#DAD5CA" stroke="#8F897C"/>
+    <path d="${sp.side}" fill="#C9C3B6" stroke="#A39D90" stroke-width=".7"/><path d="${sp.tops}" fill="#E4E0D6" stroke="#A39D90" stroke-width=".7"/>
+    <path d="${ticks}" stroke="#6F695D" stroke-width="1.5" opacity=".55"/>`;
+
+  // bricks, bottom layer first so upper layers sit on top
+  const items = [];
+  const primary = ui.sel[ui.sel.length-1];
+  CONFIG.tracks.forEach(tr => {
+    const st = startsOf(story.tracks[tr]), H = CONFIG.trackHeights[tr];
+    story.tracks[tr].forEach((b,i) => {
+      const t = typeOf(tr, b.type), pal = PAL[t.colour], sel = ui.sel.includes(b.id);
+      const lift = sel ? 4 : 0;
+      const grp = b.groupId ? members(story, b.groupId).filter(m => m.block.id !== b.id).map(m => typeOf(m.track, m.block.type).short) : [];
+      const span = tr !== 'editorial' ? ANALYSIS.overlaps(story, tr, b.id, 'editorial').filter(e => e.type !== 'unassigned').map(e => typeOf('editorial', e.type).label.toLowerCase()) : [];
+      const aria = `${t.label}${b.contributor ? ' (' + b.contributor + ')' : ''}, ${b.length} stud${b.length===1?'':'s'}${grp.length ? ', grouped with ' + grp.join(' and ') : ''}${span.length ? ', ' + [...new Set(span)].join(', ') : ''}${b.groupId && ANALYSIS.isDrifted(story, b.groupId) ? ', drifted' : ''}`;
+      const cls = 'brick' + (sel ? ' sel' : '') + (ui.hl.includes(b.id) ? ' hl' : '') + (ui.flash.includes(b.id) ? ' flash' : '');
+      items.push({
+        key: b.id, cls, pop: !firstRender,
+        attrs: { tabindex:'0', role:'button', 'aria-label':aria, 'aria-pressed': String(sel), 'data-id':b.id, 'data-track':tr, title: t.label + (b.contributor ? ' — ' + b.contributor : '') },
+        style: `left:${OX + st[i]*S - 1}px;top:${layerTop(tr) - TOPPAD - lift}px;width:${b.length*S + DX*DEPTH + 3}px;height:${TOPPAD + H + 2}px`,
+        html: brickSVG(b.length, H, pal, { sel, label: t.short, label2: tr === 'sound' ? b.contributor : '' }) +
+              `<div class="handle" data-handle="${b.id}" style="left:${b.length*S - 4}px;top:${TOPPAD}px;height:${H}px" aria-hidden="true"></div>`
+      });
+    });
+  });
+  reconcile(document.getElementById('bricks'), items);
+  ui.flash = [];
+
+  // overlays: overhang hatching, group connectors, badges
+  const ov = [];
+  CONFIG.tracks.forEach(tr => {
+    if (ends[tr] < maxEnd) ov.push({ key:'hatch-'+tr, cls:'hatch', attrs:{ 'aria-hidden':'true' },
+      style:`left:${OX + ends[tr]*S}px;top:${layerTop(tr)}px;width:${(maxEnd-ends[tr])*S}px;height:${CONFIG.trackHeights[tr]}px`, html:'' });
+  });
+  Object.keys(story.groups).forEach(gid => {
+    const ms = members(story, gid); if (!ms.length) return;
+    const drift = ANALYSIS.isDrifted(story, gid);
+    ms.forEach(m => {
+      const H = CONFIG.trackHeights[m.track], sel = ui.sel.includes(m.block.id) ? 4 : 0;
+      ov.push({ key:'c-'+m.block.id, cls:'conn' + (drift ? ' drift' : ''), attrs:{ 'aria-hidden':'true' },
+        style:`left:${OX + m.start*S + 4}px;top:${layerTop(m.track) + 3 - sel}px;height:${H - 6 + (m.track==='editorial'?0:0)}px`, html:'' });
+    });
+    const topM = ms[ms.length-1];
+    ov.push({ key:'b-'+gid, cls:'badge' + (drift ? ' drift' : ''), attrs:{ 'aria-hidden':'true', title: drift ? 'Drifted' : 'Locked' },
+      style:`left:${OX + topM.start*S - 4}px;top:${layerTop(topM.track) - TOPPAD - 4}px`,
+      html: drift ? ICON.tear : ICON.lock });
+  });
+  (ui.unlocking || []).forEach(u => ov.push({ key:'u-'+u.gid, cls:'badge unlocking', attrs:{ 'aria-hidden':'true' }, style:`left:${u.x}px;top:${u.y}px`, html:ICON.lock }));
+  reconcile(document.getElementById('overlays'), ov);
+
+  // X-Ray guides: every cut in any track; solid where all three tracks cut together
+  const allCuts = new Set(); CONFIG.tracks.forEach(tr => boundaries(story, tr).forEach(x => allCuts.add(x)));
+  const shared = new Set(sharedBoundaries(story)); const gTop = layerTop('editorial') - TOPPAD - 10;
+  reconcile(document.getElementById('guides'), [...allCuts].sort((a,b)=>a-b).map(x => ({
+    key:'g'+x, cls:'guide' + (shared.has(x) ? ' shared' : ''), attrs:{ 'aria-hidden':'true' },
+    style:`left:${OX + x*S + DX}px;top:${gTop}px;height:${BY + 12 - gTop}px`, html:'' })));
+
+  // drop points while placing a compound or pattern
+  const drops = [];
+  if (ui.placing) {
+    const lbl = ui.placing.kind === 'compound' ? CONFIG.compounds[ui.placing.key].label : CONFIG.patterns[ui.placing.key].label;
+    const dTop = layerTop('editorial') - TOPPAD - 34;
+    sharedBoundaries(story).forEach(x => {
+      drops.push({ key:'d'+x, cls:'drop', attrs:{ 'aria-hidden':'true' }, style:`left:${OX + x*S - 2}px;top:${dTop + 30}px;height:${BY - dTop - 26}px`, html:'' });
+      drops.push({ key:'db'+x, tag:'button', cls:'dropbtn', attrs:{ 'data-drop':String(x), 'aria-label':`Insert ${lbl} here` }, style:`left:${OX + x*S}px;top:${dTop}px`, html:'Insert' });
+    });
+  }
+  reconcile(document.getElementById('drops'), drops);
+
+  // stud rail under the baseplate for the selected brick: add or remove studs
+  const rail = [];
+  if (primary && locate(story, primary)) {
+    const L = locate(story, primary), st = startOf(story, primary), t = typeOf(L.track, L.block.type);
+    rail.push({ key:'rail', cls:'rail', attrs:{ role:'group', 'aria-label':'Studs' },
+      style:`left:${OX + (st + L.block.length/2)*S}px;top:${BY + 18}px`,
+      html:`<button data-stud="-1" aria-label="Remove a stud from ${esc(t.label)}">${ICON.minus}</button><span>${esc(t.short)}${L.block.groupId ? ' + group' : ''}</span><button data-stud="1" aria-label="Add a stud to ${esc(t.label)}">${ICON.plus}</button>` });
+  }
+  reconcile(document.getElementById('rail'), rail);
+
+  // track labels (outside the scroller so they stay put)
+  document.getElementById('labels').innerHTML = CONFIG.tracks.slice().reverse().map(tr => {
+    const col = { picture:PAL.yellow.front, sound:PAL.blue.front, editorial:PAL.slate.front }[tr];
+    return `<div class="tlabel" style="top:${layerTop(tr) + CONFIG.trackHeights[tr]/2 - crop}px"><i style="background:${col}"></i>${CONFIG.trackNames[tr]}</div>`;
+  }).join('');
+  firstRender = false;
+}
+
+function renderToast() {
+  const el = document.getElementById('toast');
+  if (!ui.msg && !ui.placing) { el.innerHTML = ''; return; }
+  const placing = ui.placing ? `<button data-cancel="1">Cancel</button>` : '';
+  el.innerHTML = `<div class="toast" role="status"><span>${esc(ui.msg)}</span>${placing}${!ui.placing ? '<button data-dismiss="1" aria-label="Dismiss">OK</button>' : ''}</div>`;
+}
+
+const ICON = {
+  lock:'<svg width="11" height="12" viewBox="0 0 11 12" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="5" width="9" height="6.2" rx="1.2" fill="currentColor" stroke="none"/><path d="M3 5V3.6a2.5 2.5 0 0 1 5 0V5"/></svg>',
+  tear:'<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 1L4 4.5l3 2L5 11"/></svg>',
+  plus:'<svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 2v10M2 7h10"/></svg>',
+  minus:'<svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 7h10"/></svg>'
+};
+
+function renderHeader() {
+  const views = [['build','Build'],['technical','Technical'],['editorial','Editorial'],['xray','X-Ray']];
+  document.getElementById('views').innerHTML = views.map(([k,l]) => `<button data-view="${k}" aria-pressed="${ui.view===k}">${l}</button>`).join('');
+  document.getElementById('undo').disabled = !past.length;
+  document.getElementById('redo').disabled = !future.length;
+}
+
+function renderLibrary() {
+  const tabs = [['picture','Picture'],['sound','Sound'],['editorial','Editorial'],['compounds','Compounds'],['patterns','Patterns']];
+  document.getElementById('tabs').innerHTML = tabs.map(([k,l]) => `<button role="tab" data-tab="${k}" aria-selected="${ui.tab===k}">${l}</button>`).join('');
+  let html = '<div class="lib">';
+  if (CONFIG.tracks.includes(ui.tab)) {
+    VOCAB()[ui.tab].forEach(t => {
+      const len = Math.min(t.defaultLength, 6);
+      html += `<div class="item">${miniSVG(len, PAL[t.colour], ui.tab==='editorial'?5:10)}<div class="tx"><b>${esc(t.label)}</b>${t.lens ? ` <span class="mono" style="font-size:11px;color:var(--faint)">${CONFIG.lenses[t.lens].toLowerCase()}</span>` : ''}<small>${esc(t.description)}</small></div>
+        <button class="add" data-add-track="${ui.tab}" data-add-type="${t.key}" aria-label="Add ${esc(t.label)}">Add</button></div>`;
+    });
+  } else if (ui.tab === 'compounds') {
+    Object.entries(CONFIG.compounds).forEach(([k,c]) => {
+      html += `<div class="item"><svg width="44" height="40" viewBox="0 0 44 40" aria-hidden="true">${[['slate',2],['blue',12],['yellow',24]].map(([p,y]) => `<rect x="4" y="${y}" width="32" height="${p==='slate'?7:10}" rx="1.5" fill="${PAL[p].front}" stroke="${PAL[p].end}"/>`).join('')}<rect x="6" y="3" width="3" height="30" rx="1.5" fill="#141413"/></svg>
+        <div class="tx"><b>${esc(c.label)}</b><small>${esc(c.description)}</small></div><button class="add" data-compound="${k}" aria-label="Add ${esc(c.label)}">Add</button></div>`;
+    });
+    html += `<p class="banner">Compounds only go in where all three layers cut together. Unlock one in the inspector to pull it apart.</p>`;
+  } else {
+    html += `<p class="banner" style="margin:0 0 4px">Starting structures, not rules. Insert, then pull apart.</p>`;
+    Object.entries(CONFIG.patterns).forEach(([k,p]) => {
+      html += `<div class="item"><div class="tx"><b>${esc(p.label)}</b><small>${esc(p.description)}${p.pictureOnly ? ' Picture only.' : ''}</small></div><button class="add" data-pattern="${k}" aria-label="Insert ${esc(p.label)}">Insert</button></div>`;
+    });
+  }
+  document.getElementById('library').innerHTML = html + '</div>';
+}
+
+function renderInspector() {
+  const el = document.getElementById('inspector'), sub = document.getElementById('insp-sub');
+  const sel = ui.sel.filter(id => locate(story, id));
+  if (!sel.length) {
+    sub.textContent = 'Nothing selected';
+    el.innerHTML = `<p class="note">Select a brick to change it. Shift-click adds to a selection, so you can lock bricks from different layers together.</p>
+      <p class="note">Studs are relative length, not seconds. What matters is how long things are against each other.</p>
+      <h3>Keyboard</h3><dl class="keys">
+      <dt>Tab</dt><dd>Next brick</dd><dt>↑ ↓</dt><dd>Brick in the layer above or below</dd><dt>← →</dt><dd>Move brick one place</dd>
+      <dt>[ ]</dt><dd>Remove or add a stud</dd><dt>Enter / Space</dt><dd>Select (Shift adds to selection)</dd><dt>D</dt><dd>Duplicate</dd>
+      <dt>Delete</dt><dd>Remove</dd><dt>L</dt><dd>Lock selection or unlock group</dd><dt>R</dt><dd>Realign a drifted group</dd>
+      <dt>Ctrl/Cmd Z</dt><dd>Undo (add Shift to redo)</dd></dl>`;
+    return;
+  }
+  if (sel.length > 1) {
+    sub.textContent = sel.length + ' bricks selected';
+    const why = ANALYSIS.lockProblem(story, sel);
+    el.innerHTML = `<div class="under">${sel.map(id => { const L = locate(story,id); return `${CONFIG.trackNames[L.track]}: <b>${esc(typeOf(L.track, L.block.type).label)}</b>`; }).join('<br>')}</div>
+      ${why ? `<div class="status bad">${esc(why)}</div>` : `<div class="status ok">These start together and match in length.</div>`}
+      <div class="row"><button class="tbtn primary" data-act="lock" ${why ? 'disabled' : ''}>Lock together</button><button class="tbtn" data-act="clearsel">Clear selection</button></div>`;
+    return;
+  }
+  const id = sel[0], L = locate(story, id), b = L.block, t = typeOf(L.track, b.type);
+  sub.textContent = CONFIG.trackNames[L.track] + ' layer';
+  const types = VOCAB()[L.track].map(x => `<option value="${x.key}" ${x.key===b.type?'selected':''}>${esc(x.label)}${x.lens ? ' (' + x.lens + ')' : ''}</option>`).join('');
+  let group = '';
+  if (b.groupId) {
+    const drift = ANALYSIS.isDrifted(story, b.groupId);
+    const others = members(story, b.groupId).filter(m => m.block.id !== id).map(m => typeOf(m.track, m.block.type).label).join(' and ');
+    group = drift
+      ? `<div class="status bad"><b>Drifted.</b> Locked with ${esc(others)}, but they no longer start together. <div class="row" style="margin-top:8px"><button class="tbtn" data-act="realign">Realign</button><button class="tbtn" data-act="unlock">Unlock</button></div></div>`
+      : `<div class="status ok"><b>Locked</b> with ${esc(others)}. They move and resize as one. <div class="row" style="margin-top:8px"><button class="tbtn" data-act="unlock">Unlock</button></div></div>`;
+  }
+  let under = '';
+  if (L.track === 'editorial') {
+    const u = ANALYSIS.under(story, id);
+    const list = tr => u[tr].length ? u[tr].map(x => esc(typeOf(tr, x.type).label) + (x.contributor ? ' (' + esc(x.contributor) + ')' : '') + (x.notes && tr==='picture' ? ' — ' + esc(x.notes) : '')).join(', ') : '<i>nothing</i>';
+    under = `<h3>Under this span</h3><div class="under"><b>Picture:</b> ${list('picture')}<br><b>Sound:</b> ${list('sound')}</div>`;
+  }
+  let five = '';
+  if (b.meta && b.meta.patternId) {
+    const fs = ANALYSIS.fiveShot(story, b.meta.patternId);
+    const cur = fs.current >= 0 ? CONFIG.fiveShotOrders[fs.current].name : 'your own order';
+    five = `<h3>Five-shot coverage</h3><div class="under">Currently: <b>${esc(cur)}</b>.${fs.consecutive ? '' : '<br>These five shots are no longer next to each other, so they can\'t be cycled.'}</div>
+      <div class="row" style="margin-bottom:10px"><button class="tbtn" data-act="five" ${fs.consecutive ? '' : 'disabled'}>Show three edits of these five shots</button></div>`;
+  }
+  el.innerHTML = `
+    <div class="insp-grid"><div>
+      <div class="field"><label for="f-type">Type</label><select id="f-type">${types}</select></div>
+      <div class="field"><label>Length</label><div class="stepper"><button data-stud="-1" aria-label="Remove a stud">−</button><span>${b.length} stud${b.length===1?'':'s'}</span><button data-stud="1" aria-label="Add a stud">+</button></div></div>
+      ${L.track === 'sound' ? `<div class="field"><label for="f-voice">Voice</label><select id="f-voice"><option value="">None</option>${CONFIG.voices.map(v => `<option value="${v}" ${b.voice===v?'selected':''}>${CONFIG.voiceNames[v]}</option>`).join('')}</select></div>` : ''}
+      <div class="field"><label for="f-contrib">Contributor</label><input id="f-contrib" value="${esc(b.contributor)}" placeholder="e.g. Councillor"></div>
+      <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes">${esc(b.notes)}</textarea></div>
+    </div><div>
+      ${group}${under}${five}
+      <div class="row" style="margin-bottom:8px"><button class="tbtn" data-act="left" aria-label="Move earlier">← Earlier</button><button class="tbtn" data-act="right" aria-label="Move later">Later →</button></div>
+      <div class="row"><button class="tbtn" data-act="dup">Duplicate</button><button class="tbtn danger" data-act="remove">Remove</button></div>
+      <p class="note" style="margin-top:10px;font-size:12px;color:var(--muted)">${esc(t.description)}</p>
+    </div></div>`;
+}
+
+function renderInsights() {
+  const all = ANALYSIS.run(story);
+  const lens = ui.view === 'technical' ? 'technical' : ui.view === 'editorial' ? 'editorial' : null;
+  const list = lens ? all.filter(i => i.lens === lens) : all;
+  document.getElementById('ins-sub').textContent = lens ? `${lens} lens` : 'all lenses';
+  const o = ANALYSIS.overview(story);
+  const trackCol = { picture:PAL.yellow.front, sound:PAL.blue.front, editorial:PAL.slate.front };
+  const vcol = { reporter:PAL.red.front, authority:'#134580', affected:'#4A8FDF', expert:'#1E8A84', vox:'#9DC3EE', atmos:PAL.green.front, music:PAL.purple.front, silence:'#C9C3B6', unvoiced:'#8F897C' };
+  const vname = { ...CONFIG.voiceNames, atmos:'Atmos / natural', music:'Music', silence:'Silence', unvoiced:'Voice not set' };
+  const comp = Object.entries(o.comp).sort((a,b) => b[1]-a[1]);
+  const lcol = { argument:PAL.slate.front, structure:PAL.teal.front, pace:PAL.pink.front };
+  document.getElementById('insights').innerHTML = `
+    ${list.length ? `<ul class="ins">${list.map((i,n) => `<li><button data-ins="${n}" aria-pressed="${ui.hlRule === i.id + n}"><span class="kind k-${i.kind}">${i.kind}</span><span>${esc(i.message)}</span></button></li>`).join('')}</ul>` : `<p class="note">Nothing to point out through this lens right now.</p>`}
+    <h3>Shape</h3>
+    <div class="bars">${CONFIG.tracks.slice().reverse().map(tr => `<div class="bar"><span>${CONFIG.trackNames[tr]}</span><div class="track"><i style="width:${o.ends[tr]/o.max*100}%;background:${trackCol[tr]}"></i></div></div>`).join('')}</div>
+    <h3>Whose sound</h3>
+    ${o.soundTotal ? `<div class="stack">${comp.map(([k,v]) => `<i style="width:${v/o.soundTotal*100}%;background:${vcol[k]}" title="${vname[k]}"></i>`).join('')}</div>
+    <div class="legend">${comp.map(([k,v]) => `<span><i style="background:${vcol[k]}"></i>${vname[k]} ${Math.round(v/o.soundTotal*100)}%</span>`).join('')}</div>` : '<p class="note">No sound yet.</p>'}
+    <h3>Editorial labels</h3>
+    <p class="note">${o.ends.picture ? `${Math.round(o.coverage*100)}% of the picture track sits under a labelled span.` : 'No pictures yet.'}</p>
+    ${o.assigned ? `<div class="stack">${Object.entries(o.lens).map(([k,v]) => `<i style="width:${v/o.assigned*100}%;background:${lcol[k]}"></i>`).join('')}</div>
+    <div class="legend">${Object.entries(o.lens).map(([k,v]) => `<span><i style="background:${lcol[k]}"></i>${CONFIG.lenses[k]} ${Math.round(v/o.assigned*100)}%</span>`).join('')}</div>` : ''}`;
+  renderInsights.list = list;
+}
+
+function render() {
+  renderHeader(); renderStage(); renderLibrary(); renderInspector(); renderInsights(); renderToast();
+  const lg = document.getElementById('logo');
+  if (!lg.innerHTML) lg.innerHTML = `<svg width="40" height="36" viewBox="0 0 40 36" aria-hidden="true">${[['blue',2,4],['red',0,16]].map(([p,x,y]) => `<g transform="translate(${x} ${y})">${miniSVG(3, PAL[p], 10, 9).replace(/<\/?svg[^>]*>/g,'')}</g>`).join('')}</svg><div><h1>Journalism Blocks</h1><p>Picture, sound and meaning, layer by layer</p></div>`;
+}
+
+/* ============================ INTERACTION ============================ */
+const primaryId = () => ui.sel[ui.sel.length-1];
+
+function select(id, additive) {
+  if (additive) ui.sel = ui.sel.includes(id) ? ui.sel.filter(x => x !== id) : [...ui.sel, id];
+  else ui.sel = ui.sel.length === 1 && ui.sel[0] === id ? [] : [id];
+  ui.hl = []; ui.hlRule = null; render(); focusBrick(id);
+}
+function focusBrick(id) {
+  const el = document.querySelector(`.brick[data-id="${id}"]`); if (!el) return;
+  if (document.activeElement !== el) el.focus({ preventScroll:true });
+  const sc = document.getElementById('scroller'), l = parseFloat(el.style.left), w = parseFloat(el.style.width);
+  if (l < sc.scrollLeft + 20) sc.scrollTo({ left: Math.max(0, l - 40), behavior:'smooth' });
+  else if (l + w > sc.scrollLeft + sc.clientWidth - 20) sc.scrollTo({ left: l + w - sc.clientWidth + 40, behavior:'smooth' });
+}
+document.addEventListener('focusin', e => { const b = e.target.closest && e.target.closest('.brick'); if (b) focusBrick(b.dataset.id); });
+
+function addSingle(track, type) {
+  const p = primaryId(), L = p && locate(story, p);
+  let index = story.tracks[track].length;
+  if (L && L.track === track) index = L.index + 1;
+  let len;
+  if (track === 'editorial') {           // span default: length of the picture block at the span's start, else 5
+    const at = startsOf(story.tracks.editorial)[index];
+    const PS = startsOf(story.tracks.picture); const pi = PS.indexOf(at);
+    len = pi >= 0 && pi < story.tracks.picture.length ? story.tracks.picture[pi].length : 5;
+  }
+  const b = makeBlock(track, type, len);
+  if (commit({ ...OPS.insert(story, track, index, b), ids:[b.id] })) { ui.sel = [b.id]; render(); focusBrick(b.id); }
+}
+
+function targetStud() {        // rule 1.5 for Add on compounds and multi-track patterns
+  const shared = sharedBoundaries(story); const p = primaryId();
+  if (p && locate(story, p)) {
+    const st = startOf(story, p); let best = shared[0];
+    shared.forEach(x => { if (Math.abs(x - st) < Math.abs(best - st) || (Math.abs(x - st) === Math.abs(best - st) && x > best)) best = x; });
+    return best;
+  }
+  const e = ANALYSIS.ends(story);
+  if (e.picture === e.sound && e.sound === e.editorial) return e.picture;
+  return null;
+}
+function addMulti(kind, key) {
+  const stud = targetStud();
+  if (stud === null) {
+    ui.placing = { kind, key }; say('Your tracks end at different points. Choose where it goes: click one of the blue Insert points.'); render(); return;
+  }
+  placeAt(kind, key, stud);
+}
+function placeAt(kind, key, stud) {
+  const r = kind === 'compound' ? OPS.insertCompound(story, key, stud) : OPS.insertPattern(story, key, { stud });
+  ui.placing = null; ui.msg = '';
+  if (commit(r)) { ui.sel = []; render(); say(`${kind === 'compound' ? CONFIG.compounds[key].label : CONFIG.patterns[key].label} added.`); }
+}
+function addPattern(key) {
+  const p = CONFIG.patterns[key];
+  if (p.pictureOnly) {
+    const sel = primaryId(), L = sel && locate(story, sel);
+    const index = L && L.track === 'picture' ? L.index + 1 : story.tracks.picture.length;
+    commit(OPS.insertPattern(story, key, { index, pid: newId('p') }));
+    say('Five-shot coverage added. Select any of the five to see three different edits.');
+  } else addMulti('pattern', key);
+}
+
+function studs(delta) {
+  const id = primaryId(); if (!id) return; const L = locate(story, id);
+  if (L.block.length + delta < 1) { say('A brick needs at least one stud.'); return; }
+  commit(OPS.resize(story, id, L.block.length + delta)); focusBrick(id);
+}
+function act(a) {
+  const id = primaryId(), L = id && locate(story, id);
+  switch (a) {
+    case 'lock': { const r = OPS.lockSelection(story, ui.sel); if (commit(r)) say('Locked together.'); break; }
+    case 'clearsel': ui.sel = []; render(); break;
+    case 'unlock': if (L && L.block.groupId) doUnlock(L.block.groupId); break;
+    case 'realign': if (L && L.block.groupId) { const r = OPS.realign(story, L.block.groupId); if (r.error) say(r.error); else { commit(r); say('Realigned.'); } } break;
+    case 'left': if (id) { commit(OPS.move(story, id, -1)); focusBrick(id); } break;
+    case 'right': if (id) { commit(OPS.move(story, id, 1)); focusBrick(id); } break;
+    case 'dup': if (id) { const r = OPS.duplicate(story, id); if (commit(r)) { ui.sel = [r.ids[0]]; render(); focusBrick(r.ids[0]); } } break;
+    case 'remove': if (id) { commit(OPS.remove(story, id)); ui.sel = []; render(); } break;
+    case 'five': if (L) { const r = OPS.cycleFiveShot(story, L.block.meta.patternId); if (commit(r)) say(`Showing: ${r.orderName}.`); focusBrick(id); } break;
+  }
+}
+function doUnlock(gid) {
+  const ms = members(story, gid), topM = ms[ms.length-1];
+  const x = OX + topM.start*S - 4, y = layerTop(topM.track) - TOPPAD - 4;
+  commit(OPS.unlock(story, gid));
+  // the unlock moment: badge bursts off, members nudge apart briefly
+  ui.unlocking = [{ gid, x, y }]; renderStage();
+  ms.forEach((m,i) => { const el = document.querySelector(`.brick[data-id="${m.block.id}"]`); if (el) el.animate([{ transform:'none' }, { transform:`translateY(${(i-1)*-6}px)` }, { transform:'none' }], { duration:420, easing:'cubic-bezier(.3,.8,.3,1)' }); });
+  setTimeout(() => { ui.unlocking = []; renderStage(); }, 520);
+  say('Unlocked. Now you can swap the picture while the sound runs on underneath.');
+}
+
+document.addEventListener('click', e => {
+  const t = e.target;
+  const v = t.closest('[data-view]'); if (v) { ui.view = v.dataset.view; render(); const p = primaryId(); if (p) focusBrick(p); return; }
+  const tab = t.closest('[data-tab]'); if (tab) { ui.tab = tab.dataset.tab; renderLibrary(); return; }
+  const a = t.closest('[data-add-track]'); if (a) { addSingle(a.dataset.addTrack, a.dataset.addType); return; }
+  const c = t.closest('[data-compound]'); if (c) { addMulti('compound', c.dataset.compound); return; }
+  const p = t.closest('[data-pattern]'); if (p) { addPattern(p.dataset.pattern); return; }
+  const d = t.closest('[data-drop]'); if (d && ui.placing) { placeAt(ui.placing.kind, ui.placing.key, +d.dataset.drop); return; }
+  const sd = t.closest('[data-stud]'); if (sd) { studs(+sd.dataset.stud); return; }
+  const ac = t.closest('[data-act]'); if (ac) { act(ac.dataset.act); return; }
+  const ins = t.closest('[data-ins]'); if (ins) { const i = renderInsights.list[+ins.dataset.ins]; const key = i.id + ins.dataset.ins;
+    if (ui.hlRule === key) { ui.hl = []; ui.hlRule = null; } else { ui.hl = i.blockIds; ui.hlRule = key; } render(); return; }
+  if (t.closest('[data-cancel]')) { ui.placing = null; ui.msg = ''; render(); return; }
+  if (t.closest('[data-dismiss]')) { ui.msg = ''; renderToast(); return; }
+  const br = t.closest('.brick'); if (br && !t.closest('.handle')) { select(br.dataset.id, e.shiftKey); return; }
+  if (t.closest('#world') && !br && ui.sel.length) { ui.sel = []; render(); }
+});
+
+// inspector fields commit on change (one undo step per edit, not per keystroke)
+document.addEventListener('change', e => {
+  const id = primaryId(); if (!id) return;
+  if (e.target.id === 'f-type') commit(OPS.setType(story, id, e.target.value));
+  if (e.target.id === 'f-voice') commit(OPS.updateFields(story, id, { voice: e.target.value || null }));
+  if (e.target.id === 'f-contrib') commit(OPS.updateFields(story, id, { contributor: e.target.value }));
+  if (e.target.id === 'f-notes') commit(OPS.updateFields(story, id, { notes: e.target.value }));
+});
+
+// edge-drag resize, snapping to whole studs. Live preview, one undo step on release.
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  const h = e.target.closest('[data-handle]'); if (!h) return;
+  e.preventDefault(); e.stopPropagation();
+  const id = h.dataset.handle, L = locate(story, id);
+  drag = { id, x:e.clientX, orig:L.block.length, base:story, len:L.block.length };
+  if (!ui.sel.includes(id)) ui.sel = [id];
+  document.body.classList.add('resizing');
+});
+// the stage only scrolls sideways; stop focus() from nudging it vertically
+document.getElementById('scroller').addEventListener('scroll', e => { if (e.target.scrollTop) e.target.scrollTop = 0; });
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const len = Math.max(1, drag.orig + Math.round((e.clientX - drag.x) / S));
+  if (len !== drag.len) { drag.len = len; story = OPS.resize(drag.base, drag.id, len).story; renderStage(); renderInspector(); }
+});
+window.addEventListener('pointerup', () => {
+  if (!drag) return; document.body.classList.remove('resizing');
+  if (drag.len !== drag.orig) { past.push(drag.base); if (past.length > 50) past.shift(); future = []; scheduleSave(); }
+  const id = drag.id; drag = null; render(); focusBrick(id);
+});
+
+document.addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey;
+  const typing = e.target.closest('input,textarea,select');
+  if (mod && e.key.toLowerCase() === 'z' && !typing) { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if (e.key === 'Escape' && ui.placing) { ui.placing = null; ui.msg = ''; render(); return; }
+  const br = e.target.closest && e.target.closest('.brick'); if (!br || typing) return;
+  const id = br.dataset.id, L = locate(story, id); if (!L) return;
+  const k = e.key;
+  if (k === 'Enter' || k === ' ') { e.preventDefault(); select(id, e.shiftKey); return; }
+  if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); if (!ui.sel.includes(id)) ui.sel = [id]; commit(OPS.move(story, id, k === 'ArrowLeft' ? -1 : 1)); focusBrick(id); return; }
+  if (k === 'ArrowUp' || k === 'ArrowDown') {
+    e.preventDefault(); const tIdx = CONFIG.tracks.indexOf(L.track) + (k === 'ArrowUp' ? 1 : -1); const tr = CONFIG.tracks[tIdx]; if (!tr) return;
+    const st = startOf(story, id), S2 = startsOf(story.tracks[tr]);
+    let j = story.tracks[tr].findIndex((b,i) => S2[i] <= st && S2[i] + b.length > st); if (j < 0) j = story.tracks[tr].length - 1;
+    if (j >= 0) focusBrick(story.tracks[tr][j].id); return;
+  }
+  if (k === '[' || k === ']') { e.preventDefault(); if (!ui.sel.includes(id)) ui.sel = [id]; studs(k === ']' ? 1 : -1); return; }
+  if (k.toLowerCase() === 'd') { ui.sel = [id]; act('dup'); return; }
+  if (k === 'Delete' || k === 'Backspace') { e.preventDefault(); ui.sel = [id]; act('remove'); return; }
+  if (k.toLowerCase() === 'l') { if (ui.sel.length > 1) act('lock'); else if (L.block.groupId) doUnlock(L.block.groupId); else say('Shift-select bricks in different layers, then press L to lock them.'); return; }
+  if (k.toLowerCase() === 'r') { if (L.block.groupId) { ui.sel = [id]; act('realign'); } return; }
+});
+
+/* ============================ PERSISTENCE ============================ */
+const STORE = 'journalism-blocks.v1';
+let saveT = null;
+function scheduleSave() { clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(STORE, JSON.stringify(story)); } catch(e) {} }, 300); }
+
+function validate(s) {
+  const errs = [];
+  if (!s || typeof s !== 'object') return ['This isn\'t a story file.'];
+  if (s.schema !== 1) errs.push('Unknown schema version.');
+  if (!s.tracks || Object.keys(s.tracks).sort().join() !== 'editorial,picture,sound' || !CONFIG.tracks.every(tr => Array.isArray(s.tracks[tr]))) { errs.push('Tracks must be exactly picture, sound and editorial.'); return errs; }
+  const groups = s.groups || {}; const seen = new Set(); const gm = {};
+  CONFIG.tracks.forEach(tr => s.tracks[tr].forEach(b => {
+    if (!b || !b.id || seen.has(b.id)) errs.push(`A ${tr} block has a missing or repeated id.`); seen.add(b && b.id);
+    if (!b || !typeOf(tr, b.type)) errs.push(`"${b && b.type}" isn't a ${tr} type.`);
+    if (!b || !Number.isInteger(b.length) || b.length < 1) errs.push(`A ${tr} block has a bad length.`);
+    if (b && b.groupId) { if (!groups[b.groupId]) errs.push('A block points at a group that doesn\'t exist.'); (gm[b.groupId] = gm[b.groupId] || []).push({ tr, id:b.id }); }
+  }));
+  Object.entries(groups).forEach(([g,v]) => {
+    const m = gm[g] || [];
+    if (m.length < 2) errs.push('A group has fewer than two members.');
+    if (new Set(m.map(x => x.tr)).size !== m.length) errs.push('A group has two members in the same track.');
+    if (!v || !m.some(x => x.id === v.anchorId)) errs.push('A group\'s anchor isn\'t one of its members.');
+  });
+  return [...new Set(errs)];
+}
+
+function exampleStory() {
+  const s = emptyStory('Council housing: the backlog'); const g = 'gA';
+  const P = (type,len,notes,grp) => { const b = makeBlock('picture',type,len,{notes}); if (grp) b.groupId = g; return b; };
+  const Sd = (type,len,voice,contributor,grp) => { const b = makeBlock('sound',type,len,{voice,contributor}); if (grp) b.groupId = g; return b; };
+  const E = (type,len,grp) => { const b = makeBlock('editorial',type,len); if (grp) b.groupId = g; return b; };
+  s.tracks.picture = [P('WS',6,'estate exterior'),P('CU',5,'repair notice on door'),P('MCU',12,'councillor',1),P('CU',5,'waiting-list figures on screen'),P('WS',5,'resident\'s street'),P('MCU',5,'resident'),P('CU',5,'damp on wall'),P('Detail',5,'child\'s bedroom')];
+  s.tracks.sound = [Sd('Reporter',11,'reporter'),Sd('SOT',12,'authority','Councillor',1),Sd('Reporter',10,'reporter'),Sd('SOT',10,'affected','Resident'),Sd('Reporter',9,'reporter')];
+  s.tracks.editorial = [E('context',6),E('evidence',5),E('claim',12,1),E('explanation',10),E('consequence',10),E('transition',5)];
+  s.groups[g] = { anchorId: s.tracks.picture[2].id };
+  return s;
+}
+
+document.getElementById('undo').onclick = undo;
+document.getElementById('redo').onclick = redo;
+document.getElementById('new').onclick = () => { commit(OPS.loadStory(story, emptyStory())); ui.sel = []; render(); say('Started empty. Undo brings the last story back.'); };
+document.getElementById('reset').onclick = () => { commit(OPS.loadStory(story, exampleStory())); ui.sel = []; render(); say('Example loaded. It\'s an illustration of the interface, not a model answer.'); };
+document.getElementById('export').onclick = () => {
+  const blob = new Blob([JSON.stringify(story, null, 2)], { type:'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = (story.title || 'story').replace(/[^\w-]+/g,'-').toLowerCase() + '.json'; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+document.getElementById('import').onclick = () => document.getElementById('file').click();
+document.getElementById('file').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  let s; try { s = JSON.parse(await f.text()); } catch(err) { say('That file isn\'t valid JSON. Nothing was loaded.'); return; }
+  const errs = validate(s);
+  if (errs.length) { say('Couldn\'t load that file: ' + errs.slice(0,3).join(' ') + (errs.length > 3 ? ` (+${errs.length-3} more)` : '') + ' Nothing was changed.'); return; }
+  commit(OPS.loadStory(story, s)); ui.sel = []; render(); say(`Loaded "${s.title || 'story'}".`);
+};
+
+/* =============================== BOOT ================================ */
+(function boot() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE)); } catch(e) {}
+  story = saved && !validate(saved).length ? saved : exampleStory();
+  render();
+  if (!saved) say('This is an example to show how the interface works, not a model answer. Use New to start empty.');
+  if (location.search.includes('test')) runTests();
+})();
+
+function runTests() {
+  const r = []; const ok = (c, m) => r.push((c ? 'PASS ' : 'FAIL ') + m);
+  let s = exampleStory();
+  ok(sharedBoundaries(s).join() === '0,11,23,33,43', 'shared boundaries are 0, 11, 23, 33, 43');
+  ok(sharedBoundaries(s).includes(11) && sharedBoundaries(s).includes(23), 'group A sits on shared boundaries 11 and 23');
+  const e = ANALYSIS.ends(s); ok(e.sound - e.picture === 4, 'final reporter overhangs pictures by 4 studs');
+  const mcu = s.tracks.picture[2].id;
+  let r1 = OPS.resize(s, mcu, 14).story; ok(members(r1, 'gA').every(m => m.block.length === 14), 'group resizes as one');
+  let r2 = OPS.move(s, mcu, 1).story; ok(ANALYSIS.isDrifted(r2, 'gA'), 'moving a group with uneven neighbours drifts it');
+  let r3 = OPS.realign(r2, 'gA'); ok(!!r3.error || !ANALYSIS.isDrifted(r3.story, 'gA'), 'realign either aligns or explains');
+  let c = OPS.insertCompound(s, 'interviewSOT', 5); ok(!!c.error, 'compound refused off a shared boundary');
+  let c2 = OPS.insertCompound(s, 'interviewSOT', 11).story; ok(!ANALYSIS.isDrifted(c2, Object.keys(c2.groups).find(g => g !== 'gA')), 'compound arrives aligned');
+  let ins = OPS.insert(s, 'picture', 0, makeBlock('picture','GV')).story; ok(ins.tracks.picture[0].type === 'GV', 'insert');
+  console.log(r.join('\n')); window.__tests = r;
+}
+</script>
+</body>
+</html>

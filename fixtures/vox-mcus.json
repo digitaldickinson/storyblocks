@@ -1,0 +1,40 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "MCU",
+        "x": 0,
+        "len": 3
+      },
+      {
+        "code": "MCU",
+        "x": 3,
+        "len": 3
+      },
+      {
+        "code": "MCU",
+        "x": 6,
+        "len": 3
+      }
+    ],
+    "sound": [
+      {
+        "code": "VOX",
+        "x": 0,
+        "len": 9
+      }
+    ],
+    "script": [
+      {
+        "code": "RUN",
+        "x": 0,
+        "len": 9
+      }
+    ],
+    "editorial": []
+  },
+  "_about": "A string of MCUs under a vox pop: the convention, so no Shot sizes notice."
+}

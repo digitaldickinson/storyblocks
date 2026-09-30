@@ -1,0 +1,103 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "audio",
+  "layers": {
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 6,
+        "len": 10
+      },
+      {
+        "code": "CLIP",
+        "x": 16,
+        "len": 8
+      },
+      {
+        "code": "ACT",
+        "x": 24,
+        "len": 8
+      },
+      {
+        "code": "CLIP",
+        "x": 32,
+        "len": 10
+      },
+      {
+        "code": "ATM",
+        "x": 42,
+        "len": 6
+      }
+    ],
+    "script": [
+      {
+        "code": "CUE",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "TRK",
+        "x": 6,
+        "len": 10
+      },
+      {
+        "code": "RUN",
+        "x": 16,
+        "len": 8
+      },
+      {
+        "code": "TRK",
+        "x": 24,
+        "len": 8
+      },
+      {
+        "code": "RUN",
+        "x": 32,
+        "len": 10
+      },
+      {
+        "code": "TRK",
+        "x": 42,
+        "len": 6
+      },
+      {
+        "code": "SIGN",
+        "x": 48,
+        "len": 3
+      }
+    ],
+    "editorial": [
+      {
+        "code": "CONTEXT",
+        "x": 0,
+        "len": 6
+      },
+      {
+        "code": "EXPLAIN",
+        "x": 6,
+        "len": 10
+      },
+      {
+        "code": "CLAIM",
+        "x": 16,
+        "len": 8
+      },
+      {
+        "code": "EVIDENCE",
+        "x": 24,
+        "len": 8
+      },
+      {
+        "code": "CONSEQ",
+        "x": 32,
+        "len": 10
+      },
+      {
+        "code": "UNSET",
+        "x": 42,
+        "len": 9
+      }
+    ]
+  }
+}

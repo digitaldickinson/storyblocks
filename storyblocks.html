@@ -1,0 +1,1191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StoryBlocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#141413; --muted:#5E5A50; --faint:#6B665A; --paper:#FAF9F5; --ground:#EDE9DF;
+  --line:#DCD6C8; --line2:#CFC8B8; --stage:#FFC72C;
+}
+*{box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{margin:0;font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);background:var(--ground)}
+button{font-family:inherit;color:inherit}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.app{height:100vh;min-height:680px;display:grid;grid-template-rows:64px minmax(0,1fr)}
+:focus-visible{outline:2px solid #1D5FAE;outline-offset:2px}
+
+/* header */
+header{display:flex;align-items:center;gap:24px;padding:0 20px;background:var(--paper);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand h1{margin:0;font-family:'Archivo Black',sans-serif;font-size:22px;line-height:1;letter-spacing:-.01em;font-weight:400}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.spacer{flex:1}
+.tbtn{height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line2);background:#fff;font-size:14px;font-weight:600;cursor:pointer}
+.tbtn:hover:not(:disabled){background:#EFEBE1}
+.tbtn:disabled{opacity:.4;cursor:default}
+.tbtn.ib{display:flex;align-items:center;gap:6px;padding:0 12px}
+header{gap:10px}
+header .tbtn{padding:0 13px;white-space:nowrap;flex-shrink:0}
+.brand{flex-shrink:0}
+.brand p{white-space:nowrap}
+.medium{margin-left:8px;flex-shrink:0}
+.hsep{width:1px;height:28px;background:var(--line2)}
+.tbtn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.tbtn.primary:hover{background:#2c2b28}
+
+/* layout */
+.main{display:grid;grid-template-columns:360px minmax(0,1fr);min-height:0}
+.main.closed{grid-template-columns:52px minmax(0,1fr)}
+/* floating toolbar above the selected brick */
+/* translucent until you reach for it */
+.tbar{position:absolute;transform:translate(-50%,-100%);display:flex;align-items:center;gap:2px;padding:3px 3px 3px 12px;background:rgba(20,20,19,.58);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#FAF9F5;border-radius:12px;box-shadow:0 3px 10px rgba(20,20,19,.12);z-index:6;white-space:nowrap;animation:tbin .16s ease-out;transition:background .15s}
+.tbar:hover,.tbar:focus-within{background:rgba(20,20,19,.86)}
+.tbar::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:rgba(20,20,19,.58)}
+.tbar:hover::after,.tbar:focus-within::after{border-top-color:rgba(20,20,19,.86)}
+@keyframes tbin{from{opacity:0;margin-top:6px}to{opacity:1;margin-top:0}}
+.tbar b{font-size:13px;margin-right:8px}
+.tbar button{width:36px;height:36px;border:0;border-radius:9px;background:none;color:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.tbar button:hover{background:rgba(250,249,245,.14)}
+.tbar button:disabled{opacity:.35;cursor:default}
+.tbar .n{min-width:58px;text-align:center;font-size:12px;font-weight:600;opacity:.85}
+.tbar .sep{width:1px;height:22px;background:rgba(250,249,245,.25);margin:0 4px}
+/* brick drawer */
+.drawerhead{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 0 16px}
+.dbtn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line2);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.dbtn:hover{background:#EFEBE1}
+.rail{height:100%;width:100%;border:0;background:var(--paper);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:14px;padding-top:14px}
+.rail:hover{background:#F2EFE7}
+.rail .tab{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.rail .dots{display:flex;flex-direction:column;gap:5px}
+.rail .dots i{width:12px;height:12px;border-radius:3px;display:block}
+aside{display:flex;flex-direction:column;min-height:0;background:var(--paper)}
+.left{border-right:1px solid var(--line)}
+/* the selected-brick drawer only exists while a brick is selected */
+.scroll{overflow-y:auto}
+.scroll::-webkit-scrollbar{width:8px}.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+h2{margin:0;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+
+/* palette */
+.palette{flex:1;padding:16px 16px 8px;display:flex;flex-direction:column;gap:14px}
+.ghead{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.chip{width:10px;height:10px;border-radius:2px;align-self:center;flex-shrink:0}
+.ghead span.b{font-size:12px;color:var(--faint)}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pcard{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:66px;padding:6px 4px 8px;border-radius:10px;cursor:pointer;border:1px solid var(--line);background:#fff;transition:transform .12s,box-shadow .12s}
+.pcard:hover{transform:translateY(-2px);box-shadow:0 4px 0 #D8D2C3}
+.pcard b{font-size:11.5px;line-height:1;letter-spacing:.02em}
+.info{flex-shrink:0;margin:0 16px 16px;padding:14px;min-height:128px;background:#fff;border:1px solid var(--line);border-radius:14px}
+.info p{margin:0;font-size:13px;line-height:1.45;color:#34322C}
+.info .row{display:flex;gap:14px;align-items:flex-start}
+.info .nm{font-weight:700;font-size:16px}
+.info .meta{font-size:12px;color:var(--muted)}
+
+/* stage */
+.stage{position:relative;overflow:hidden;background:var(--stage);user-select:none;-webkit-user-select:none}
+.scroller{position:absolute;inset:0;overflow:auto}
+.world{position:relative}
+.zoom{display:flex;align-items:center;gap:4px;padding:4px;pointer-events:auto}
+.zoom button{height:34px;min-width:34px;padding:0 8px;border:0;border-radius:9px;background:none;cursor:pointer;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.zoom button:hover:not(:disabled){background:#EFEBE1}
+.zoom button:disabled{opacity:.35;cursor:default}
+.zsep{width:1px;height:20px;background:var(--line2);margin:0 2px}
+/* the stage itself is a handle: drag empty space to turn the model */
+.scroller{cursor:grab}
+.world{touch-action:none}
+body.orbiting,body.orbiting *{cursor:grabbing!important}
+.zoom span{font-size:13px;font-weight:600;padding:0 8px 0 6px;border-right:1px solid var(--line2);margin-right:2px}
+.brick{position:absolute;background:none;border:0;padding:0;margin:0;cursor:pointer;pointer-events:none;transition:top .18s ease-out,opacity .2s}
+.brick svg{display:block;overflow:visible}
+.brick path.face{pointer-events:visiblePainted}
+.brick text{pointer-events:none}
+.brick:focus-visible{outline:none}
+.brick:focus-visible path.face{stroke:var(--ink);stroke-width:2.5}
+.brick:hover path.face{filter:brightness(1.06)}
+.brick.faded{opacity:.3}
+.pop{animation:pop .32s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes pop{from{transform:translateY(-50px);opacity:0}to{transform:none;opacity:1}}
+.ghost{position:absolute;pointer-events:none}
+.grip{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#fff;border:2px solid var(--ink);cursor:ew-resize;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(20,20,19,.25);z-index:5;padding:0}
+.grip:hover{background:#EFEBE1}
+body.resizing,body.resizing *{cursor:ew-resize!important}
+body.moving,body.moving *{cursor:grabbing!important}
+.brick{cursor:grab}
+.brick.lifted{filter:drop-shadow(0 10px 6px rgba(20,20,19,.25))}
+.hud{position:absolute;left:24px;top:20px;right:24px;display:flex;justify-content:flex-end;align-items:flex-start;gap:12px;pointer-events:none}
+.card{background:rgba(250,249,245,.92);border:1px solid rgba(20,20,19,.12);border-radius:14px}
+.empty{position:absolute;left:0;right:0;top:170px;display:flex;justify-content:center;pointer-events:none}
+.empty .card{max-width:400px;text-align:center;padding:16px 20px}
+.empty h3{margin:0 0 6px;font-family:'Archivo Black',sans-serif;font-size:20px;font-weight:400}
+.empty p{margin:0;font-size:14px;line-height:1.45;color:#34322C}
+.caption{position:absolute;left:24px;right:24px;bottom:18px;display:flex;justify-content:center;pointer-events:none}
+.caption div{padding:10px 16px;background:var(--ink);color:var(--paper);border-radius:12px;font-size:13px;font-weight:600;max-width:560px;text-align:center;line-height:1.4}
+/* layer key: a fixed mini stack in the empty bottom-left corner of the stage */
+.lkey{position:absolute;left:20px;bottom:20px;padding:8px;display:flex;flex-direction:column;gap:0}
+.lkey .kr{display:flex;align-items:center;gap:10px;height:30px;border-radius:7px;padding:0 8px 0 4px;transition:background .12s,opacity .12s;border:0;background:none;cursor:pointer;text-align:left;color:inherit;font:inherit}
+.lkey .kr:hover{background:rgba(20,20,19,.06);opacity:1}
+.lkey .kr.solo{background:rgba(20,20,19,.1);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.lkey .khint{font-size:11px;color:var(--muted);padding:6px 6px 2px;max-width:230px;line-height:1.35}
+/* medium switch */
+.medium{display:flex;background:#fff;border:1px solid var(--line2);border-radius:12px;padding:3px;gap:2px;margin-left:16px}
+.medium button{height:36px;padding:0 12px;border:0;border-radius:9px;background:none;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.medium button[aria-checked="true"]{background:var(--ink);color:var(--paper)}
+.medium button:not([aria-checked="true"]):hover{background:#EFEBE1}
+/* bricks faded above the working layer are see-through to clicks, so the brick you can see is the one you get */
+.brick.faded path.face{pointer-events:none}
+/* Notice */
+.nbtn{height:42px;padding:0 16px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;cursor:pointer;pointer-events:auto;color:var(--ink)}
+.nbtn:hover{background:#fff}
+.npanel{position:absolute;right:24px;top:76px;width:340px;max-height:calc(100% - 110px);overflow-y:auto;padding:12px;background:rgba(250,249,245,.97);box-shadow:0 8px 24px rgba(20,20,19,.12);z-index:7;animation:tbin .18s ease-out}
+.nhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.nclose{width:32px;height:32px;border:0;border-radius:8px;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.nclose:hover{background:#EFEBE1}
+.nlist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.nitem{width:100%;text-align:left;display:flex;flex-direction:column;gap:3px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;font-size:13px;line-height:1.45;color:var(--ink)}
+.nitem:hover:not(:disabled),.nitem.pinned{border-color:#1D5FAE;box-shadow:0 0 0 1px #1D5FAE}
+.nitem b{font-size:13.5px}
+.ntag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1D5FAE}
+.ntag.ask{color:#7440B0}
+.nmore{margin-top:8px;border:0;background:none;color:#1D5FAE;font-weight:700;font-size:13px;cursor:pointer;padding:4px 2px}
+.nempty{font-size:13px;line-height:1.5;color:#34322C;margin:0}
+.npanel.stale .nlist{opacity:.45}
+.nstale{font-size:12.5px;line-height:1.4;background:#FFF4CC;border-radius:9px;padding:8px 10px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nstale button{border:1px solid var(--ink);background:#fff;border-radius:8px;height:30px;padding:0 10px;font-weight:700;cursor:pointer}
+.brick.noticed{filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 5px rgba(29,95,174,.95))}
+.nband{position:absolute;pointer-events:none}
+.lkey .kr svg{flex-shrink:0;display:block}
+.lkey .kr span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.lkey .kr small{font-size:11px;color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none;margin-left:2px}
+.lkey.hot .kr{opacity:.4}
+.lkey.hot .kr.on{opacity:1;background:rgba(20,20,19,.07)}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="live" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)"></div>
+
+<script>
+/* ============================================================
+   StoryBlocks — layers edition.
+   Four layers stacked as courses: picture at the bottom, then
+   sound (actuality), then script (the reporter's words),
+   with editorial plates on top.
+   Each layer is a packed row; order is position.
+   A stud is relative length, not a second.
+   ============================================================ */
+
+/* ---------------- CONFIG: edit to change the brick set ---------------- */
+const PAL = {
+  yellow: { top:'#FFDB45', front:'#F0B700', end:'#C28F00', ink:'#2E2200' },
+  orange: { top:'#FFA95C', front:'#E8791A', end:'#B45A0E', ink:'#2A1200' },
+  red:    { top:'#F2493D', front:'#C8261B', end:'#931A12', ink:'#FFFFFF' },
+  blue:   { top:'#4A8FDF', front:'#1D5FAE', end:'#134580', ink:'#FFFFFF' },
+  sky:    { top:'#9CC6F2', front:'#5E9BDD', end:'#3B75B4', ink:'#0E2A4A' },
+  green:  { top:'#44B874', front:'#1B7A43', end:'#125A30', ink:'#FFFFFF' },
+  teal:   { top:'#45C1B8', front:'#1E8A84', end:'#136560', ink:'#FFFFFF' },
+  white:  { top:'#FFFFFF', front:'#EAE6DB', end:'#C9C3B6', ink:'#3A3833' },
+  purple: { top:'#A274DB', front:'#7440B0', end:'#552E85', ink:'#FFFFFF' },
+  pink:   { top:'#F59AC0', front:'#C95388', end:'#963A63', ink:'#FFFFFF' },
+  wine:   { top:'#C24561', front:'#8E1B3A', end:'#62102A', ink:'#FFFFFF' },   // presenter's words
+  gold:   { top:'#FFE88A', front:'#E5C73A', end:'#B39618', ink:'#2E2200' },   // studio shots
+  grey:   { top:'#F1EEE7', front:'#DAD5CA', end:'#BDB7AA', ink:'#4A473F', dash:true }
+};
+
+// Every layer there is, bottom to top. Each medium uses some of them (MEDIA below).
+const ALL_LAYERS = [
+  { key:'picture',   name:'Picture',   blurb:'What the audience sees', chip:PAL.yellow.front },
+  { key:'sound',     name:'Sound',     blurb:'Everything but the reporter', chip:PAL.blue.front },
+  { key:'script',    name:'Script',    blurb:'Words read from a script', chip:PAL.red.front },
+  { key:'editorial', name:'Editorial', blurb:'What it means',          chip:PAL.purple.front }
+];
+
+// [code, layer, label on brick, name, default studs, colour, description, medium]
+// medium: 'v' = video only, 'a' = audio only, left out = both.
+const BRICK_ROWS = [
+  ['WS','picture','WS','Wide shot',5,'yellow','Where we are. The whole scene.'],
+  ['MS','picture','MS','Mid shot',5,'yellow','A person or action, waist up or equivalent.'],
+  ['MCU','picture','MCU','Mid close-up',5,'yellow','Head and shoulders. The convention for interviews.'],
+  ['CU','picture','CU','Close-up',4,'yellow','A face or an object filling the frame.'],
+  ['GV','picture','GV','General view',5,'yellow','Scene-setting pictures of a place.'],
+  ['DET','picture','DET','Detail',4,'yellow','The telling object that carries the story.'],
+  ['GFX','picture','GFX','Graphic',6,'orange','Data, a map or a quote made visual.'],
+  ['PTC','picture','PTC','Piece to camera',8,'yellow','The reporter in vision on location.'],
+  ['INVIZ','picture','inVIZ','Presenter in vision',6,'gold','The presenter on camera in the studio.'],
+  ['WALL','picture','WALL','Studio screen',5,'gold','A two-shot with the studio screen or graphic wall behind the presenter.'],
+
+  ['SOT','sound','SOT','Interview (sync)',10,'blue','Someone speaking on camera, in sync.','v'],
+  ['CLIP','sound','CLIP','Interview clip',10,'blue','A contributor\'s recorded voice. Pick the moment of feeling or first-hand fact, not the explanation you could write yourself.','a'],
+  ['VOX','sound','VOX','Vox pops',6,'sky','Quick street voices. Colour, not evidence.'],
+  ['NAT','sound','NAT','Natural sound',3,'green','Actuality up full: a door, a crowd, a machine.','v'],
+  ['ACT','sound','ACT','Actuality',4,'green','The sound of the thing happening: the protest, the machine, the crowd. Radio\'s pictures.','a'],
+  ['ATM','sound','ATM','Atmos',3,'green','The background sound of the place.'],
+  ['MUS','sound','MUS','Music bed',8,'teal','Music under the piece. Use with care.'],
+  ['SIL','sound','SIL','Silence',2,'white','Deliberate quiet.'],
+
+  ['CUE','script','CUE','Presenter cue',6,'wine','The presenter sets the story up.'],
+  ['OOV','script','OOV','Presenter OOV',8,'wine','The presenter reads over pictures, out of vision. Write to the pictures.','v'],
+  ['BACK','script','BACK','Back-anno',4,'wine','The presenter picks up after the clip: attribution, a response, or what happens next.'],
+  ['VO','script','VO','Voiceover',10,'red','Reporter script over pictures. Write to the pictures, not against them.','v'],
+  ['TRK','script','TRK','Reporter track',10,'red','The reporter\'s voice, written for the ear. Tell the listener what they can\'t see.','a'],
+  ['PTM','script','PTM','Piece to mic',6,'red','The reporter on location, with the scene audible behind them.','a'],
+  ['LINK','script','LINK','Link',4,'red','A bridging line that moves the audience from one idea to the next.'],
+  ['PTCW','script','PTC','PTC words',8,'red','What the reporter says in vision. Sits over a PTC shot.','v'],
+  ['SIGN','script','SIGN','Sign-off',3,'red','Name, programme, place. On radio, the standard out-cue.'],
+  ['RUN','script','RUN','Clip runs',10,'grey','No reporter words here: an interview or the sound carries it. Note the in-words and out-words.'],
+
+  ['CONTEXT','editorial','CONTEXT','Context',5,'purple','What the viewer needs to know first.'],
+  ['CLAIM','editorial','CLAIM','Claim',5,'purple','Someone asserts that something is true.'],
+  ['EVIDENCE','editorial','EVIDENCE','Evidence',5,'purple','What shows the claim is, or is not, true.'],
+  ['CHALLENGE','editorial','CHALLENGE','Challenge',5,'purple','Testing a claim against another view or fact.'],
+  ['CONSEQ','editorial','CONSEQ','Consequence',5,'purple','What happens to people as a result.'],
+  ['EXPLAIN','editorial','EXPLAIN','Explanation',5,'purple','How or why it works.'],
+  ['BREATHE','editorial','BREATHE','Breathe',5,'pink','A pause to let something land.'],
+  ['UNSET','editorial','?','Unlabelled',5,'grey','A span you haven\'t decided on yet.']
+];
+
+/* Media: which layers, which examples, and the brick that stands for each layer in the key.
+   ['GAP', n] in an example leaves n empty studs. */
+const MEDIA = {
+  video: { name:'Video', layers:['picture','sound','script','editorial'],
+    rep: { picture:'WS', sound:'SOT', script:'VO', editorial:'CLAIM' },
+    how: 'Four layers, stacked like courses of bricks: pictures at the bottom, then sound, then the script (reporter in red, presenter in dark red), with meaning on top.',
+    empty: ['Start with the pictures', 'Lay down some shots, put sound and script on top of them, then label what each part means. Watch where the layers don\'t line up.'],
+    examples: {
+      pkg: { label:'Package', name:'Package: council housing backlog',     // deliberately imperfect
+        picture:   [['WS',6],['CU',5],['MCU',12],['CU',5],['WS',5],['MCU',5],['CU',5],['DET',5]],
+        sound:     [['ATM',11],['SOT',12],['ATM',10],['SOT',10],['ATM',5]],
+        script:    [['VO',11],['RUN',12],['VO',10],['RUN',10],['VO',9]],
+        editorial: [['CONTEXT',6],['EVIDENCE',5],['CLAIM',12],['EXPLAIN',10],['CONSEQ',10],['UNSET',5]] },
+      oov: { label:'OOV/SOT', name:'OOV/SOT: bus route cut',               // the OOV is written a touch long
+        picture:   [['INVIZ',6],['GV',5],['CU',4],['WS',5],['MCU',10],['INVIZ',4]],
+        sound:     [['GAP',6],['NAT',14],['SOT',10]],
+        script:    [['CUE',6],['OOV',16],['RUN',10],['BACK',4]],
+        editorial: [['CONTEXT',6],['EXPLAIN',14],['CONSEQ',10],['UNSET',4]] } } },
+  audio: { name:'Audio', layers:['sound','script','editorial'],
+    rep: { sound:'CLIP', script:'TRK', editorial:'CLAIM' },
+    how: 'Three layers, stacked like courses of bricks: the sound of the world at the bottom, then the script (reporter in red, presenter in dark red), with meaning on top. No pictures: the sound has to do that job.',
+    empty: ['Start with the sound', 'Lay down the sound of the story: clips, actuality, atmos. Put the script on top of it, then label what each part means. Watch where the layers don\'t line up.'],
+    examples: {
+      rpkg: { label:'Package', name:'Radio package: council housing backlog',   // ends on a dry sign-off, over nothing
+        sound:     [['GAP',6],['ATM',10],['CLIP',8],['ACT',8],['CLIP',10],['ATM',6]],
+        script:    [['CUE',6],['TRK',10],['RUN',8],['TRK',8],['RUN',10],['TRK',6],['SIGN',3]],
+        editorial: [['CONTEXT',6],['EXPLAIN',10],['CLAIM',8],['EVIDENCE',8],['CONSEQ',10],['UNSET',9]] },
+      rcue: { label:'Cue + clip', name:'Cue and clip: bus route cut',
+        sound:     [['GAP',8],['CLIP',12]],
+        script:    [['CUE',8],['RUN',12],['BACK',4]],
+        editorial: [['CONTEXT',8],['CONSEQ',12],['UNSET',4]] } } }
+};
+
+const B = {};
+BRICK_ROWS.forEach(r => B[r[0]] = { code:r[0], layer:r[1], label:r[2], name:r[3], len:r[4], colour:r[5], desc:r[6], media:r[7] || 'va' });
+// renamed bricks: old saves and exported files still open
+const CODE_ALIASES = { IV:'INVIZ' };
+const canon = b => (b && CODE_ALIASES[b.code] ? { ...b, code: CODE_ALIASES[b.code] } : b);
+const inMedium = (code, m) => B[code].media.includes(m === 'audio' ? 'a' : 'v');
+
+/* ---------------- TRAITS: what each brick means to Notice ----------------
+   The Notice rules never look at brick codes, only at these traits. Add, rename or recolour
+   a brick, give it the right traits here, and the notices understand it straight away.
+   Vocabulary (a brick can have several, separated by spaces):
+     picture    wide | mid | close   the shot-size family (used for "three the same in a row")
+                presenter            the presenter is on screen
+                reporter             the reporter is on screen
+                graphic              made-up pictures: data, maps, quotes
+     sound      voice                someone speaking (interview, vox)
+                place                the sound of the place (natural sound, actuality, atmos)
+                music | silence
+                repeat-wide | repeat-mid | repeat-close
+                                     shots of that size cut together under this sound are the
+                                     convention (a vox pop is a string of MCUs), so not noticed
+     script     words                something is read out
+                reporter | presenter who reads it
+                inviz                read on screen: the reader should be in the picture underneath
+                oov                  read over pictures, the reader not on screen
+                no-words             nothing read here: a clip carries it
+     editorial  claim | challenge | unlabelled
+   A brick with no traits is simply ignored by every rule. */
+const TRAITS = {
+  WS:'wide', GV:'wide', MS:'mid', MCU:'mid', CU:'close', DET:'close', GFX:'graphic',
+  PTC:'mid reporter', INVIZ:'mid presenter', WALL:'wide presenter',
+  SOT:'voice', CLIP:'voice', VOX:'voice repeat-mid', NAT:'place', ACT:'place', ATM:'place', MUS:'music', SIL:'silence',
+  CUE:'words presenter inviz', OOV:'words presenter oov', BACK:'words presenter inviz',
+  VO:'words reporter oov', TRK:'words reporter', PTM:'words reporter', LINK:'words reporter', PTCW:'words reporter inviz', SIGN:'words reporter',
+  RUN:'no-words',
+  CLAIM:'claim', CHALLENGE:'challenge', UNSET:'unlabelled'
+};
+Object.keys(B).forEach(c => B[c].traits = new Set((TRAITS[c] || '').split(/\s+/).filter(Boolean)));
+const is = (b, t) => B[b.code].traits.has(t);
+
+// The current medium's layers (bottom to top). Reassigned by setMedium().
+let MEDIUM = 'video';
+try { const m = localStorage.getItem('storystack.medium'); if (MEDIA[m]) MEDIUM = m; } catch(e) {}
+let LAYERS = ALL_LAYERS.filter(L => MEDIA[MEDIUM].layers.includes(L.key));
+let EXAMPLES = MEDIA[MEDIUM].examples;
+
+/* ---------------- STATE ---------------- */
+/* Every brick has x: its first stud. Layers can have gaps. No two bricks in a layer overlap.
+   Each layer array is kept sorted by x. */
+// Each medium keeps its own story, so switching between them loses nothing.
+const storeKey = m => 'storystack.v4.' + m;
+let seq = 1;
+const newBlock = (code, len, x=0) => ({ id: 'b' + (seq++), code, len: len ?? B[code].len, x });
+const emptyStory = () => { const s = {}; LAYERS.forEach(L => s[L.key] = []); return s; };
+// Example rows are laid end to end; ['GAP', n] leaves n empty studs.
+const exampleStory = (key = Object.keys(EXAMPLES)[0]) => {
+  const s = emptyStory(), E = EXAMPLES[key];
+  LAYERS.forEach(L => { let x = 0; s[L.key] = []; E[L.key].forEach(([c,l]) => { if (c !== 'GAP') s[L.key].push(newBlock(c,l,x)); x += l; }); });
+  return s;
+};
+
+let story = emptyStory(), past = [], future = [];
+let ui = { sel:null, hover:null, msg:'', zoom:1, drawer:true, az:45, el:35.264, roll:0, solo:null, notice:null, npin:null, nhover:null };
+// how far the model can be turned from isometric
+const TURN = { az:[25, 65], el:[20, 50], roll:[-10, 10] };
+try { ui.drawer = localStorage.getItem('storystack.drawer') !== 'closed'; } catch(e) {}
+let justAdded = null;
+
+function loadStory() {   // the saved story for the current medium, or its first example
+  let saved = null;
+  try {
+    saved = JSON.parse(localStorage.getItem(storeKey(MEDIUM)));
+    if (!saved && MEDIUM === 'video') saved = JSON.parse(localStorage.getItem('storystack.layers.v3'));  // carry over older saves
+  } catch(e) { saved = null; }
+  if (saved && LAYERS.every(L => Array.isArray(saved[L.key]))) {
+    const s = {};
+    LAYERS.forEach(L => { s[L.key] = saved[L.key].map(canon).filter(b => B[b.code] && inMedium(b.code, MEDIUM) && b.len >= 1 && Number.isInteger(b.x) && b.x >= 0); sortLayer(s[L.key]); });
+    seq = Math.max(seq, 1 + Math.max(0, ...LAYERS.flatMap(L => s[L.key].map(b => +String(b.id).slice(1) || 0))));
+    return s;
+  }
+  return exampleStory();
+}
+story = loadStory();
+
+function setMedium(m) {
+  if (m === MEDIUM || !MEDIA[m]) return;
+  save();
+  MEDIUM = m; LAYERS = ALL_LAYERS.filter(L => MEDIA[m].layers.includes(L.key)); EXAMPLES = MEDIA[m].examples;
+  try { localStorage.setItem('storystack.medium', m); } catch(e) {}
+  story = loadStory(); past = []; future = [];
+  ui.sel = null; ui.solo = null; ui.hover = null; ui.msg = ''; ui.notice = null; ui.npin = null; ui.nhover = null;
+  render();
+}
+
+function save() { try { localStorage.setItem(storeKey(MEDIUM), JSON.stringify(story)); } catch(e) {} }
+function commit(next) { past.push(story); if (past.length > 60) past.shift(); future = []; story = next; save(); render(); }
+const cloneStory = s => JSON.parse(JSON.stringify(s));
+
+/* ---------------- MODEL helpers ---------------- */
+function find(id, s=story) { for (const L of LAYERS) { const i = s[L.key].findIndex(b => b.id === id); if (i >= 0) return { layer:L.key, index:i, block:s[L.key][i] }; } return null; }
+function sortLayer(arr) { arr.sort((a,b) => a.x - b.x); return arr; }
+const layerEnd  = k => story[k].reduce((a,b) => Math.max(a, b.x + b.len), 0);   // where the layer stops
+const layerLen = layerEnd;
+
+/* ----- physical placement -----
+   put():      drop a brick at x. If x lands inside a brick, it goes after that brick.
+               Bricks it lands on are shoved right; a gap absorbs the shove.
+   pushLeft(): move a brick left, shoving touching bricks left; refuses if they'd fall off stud 0. */
+function put(arr, blk, x) {
+  const others = arr.filter(b => b.id !== blk.id);
+  x = Math.max(0, x);
+  const host = others.find(o => o.x < x && o.x + o.len > x);
+  if (host) x = host.x + host.len;
+  blk.x = x;
+  let cursor = x + blk.len;
+  for (const o of others.filter(o => o.x >= x).sort((a,b) => a.x - b.x)) {
+    if (o.x < cursor) { o.x = cursor; cursor = o.x + o.len; } else break;
+  }
+  arr.length = 0; arr.push(...sortLayer([...others, blk]));
+}
+function pushLeft(arr, blk, x) {
+  const others = arr.filter(b => b.id !== blk.id).filter(o => o.x < blk.x).sort((a,b) => b.x - a.x);
+  let cursor = x;
+  const moves = [];
+  for (const o of others) { if (o.x + o.len > cursor) { const nx = cursor - o.len; if (nx < 0) return false; moves.push([o, nx]); cursor = nx; } else break; }
+  if (x < 0) return false;
+  moves.forEach(([o, nx]) => o.x = nx); blk.x = x; sortLayer(arr); return true;
+}
+function grow(arr, blk, len) {   // lengthen, shoving touching bricks to the right
+  blk.len = len; let cursor = blk.x + blk.len;
+  for (const o of arr.filter(o => o.x > blk.x).sort((a,b) => a.x - b.x)) { if (o.x < cursor) { o.x = cursor; cursor = o.x + o.len; } else break; }
+  sortLayer(arr);
+}
+
+const actions = {
+  add(code) {
+    const b = B[code], s = cloneStory(story), f = ui.sel && find(ui.sel, s);
+    const blk = newBlock(code);
+    // after the selected brick if it's in this layer, otherwise at the end of the layer
+    const x = f && f.layer === b.layer ? f.block.x + f.block.len : s[b.layer].reduce((a,o) => Math.max(a, o.x + o.len), 0);
+    put(s[b.layer], blk, x);
+    justAdded = blk.id; ui.sel = blk.id; ui.msg = '';
+    commit(s);
+  },
+  hover(code) { if (ui.hover !== code) { ui.hover = code; renderInfo(); } },
+  select(id) { ui.sel = ui.sel === id ? null : id; ui.msg = ''; render(); focusBrick(id); },
+  studs(delta) {
+    const f = ui.sel && find(ui.sel); if (!f) return;
+    if (f.block.len + delta < 1) { say('A brick needs at least one stud.'); return; }
+    const s = cloneStory(story), g = find(f.block.id, s);
+    grow(s[g.layer], g.block, g.block.len + delta);
+    commit(s); focusBrick(ui.sel);
+  },
+  nudge(dir) {   // one stud left or right, shoving whatever it touches
+    const f = ui.sel && find(ui.sel); if (!f) return;
+    const s = cloneStory(story), g = find(f.block.id, s);
+    if (dir > 0) put(s[g.layer], g.block, g.block.x + 1);
+    else if (!pushLeft(s[g.layer], g.block, g.block.x - 1)) { say('No room to go further left.'); return; }
+    commit(s); focusBrick(ui.sel);
+  },
+  swap(dir) {    // trade places with the neighbouring brick, keeping any gap between them
+    const f = ui.sel && find(ui.sel); if (!f) return;
+    const s = cloneStory(story), g = find(f.block.id, s), arr = s[g.layer];
+    const n = arr[g.index + dir]; if (!n) return;
+    const a = g.block, [first, second] = dir > 0 ? [a, n] : [n, a];
+    const gap = second.x - (first.x + first.len), start = first.x;
+    second.x = start; first.x = start + second.len + gap;
+    sortLayer(arr); commit(s); focusBrick(ui.sel);
+  },
+  dup() {
+    const f = ui.sel && find(ui.sel); if (!f) return;
+    const s = cloneStory(story), c = newBlock(f.block.code, f.block.len);
+    put(s[f.layer], c, f.block.x + f.block.len);
+    justAdded = c.id; ui.sel = c.id; commit(s);
+  },
+  remove() {   // leaves a gap, like pulling a brick out
+    const f = ui.sel && find(ui.sel); if (!f) return;
+    const s = cloneStory(story); s[f.layer].splice(f.index, 1); ui.sel = null; commit(s);
+  },
+  closeGap() {  // slide this brick left to meet the one before it (or stud 0)
+    const f = ui.sel && find(ui.sel); if (!f) return;
+    const prev = story[f.layer][f.index - 1], target = prev ? prev.x + prev.len : 0;
+    if (target === f.block.x) return;
+    const s = cloneStory(story), g = find(f.block.id, s); g.block.x = target; sortLayer(s[g.layer]);
+    commit(s); focusBrick(ui.sel);
+  },
+  deselect() { ui.sel = null; render(); },
+  example(key) { ui.sel = null; ui.notice = null; ui.npin = null; commit(exampleStory(key)); say(`${EXAMPLES[key].name}. Someone built this. Explore it: what do you notice? Then press Notice.`); },
+  clear() { ui.sel = null; ui.notice = null; ui.npin = null; commit(emptyStory()); },
+  exportFile() {
+    const out = { app:'storyblocks', version:1, medium:MEDIUM, saved:new Date().toISOString(), layers:{} };
+    LAYERS.forEach(L => out.layers[L.key] = story[L.key].map(b => ({ code:b.code, x:b.x, len:b.len })));
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `storyblocks-${MEDIUM}-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    say('Saved as ' + a.download);
+  },
+  importFile() { document.getElementById('importInput').click(); },
+  undo() { if (!past.length) return; future.push(story); story = past.pop(); if (ui.sel && !find(ui.sel)) ui.sel = null; save(); render(); },
+  redo() { if (!future.length) return; past.push(story); story = future.pop(); if (ui.sel && !find(ui.sel)) ui.sel = null; save(); render(); },
+  dismiss() { ui.msg = ''; render(); },
+  medium(m) { setMedium(m); },
+  notice() { ui.notice = { items: runNotice(), snap: JSON.stringify(story), all:false }; ui.npin = null; ui.nhover = null; render(); },
+  npin(i) { ui.npin = ui.npin === i ? null : i; render(); },
+  nall() { ui.notice.all = true; render(); },
+  nclose() { ui.notice = null; ui.npin = null; ui.nhover = null; render(); },
+  solo(layer) {   // fade everything above this layer and let clicks fall through to it
+    ui.solo = ui.solo === layer ? null : layer;
+    const s = ui.sel && find(ui.sel);
+    if (s && ui.solo && LAYERS.findIndex(L => L.key === s.layer) > LAYERS.findIndex(L => L.key === ui.solo)) ui.sel = null;
+    render();
+  },
+  resetView() {   // ease back to isometric
+    const from = { az:ui.az, el:ui.el, roll:ui.roll }, t0 = performance.now(), dur = 260;
+    const step = now => {
+      const t = Math.min(1, (now - t0) / dur), k = 1 - Math.pow(1 - t, 3);
+      ui.az = from.az + (ISO_AZ - from.az) * k; ui.el = from.el + (ISO_EL - from.el) * k; ui.roll = from.roll * (1 - k);
+      redrawStage(); if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  },
+  drawer() {
+    ui.drawer = !ui.drawer;
+    try { localStorage.setItem('storystack.drawer', ui.drawer ? 'open' : 'closed'); } catch(e) {}
+    render();
+    const t = document.querySelector('[data-act="drawer"]'); if (t) t.focus({ preventScroll:true });
+  },
+  zoom(d) {
+    const sc = document.getElementById('scroller');
+    const cx = sc ? (sc.scrollLeft + sc.clientWidth/2) / sc.scrollWidth : .5, cy = sc ? (sc.scrollTop + sc.clientHeight/2) / sc.scrollHeight : .5;
+    ui.zoom = d === 0 ? 1 : Math.max(1, Math.min(4, +(ui.zoom * (d > 0 ? 1.4 : 1/1.4)).toFixed(3)));
+    render();
+    const s2 = document.getElementById('scroller'); s2.scrollLeft = cx * s2.scrollWidth - s2.clientWidth/2; s2.scrollTop = cy * s2.scrollHeight - s2.clientHeight/2;
+  }
+};
+/* Check an imported file completely before touching anything. Returns { medium, story } or { error }. */
+function readImport(data) {
+  if (!data || !['storyblocks','storystack'].includes(data.app) || !data.layers) return { error:'That isn\'t a StoryBlocks file.' };
+  if (data.version !== 1) return { error:'That file comes from a different version of StoryBlocks.' };
+  const m = data.medium;
+  if (!MEDIA[m]) return { error:'That file is for a medium StoryBlocks doesn\'t know.' };
+  const keys = MEDIA[m].layers, problems = [];
+  const extra = Object.keys(data.layers).filter(k => !keys.includes(k));
+  if (extra.length) problems.push(`it has a ${extra[0]} layer, which ${MEDIA[m].name.toLowerCase()} doesn't use`);
+  const s = {};
+  for (const k of keys) {
+    const rows = data.layers[k] || [];
+    if (!Array.isArray(rows)) { problems.push(`the ${k} layer is broken`); continue; }
+    const blocks = [];
+    rows.map(canon).forEach((r, i) => {
+      const where = `${k} brick ${i + 1}`;
+      if (!r || !B[r.code]) { problems.push(`${where} isn't a brick StoryBlocks knows`); return; }
+      if (B[r.code].layer !== k) { problems.push(`${where} (${r.code}) belongs on the ${B[r.code].layer} layer`); return; }
+      if (!inMedium(r.code, m)) { problems.push(`${where} (${r.code}) isn't used in ${MEDIA[m].name.toLowerCase()}`); return; }
+      if (!Number.isInteger(r.len) || r.len < 1) { problems.push(`${where} has a bad length`); return; }
+      if (!Number.isInteger(r.x) || r.x < 0) { problems.push(`${where} has a bad position`); return; }
+      blocks.push({ code:r.code, x:r.x, len:r.len });
+    });
+    blocks.sort((a,b) => a.x - b.x);
+    for (let i = 1; i < blocks.length; i++) if (blocks[i].x < blocks[i-1].x + blocks[i-1].len) { problems.push(`two bricks overlap on the ${k} layer`); break; }
+    s[k] = blocks;
+  }
+  if (problems.length) return { error:'Couldn\'t open that file: ' + problems.slice(0,3).join('; ') + (problems.length > 3 ? ` (and ${problems.length-3} more)` : '') + '. Nothing was changed.' };
+  return { medium:m, story:s };
+}
+async function importChosen(file) {
+  let data;
+  try { data = JSON.parse(await file.text()); } catch(e) { say('That file isn\'t readable JSON. Nothing was changed.'); return; }
+  const r = readImport(data);
+  if (r.error) { say(r.error); return; }
+  if (r.medium !== MEDIUM) setMedium(r.medium);          // switch first, so the import is undoable within that medium
+  const s = {}; LAYERS.forEach(L => s[L.key] = r.story[L.key].map(b => newBlock(b.code, b.len, b.x)));
+  ui.sel = null; commit(s);
+  say(`Opened ${file.name}` + (r.medium === 'audio' ? ' (audio).' : ' (video).') + ' Undo puts back what was here.');
+}
+
+function say(m) { ui.msg = m; document.getElementById('live').textContent = m; render(); }
+
+/* ---------------- ISOMETRIC GEOMETRY ---------------- */
+const f = n => n.toFixed(1);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* The view. az = turn around the vertical axis (45° = isometric), el = tilt (35.26° = isometric).
+   Projection: turn by az, tilt by el, orthographic. K keeps the isometric default at the scale
+   the rest of the code was written for (x axis = (0.866, 0.5) per stud, z = 1px per px).
+   Within about ±20° of isometric the same three faces (top, front, end) stay visible and
+   left-to-right drawing order stays correct, which is why the turn is limited. */
+const K = 1.2247, ISO_AZ = 45, ISO_EL = 35.264;
+function makeView(az, el) {
+  const a = az * Math.PI/180, e = el * Math.PI/180;
+  return { xs: Math.cos(a)*K, ys: Math.sin(a)*K, se: Math.sin(e), zs: Math.cos(e)*K };
+}
+const ISO = makeView(ISO_AZ, ISO_EL);
+const project = (V, U) => (x,y,z) => [(x*V.xs - y*V.ys)*U, (x*V.ys + y*V.xs)*V.se*U - z*V.zs];
+
+/* A box: len along x, depth along y, h in px, at scale U, seen from view V.
+   Returns SVG paths in local coords; (ax, ay) is where local origin (0,0,0) sits. */
+function geom(len, depth, h, studs, U, hs, V=ISO) {
+  const r = 0.3, rx = r*U*K, ry = r*U*K*V.se;   // a stud's circle stays an upright ellipse at any turn
+  const P = project(V, U);
+  hs = hs * V.zs;
+  const pad = 3;
+  const minX = P(0,depth,0)[0]-pad, maxX = P(len,0,0)[0]+pad;
+  const minY = P(0,0,h)[1]-pad,     maxY = P(len,depth,0)[1]+pad;
+  const ax = -minX, ay = -minY;
+  const q = (x,y,z) => { const p = P(x,y,z); return f(p[0]+ax)+' '+f(p[1]+ay); };
+  const top   = `M${q(0,0,h)}L${q(len,0,h)}L${q(len,depth,h)}L${q(0,depth,h)}Z`;
+  const front = `M${q(0,depth,0)}L${q(len,depth,0)}L${q(len,depth,h)}L${q(0,depth,h)}Z`;
+  const end   = `M${q(len,0,0)}L${q(len,depth,0)}L${q(len,depth,h)}L${q(len,0,h)}Z`;
+  let side = '', tops = '';
+  if (studs) for (let j=0;j<depth;j++) for (let i=0;i<len;i++) {
+    const p = P(i+.5, j+.5, h), cx = p[0]+ax, cy = p[1]+ay, t = cy-hs;
+    side += `M${f(cx-rx)} ${f(t)}L${f(cx-rx)} ${f(cy)}A${f(rx)} ${f(ry)} 0 0 0 ${f(cx+rx)} ${f(cy)}L${f(cx+rx)} ${f(t)}Z`;
+    tops += `M${f(cx-rx)} ${f(t)}A${f(rx)} ${f(ry)} 0 0 1 ${f(cx+rx)} ${f(t)}A${f(rx)} ${f(ry)} 0 0 1 ${f(cx-rx)} ${f(t)}Z`;
+  }
+  const o = P(0,depth,0);
+  return { w:Math.ceil(maxX-minX), h:Math.ceil(maxY-minY), ax, ay, top, front, end, side, tops,
+           tf:`matrix(${V.xs.toFixed(4)} ${(V.ys*V.se).toFixed(4)} 0 ${V.zs.toFixed(4)} ${f(o[0]+ax)} ${f(o[1]+ay)})`, faceLen: len*U };
+}
+
+function svgBox(g, o, extra='') {
+  const st = `stroke="${o.stroke}" stroke-width="${o.sw||1}" stroke-linejoin="round"${o.dash?` stroke-dasharray="${o.dash}"`:''}`;
+  let label = '';
+  if (o.label) {
+    const fits = o.label.length * o.fs * 0.66 < g.faceLen - 4;
+    if (fits) label = `<text x="${f(g.faceLen/2)}" y="${o.ty}" transform="${g.tf}" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-weight="700" font-size="${o.fs}" letter-spacing="0.5" fill="${o.ink}">${esc(o.label)}</text>`;
+  }
+  return `<svg width="${g.w}" height="${g.h}" viewBox="0 0 ${g.w} ${g.h}" ${extra}>
+    <path class="face" d="${g.front}" fill="${o.front}" ${st}/>
+    <path class="face" d="${g.end}" fill="${o.end}" ${st}/>
+    <path class="face" d="${g.top}" fill="${o.top}" ${st}/>
+    ${g.side ? `<path d="${g.side}" fill="${o.front}" stroke="${o.stroke}" stroke-width="${o.ssw||1}"${o.dash?` stroke-dasharray="2 2"`:''}/><path d="${g.tops}" fill="${o.top}" stroke="${o.stroke}" stroke-width="${o.ssw||1}"/>` : ''}
+    ${label}</svg>`;
+}
+const colours = code => { const p = PAL[B[code].colour]; return { top:p.top, front:p.front, end:p.end, stroke:p.end, ink:p.ink, dash: p.dash ? '4 3' : '' }; };
+
+/* Fit the scale to the story: short stories are chunky, long ones zoom out.
+   ui.zoom multiplies the fitted scale; above 1 the stage pans. */
+const LABEL_W = 100;
+/* Fit for the current view. Every size in the build scales with U, so measure the model at U = 1
+   and divide. Turning the model therefore pulls the camera back or in, smoothly, rather than
+   letting the build run off the stage. */
+function fitScale(maxLen, w, h, V) {
+  const P = project(V, 1), x0 = -1, x1 = maxLen + 4;
+  const wide = P(x1,-1,0)[0] - P(x0,3,0)[0];
+  const stack = LAYERS.reduce((a,L) => a + (L.key === 'editorial' ? 0.45 : 1.2), 0);
+  const tall = P(x1,3,-0.35)[1] - P(x0,-1,stack)[1];
+  return Math.max(9, Math.min(30, (w - 60 - LABEL_W) / wide, (h - 190) / tall));
+}
+
+/* ---------------- RENDER ---------------- */
+const ICON = {
+  eye: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z"/><circle cx="8" cy="8" r="2"/></svg>',
+  down: '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5L8 10l3.5-3.5M2.5 13.5h11"/></svg>',
+  up:   '<svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 10V2M4.5 5.5L8 2l3.5 3.5M2.5 13.5h11"/></svg>',
+  cam: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="1.5" y="4" width="9" height="8" rx="1.5"/><path d="M10.5 7l4-2.2v6.4l-4-2.2"/></svg>',
+  mic: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="5.5" y="1.5" width="5" height="8" rx="2.5"/><path d="M3 7.5a5 5 0 0 0 10 0M8 12.5V15"/></svg>',
+  reset: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a5 5 0 1 0 1.6-3.7"/><path d="M3 2.5v2.8h2.8"/></svg>',
+  dup:   '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v6A1.5 1.5 0 0 0 3.5 11H5"/></svg>',
+  bin:   '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5h11M6 4.5V3h4v1.5M4 4.5l.7 9h6.6l.7-9"/></svg>',
+  x:     '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 3l8 8M11 3l-8 8"/></svg>',
+  left:  '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg>',
+  right: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>',
+  plus:  '<svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
+  minus: '<svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10"/></svg>',
+  grip:  '<svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" aria-hidden="true"><path d="M3.5 2L1 5l2.5 3M6.5 2L9 5 6.5 8"/></svg>'
+};
+
+function renderHeader() {
+  const lg = geom(2,2,10,true,9,2);
+  const logo = `<div aria-hidden="true" style="position:relative;width:44px;height:44px">
+    <div style="position:absolute;left:2px;top:14px">${svgBox(lg, colours('WS'))}</div>
+    <div style="position:absolute;left:9px;top:2px">${svgBox(lg, colours('SOT'))}</div></div>`;
+  return `<header>
+    <div class="brand">${logo}<div><h1>StoryBlocks</h1><p>${MEDIUM === 'audio' ? 'Sound, script and meaning' : 'Picture, sound, script and meaning'}, layer by layer</p></div></div>
+    <div class="medium" role="radiogroup" aria-label="Medium">
+      ${Object.entries(MEDIA).map(([k,m]) => `<button role="radio" aria-checked="${k === MEDIUM}" data-act="medium" data-arg="${k}">${k === 'audio' ? ICON.mic : ICON.cam}${m.name}</button>`).join('')}
+    </div>
+    <div class="spacer"></div>
+    <span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Examples</span>
+    ${Object.entries(EXAMPLES).map(([k,e]) => `<button class="tbtn primary" data-act="example" data-arg="${k}">${esc(e.label)}</button>`).join('')}
+    <button class="tbtn" data-act="undo" ${past.length?'':'disabled'}>Undo</button>
+    <button class="tbtn" data-act="redo" ${future.length?'':'disabled'}>Redo</button>
+    <button class="tbtn" data-act="clear">Clear</button>
+    <span class="hsep" aria-hidden="true"></span>
+    <button class="tbtn ib" data-act="exportFile" title="Save this build as a .json file">${ICON.down}Export</button>
+    <button class="tbtn ib" data-act="importFile" title="Open a .json file saved from StoryBlocks">${ICON.up}Import</button>
+    <input type="file" id="importInput" accept=".json,application/json" hidden>
+  </header>`;
+}
+
+function renderPalette() {
+  return LAYERS.slice().reverse().map(L => {
+    const cards = BRICK_ROWS.filter(r => r[1] === L.key && inMedium(r[0], MEDIUM)).map(r => {
+      const b = B[r[0]], ed = L.key === 'editorial';
+      const g = geom(Math.min(b.len, 4), 2, ed ? 4 : 9, true, 8, 2);
+      return `<button class="pcard" data-act="add" data-arg="${b.code}" data-hover="${b.code}" aria-label="Add ${esc(b.name)} to the ${L.name.toLowerCase()} layer">
+        ${svgBox(g, {...colours(b.code), sw:.6, ssw:.5}, 'aria-hidden="true"')}<b>${esc(b.label === '?' ? 'UNSET' : b.label)}</b></button>`;
+    }).join('');
+    return `<section><div class="ghead"><span class="chip" style="background:${L.chip}"></span><h2>${L.name}</h2><span class="b">${L.blurb}</span></div><div class="cards">${cards}</div></section>`;
+  }).join('');
+}
+
+function infoHTML() {
+  const b = ui.hover && B[ui.hover];
+  if (!b) return `<div style="font-weight:700;font-size:14px;margin-bottom:6px">How it works</div>
+    <p>${MEDIA[MEDIUM].how} Studs are relative length, not seconds. Click a brick to add it; select one on the stage to add or take away studs.</p>`;
+  const ed = b.layer === 'editorial';
+  const g = geom(Math.min(b.len, 5), 2, ed ? 7 : 18, true, 15, 3);
+  return `<div class="row">${svgBox(g, {...colours(b.code), sw:.8, ssw:.6}, 'aria-hidden="true" style="flex-shrink:0"')}
+    <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+      <div><span class="nm">${esc(b.name)}</span> <span class="meta mono">${LAYERS.find(L=>L.key===b.layer).name.toLowerCase()} · starts at ${b.len} studs</span></div>
+      <p>${esc(b.desc)}</p></div></div>`;
+}
+function renderInfo() { const el = document.getElementById('info'); if (el) el.innerHTML = infoHTML(); }
+
+let geomCache = null;
+function renderStage(stageEl) {
+  const W = stageEl.clientWidth || 720, Ht = stageEl.clientHeight || 836;
+  const lens = {}; LAYERS.forEach(L => lens[L.key] = layerLen(L.key));
+  const maxLen = Math.max(8, ...Object.values(lens));
+  const U = Math.min(44, fitScale(maxLen, W, Ht, makeView(ui.az, ui.el)) * ui.zoom);
+  const H = 1.2*U, PH = 0.45*U, HS = Math.max(2, 0.18*U), BASE = 0.35*U;
+  // stack whatever layers this medium has: editorial is a thin plate, the rest are full bricks
+  const HT = {}, Z = {}; let zAcc = 0;
+  LAYERS.forEach(L => { HT[L.key] = L.key === 'editorial' ? PH : H; Z[L.key] = zAcc; zAcc += HT[L.key]; });
+  const STACK = zAcc;
+  const V = makeView(ui.az, ui.el);
+  const P = project(V, U);
+
+  // centre the baseplate (x -1..maxLen+4, y -1..3) in the space under the HUD
+  const x0 = -1, x1 = maxLen + 4;
+  const left = P(x0,3,0)[0], right = P(x1,-1,0)[0];
+  const top = P(x0,-1,STACK)[1] - 10, bottom = P(x1,3,-BASE)[1];
+  // At Fit the world is exactly the stage (turning the model recentres it, never adds scrollbars).
+  // Zoomed in, the world grows and the stage scrolls.
+  const needW = (right - left) + LABEL_W + 80, needH = (bottom - top) + 150 + 60;
+  const fit = ui.zoom <= 1;
+  const worldW = fit ? W : Math.max(W, needW), worldH = fit ? Ht : Math.max(Ht, needH);
+  const OX = worldW === W ? (W + LABEL_W)/2 - (left+right)/2 : 40 + LABEL_W - left;
+  const OY = worldH === Ht ? Math.max(150 - top, (150 + Ht - 30)/2 - (top+bottom)/2) : 150 - top;
+  geomCache = { worldW, worldH };
+  const at = (g,x,y,z,lift=0) => { const p = P(x,y,z); return `left:${f(OX+p[0]-g.ax)}px;top:${f(OY+p[1]-g.ay-lift)}px`; };
+  Object.assign(geomCache, { U, OX, OY, P, H, Z, HT, V });
+
+  // baseplate
+  const bg = geom(x1-x0, 4, BASE, true, U, HS, V);
+  let html = `<div aria-hidden="true" style="position:absolute;${at(bg,x0,-1,-BASE)}">${svgBox(bg,{top:'#DAD5CA',front:'#BDB7AA',end:'#A39D90',stroke:'#8F897C',ssw:.7})}</div>`;
+
+  const sel = ui.sel && find(ui.sel);
+  const selLevel = sel ? LAYERS.findIndex(L => L.key === sel.layer) : -1;
+
+  const anything = Object.values(lens).some(v => v > 0);
+  const lifting = drag && drag.kind === 'move' && drag.moved ? drag.id : null;
+  const nh = noticeHighlight(), noticed = new Set(nh ? nh.bricks : []);
+  LAYERS.forEach((L, li) => {
+    // bricks and empty stretches, drawn left to right so the isometric overlaps come out right
+    const items = story[L.key].map(b => ({ x:b.x, b }));
+    if (anything) { let cur = 0; story[L.key].forEach(b => { if (b.x > cur) items.push({ x:cur, gap:b.x - cur }); cur = Math.max(cur, b.x + b.len); }); if (cur < maxLen) items.push({ x:cur, gap:maxLen - cur }); }
+    items.sort((a,b) => a.x - b.x);
+    // layers above the one you're working on fade and stop catching clicks
+    const soloLevel = ui.solo ? LAYERS.findIndex(x => x.key === ui.solo) : -1;
+    const faded = (sel && li > selLevel) || (ui.solo && li > soloLevel);
+    items.forEach(it => {
+      if (it.gap) {   // nothing here: a dashed ghost
+        const g = geom(it.gap, 2, HT[L.key], false, U, HS, V);
+        html += `<div class="ghost" aria-hidden="true" style="${at(g, it.x, 0, Z[L.key])}${faded ? ';opacity:.3' : ''}">${svgBox(g, { top:'rgba(20,20,19,.04)', front:'rgba(20,20,19,.07)', end:'rgba(20,20,19,.1)', stroke:'rgba(20,20,19,.42)', sw:1.1, dash:'5 4' })}</div>`;
+        return;
+      }
+      const b = it.b, isSel = ui.sel === b.id, c = colours(b.code);
+      const g = geom(b.len, 2, HT[L.key], true, U, HS, V);
+      const fs = L.key === 'editorial' ? Math.max(7, Math.min(10, PH*0.8)) : Math.max(8, Math.min(13, H*0.42));
+      const o = { ...c, stroke: isSel ? '#141413' : c.stroke, sw: isSel ? 2.2 : 1, label: b.code === 'UNSET' ? '?' : B[b.code].label, fs, ty: f(-HT[L.key]/2 + fs*.36) };
+      const lift = lifting === b.id ? Math.max(14, U*.9) : isSel ? Math.max(6,U*.35) : 0;
+      const aria = `${B[b.code].name}, ${L.name.toLowerCase()} layer, ${b.len} stud${b.len===1?'':'s'}, starts at stud ${b.x}`;
+      html += `<button class="brick${faded?' faded':''}${b.id===justAdded?' pop':''}${lifting===b.id?' lifted':''}${noticed.has(b.id)?' noticed':''}" style="${at(g, b.x, 0, Z[L.key], lift)}" data-act="select" data-arg="${b.id}" data-id="${b.id}" data-layer="${L.key}" aria-pressed="${isSel}" aria-label="${esc(aria)}">${svgBox(g,o)}</button>`;
+    });
+  });
+
+  // (layer names live in the fixed key, bottom-left of the stage — see layerKey())
+
+  // the stretch a notice is about: a soft outline around those studs, through the layers it concerns
+  if (nh && nh.spans && nh.spans.length) {
+    const idx = LAYERS.map((L,i) => nh.layers.includes(L.key) ? i : -1).filter(i => i >= 0);
+    const lo = LAYERS[Math.min(...idx)], hi = LAYERS[Math.max(...idx)];
+    const z0 = Z[lo.key], z1 = Z[hi.key] + HT[hi.key];
+    nh.spans.forEach(([a, b]) => {
+      const g = geom(Math.max(1, b - a), 2, z1 - z0 + 2, false, U, HS, V);
+      html += `<div class="nband" aria-hidden="true" style="${at(g, a, 0, z0 - 1)}">${svgBox(g, { top:'rgba(29,95,174,.10)', front:'rgba(29,95,174,.14)', end:'rgba(29,95,174,.18)', stroke:'#1D5FAE', sw:1.6, dash:'6 4' })}</div>`;
+    });
+  }
+
+  // drag grip on the selected brick's end face
+  if (sel && !lifting) {
+    const lift = Math.max(6,U*.35);
+    const p = P(sel.block.x + sel.block.len, 1, Z[sel.layer] + HT[sel.layer]/2);
+    html += `<button class="grip" data-grip="${sel.block.id}" style="left:${f(OX+p[0])}px;top:${f(OY+p[1]-lift)}px" aria-label="Drag to add or remove studs">${ICON.grip}</button>`;
+    // toolbar floats above the middle of the brick's top face, kept inside the world
+    const t = P(sel.block.x + sel.block.len/2, 1, Z[sel.layer] + HT[sel.layer]);
+    const tx = Math.max(170, Math.min(geomCache.worldW - 170, OX + t[0])), ty = Math.max(56, OY + t[1] - lift - 12);
+    const b = B[sel.block.code], n = sel.block.len;
+    html += `<div class="tbar" role="toolbar" aria-label="${esc(b.name)}" style="left:${f(tx)}px;top:${f(ty)}px">
+      <b>${esc(b.name)}</b>
+      <button data-act="studs" data-arg="-1" aria-label="Take away a stud" ${n <= 1 ? 'disabled' : ''}>${ICON.minus}</button>
+      <span class="n">${n} stud${n===1?'':'s'}</span>
+      <button data-act="studs" data-arg="1" aria-label="Add a stud">${ICON.plus}</button>
+      <span class="sep"></span>
+      <button data-act="dup" aria-label="Duplicate" title="Duplicate">${ICON.dup}</button>
+      <button data-act="remove" aria-label="Remove" title="Remove (leaves a gap)">${ICON.bin}</button>
+    </div>`;
+  }
+  justAdded = null;
+  return html;
+}
+
+/* ======================= NOTICE =======================
+   BUILD → NOTICE → REBUILD. Nothing is analysed while the student builds. Pressing Notice takes
+   a snapshot and surfaces a few observations. Changing the build makes them stale rather than
+   updating live; pressing Notice again looks at the new build. No scores, no fixes.
+
+   Each rule looks at traits (see TRAITS), never brick codes, and returns at most one item:
+     { title, text, span:[fromStud, toStud] (optional), layers:[...], bricks:[ids] }
+   kind 'see' = something StoryBlocks can state with confidence (a relationship in the build)
+   kind 'ask' = an editorial question; phrased tentatively, never an instruction.
+   Design test for any new rule: does it point at something in THIS build the student might
+   have overlooked? Does it tell them what to decide? (If so, rethink it.) */
+const pl = n => `${n} stud${n === 1 ? '' : 's'}`;
+const places = n => n === 1 ? '' : ` in ${n} places`;
+
+/* What the rules can measure. Everything is counted in studs along the build; nothing is guessed. */
+function noticeContext(s) {
+  const lay = k => s[k] || [];
+  const end = k => lay(k).reduce((a,b) => Math.max(a, b.x + b.len), 0);
+  const at  = (k, x) => lay(k).find(b => b.x <= x && x < b.x + b.len) || null;      // the brick covering stud x (layers never overlap)
+  const overlap = (a, b) => Math.max(0, Math.min(a.x + a.len, b.x + b.len) - Math.max(a.x, b.x));
+  const runs = (pred, from, to) => {             // the stretches [a,b) between from and to where pred(stud) holds
+    const out = []; let st = null;
+    for (let x = from; x <= to; x++) { const v = x < to && pred(x); if (v && st === null) st = x; if (!v && st !== null) { out.push([st, x]); st = null; } }
+    return out;
+  };
+  const total = spans => spans.reduce((a, [p, q]) => a + q - p, 0);
+  const video = MEDIUM === 'video';
+  // the piece runs from the first stud anything occupies to the last, on the layers that carry it
+  const carriers = video ? ['picture','sound','script'] : ['sound','script'];
+  const pieceEnd = Math.max(0, ...carriers.map(end));
+  // "at the start" / "at the end": only said when it's true of every stretch reported
+  const whereAll = spans => spans.length && spans.every(([p]) => p === 0) ? ' at the start'
+                          : spans.length && spans.every(([,q]) => q === pieceEnd) ? ' at the end' : '';
+  return { s, lay, end, at, overlap, runs, total, video, pieceEnd, whereAll };
+}
+
+const NOTICE_RULES = [
+  /* Script words that run on after the last picture. Only words count: a RUN brick reads nothing. */
+  { id:'words-past-pictures', kind:'see', media:'video', find(c) {
+      const pe = c.end('picture'); if (!pe) return null;
+      const over = c.lay('script').filter(b => is(b, 'words') && b.x + b.len > pe);
+      if (!over.length) return null;
+      const n = Math.max(...over.map(b => b.x + b.len)) - pe;
+      return { title:'Writing to pictures', text:`The script carries on for ${pl(n)} after the last picture. What would the audience see while it's read?`,
+               spans:[[pe, pe + n]], layers:['picture','script'], bricks: over.map(b => b.id) }; } },
+
+  /* Stretches with no picture but something to hear. Inside the pictures, and sound (not script) running on after them. */
+  { id:'nothing-to-see', kind:'see', media:'video', find(c) {
+      const pe = c.end('picture');
+      const inside = c.runs(x => !c.at('picture', x) && (c.at('sound', x) || c.at('script', x)), 0, pe);
+      const after  = c.runs(x => c.at('sound', x) && !(c.at('script', x) && is(c.at('script', x), 'words')), pe, c.end('sound'));
+      const spans = [...inside, ...after]; if (!spans.length) return null;
+      return { title:'Nothing to see', text:`For ${pl(c.total(spans))}${places(spans.length)}${c.whereAll(spans)}, there's sound or script but no picture. What's on screen there?`,
+               spans, layers:['picture','sound','script'], bricks:[] }; } },
+
+  /* Nothing in sound or script. Video: only where there's a picture. Audio: anywhere inside the piece.
+     A SIL brick is sound, so a silence the student has placed on purpose is never reported. */
+  { id:'nothing-to-hear', kind:'see', find(c) {
+      const spans = c.video
+        ? c.runs(x => c.at('picture', x) && !c.at('sound', x) && !c.at('script', x), 0, c.end('picture'))
+        : c.runs(x => !c.at('sound', x) && !c.at('script', x), 0, c.pieceEnd);
+      if (!spans.length) return null;
+      const n = c.total(spans), w = `${pl(n)}${places(spans.length)}${c.whereAll(spans)}`;
+      return { title:'Nothing to hear', text: c.video
+                 ? `For ${w}, there's a picture but nothing in the sound or script layers above it. Is that silence meant?`
+                 : `For ${w}, there's nothing in the sound or script layers. Is that silence meant?`,
+               spans, layers: c.video ? ['picture','sound','script'] : ['sound','script'], bricks:[] }; } },
+
+  /* Words read over someone else's recorded voice: measured overlap, not mere proximity. */
+  { id:'two-voices', kind:'see', find(c) {
+      const hits = [];
+      for (const w of c.lay('script')) if (is(w, 'words')) for (const v of c.lay('sound')) if (is(v, 'voice')) {
+        const o = c.overlap(w, v); if (o) hits.push({ w, v, o, span:[Math.max(w.x, v.x), Math.max(w.x, v.x) + o] });
+      }
+      if (!hits.length) return null;
+      const h = hits[0], more = hits.length > 1 ? ` (and ${hits.length - 1} more place${hits.length > 2 ? 's' : ''} like it)` : '';
+      return { title:'Two voices', text:`${B[h.w.code].name} and ${B[h.v.code].name.toLowerCase()} overlap for ${pl(h.o)}${more}. Who does the audience hear there?`,
+               spans: hits.map(x => x.span), layers:['sound','script'], bricks:[...new Set(hits.flatMap(x => [x.w.id, x.v.id]))] }; } },
+
+  /* The script hands over to a clip (RUN): how much of that stretch actually has a voice under it? */
+  { id:'whose-voice', kind:'see', find(c) {
+      for (const r of c.lay('script')) if (is(r, 'no-words')) {
+        const voiced = c.lay('sound').filter(v => is(v, 'voice')).reduce((a, v) => a + c.overlap(r, v), 0);
+        if (voiced >= r.len) continue;
+        const gaps = c.runs(x => { const v = c.at('sound', x); return !(v && is(v, 'voice')); }, r.x, r.x + r.len);
+        return { title:'Whose voice?', text: voiced
+                   ? `The script hands over to a clip for ${pl(r.len)}, but there's a voice in the sound layer under only ${voiced} of them. What fills the rest?`
+                   : `The script hands over to a clip for ${pl(r.len)}, but nothing in the sound layer underneath is a voice. Who is speaking?`,
+                 spans: gaps, layers:['sound','script'], bricks:[r.id] };
+      }
+      return null; } },
+
+  /* Who's on screen? Words read in vision need their reader in the picture; words read out of vision shouldn't have them there. */
+  { id:'in-or-out', kind:'see', media:'video', find(c) {
+      for (const w of c.lay('script')) {
+        const who = is(w, 'presenter') ? 'presenter' : is(w, 'reporter') ? 'reporter' : null;
+        if (!who || !(is(w, 'inviz') || is(w, 'oov'))) continue;
+        const bad = c.runs(x => { const p = c.at('picture', x); return p && (is(w, 'inviz') ? !is(p, who) : is(p, who)); }, w.x, w.x + w.len);
+        if (!bad.length) continue;
+        const n = c.total(bad);
+        return { title:'In or out of vision?', text: is(w, 'inviz')
+                   ? `${B[w.code].name} is read on screen, but for ${pl(n)} the picture under it isn't the ${who}. Which is it?`
+                   : `${B[w.code].name} is read out of vision, but for ${pl(n)} the picture under it is the ${who}. Which is it?`,
+                 spans: bad, layers:['picture','script'], bricks:[w.id, ...c.lay('picture').filter(p => bad.some(([a,b]) => p.x < b && a < p.x + p.len)).map(p => p.id)] };
+      }
+      return null; } },
+
+  /* Three shots of the same size family cut straight into each other (touching, no gap between them). */
+  { id:'shot-sizes', kind:'see', media:'video', find(c) {
+      const p = c.lay('picture');
+      for (let i = 0; i + 2 < p.length; i++) {
+        const [a, b, d] = [p[i], p[i+1], p[i+2]];
+        if (a.x + a.len !== b.x || b.x + b.len !== d.x) continue;
+        const sz = ['wide','mid','close'].find(t => [a, b, d].every(q => is(q, t)));
+        if (!sz) continue;
+        // not worth noticing if each shot sits mostly under a sound whose convention is exactly this (e.g. MCUs under a vox pop)
+        const expected = q => c.lay('sound').some(v => is(v, 'repeat-' + sz) && c.overlap(q, v) * 2 >= q.len);
+        if ([a, b, d].every(expected)) continue;
+        return { title:'Shot sizes', text:`Three ${sz} shots cut straight into each other. What would a change of size tell the viewer?`,
+                         spans:[[a.x, d.x + d.len]], layers:['picture'], bricks:[a.id, b.id, d.id] };
+      }
+      return null; } },
+
+  /* The sound of the place. Reports what's measurable: none at all, or voice-over with nothing under it in the sound layer. */
+  { id:'the-place', kind:'ask', find(c) {
+      const snd = c.lay('sound'), ear = c.video ? 'viewer' : 'listener';
+      if (snd.length && !snd.some(b => is(b, 'place')))
+        return { title:'The place itself', text:`Nothing in the sound layer is natural sound, actuality or atmos. What would the ${ear} hear if they were standing there?`,
+                 layers:['sound'], bricks: snd.map(b => b.id) };
+      // video: words read out of vision; audio: the reporter's own words (a studio cue is dry by nature)
+      const vo = c.lay('script').filter(w => is(w, 'words') && (c.video ? is(w, 'oov') : is(w, 'reporter')));
+      const dry = []; vo.forEach(w => dry.push(...c.runs(x => !c.at('sound', x), w.x, w.x + w.len)));
+      const n = c.total(dry); if (!n || !snd.length) return null;
+      return { title:'The place itself', text:`For ${pl(n)}${places(dry.length)}, ${c.video ? 'words read out of vision have' : 'the reporter\'s words have'} nothing under them in the sound layer. What would the ${ear} hear of the place there?`,
+               spans: dry, layers:['sound','script'], bricks: vo.filter(w => dry.some(([a,b]) => w.x < b && a < w.x + w.len)).map(w => w.id) }; } },
+
+  /* Reads the student's own labels, nothing more: it can't know whether the journalism challenges the claim. */
+  { id:'claim', kind:'ask', find(c) {
+      const e = c.lay('editorial');
+      for (const b of e) if (is(b, 'claim') && !e.some(x => is(x, 'challenge') && x.x >= b.x + b.len))
+        return { title:'Claim', text:'Nothing labelled challenge comes after this claim in the meaning layer. Does it need challenging?',
+                 spans:[[b.x, b.x + b.len]], layers:['editorial'], bricks:[b.id] };
+      return null; } }
+];
+
+// Run once, on request. Confident observations first, then questions; each group left to right along the build.
+function runNotice() {
+  const c = noticeContext(story);
+  const items = NOTICE_RULES.filter(r => !r.media || r.media === MEDIUM).map(r => { const it = r.find(c); return it && { ...it, kind:r.kind, id:r.id }; }).filter(Boolean);
+  items.sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'see' ? -1 : 1) || (((a.spans && a.spans[0]) ? a.spans[0][0] : 1e9) - ((b.spans && b.spans[0]) ? b.spans[0][0] : 1e9)));
+  return items;
+}
+const noticeStale = () => ui.notice && ui.notice.snap !== JSON.stringify(story);
+const noticeShown = () => ui.notice ? (ui.notice.all ? ui.notice.items : ui.notice.items.slice(0, 3)) : [];
+function noticeHighlight() {    // the item being hovered (or pinned), unless the build has moved on
+  if (!ui.notice || noticeStale()) return null;
+  const i = ui.nhover ?? ui.npin; return i == null ? null : noticeShown()[i] || null;
+}
+function noticePanel() {
+  if (!ui.notice) return '';
+  const stale = noticeStale(), items = noticeShown(), more = ui.notice.items.length - items.length;
+  const body = !ui.notice.items.length
+    ? `<p class="nempty">Nothing stands out to StoryBlocks right now. That doesn't mean it's finished, only that none of the things it looks for are showing.</p>`
+    : `<ol class="nlist">${items.map((it, i) => `<li><button class="nitem${ui.npin === i ? ' pinned' : ''}" data-act="npin" data-arg="${i}" data-nitem="${i}" aria-pressed="${ui.npin === i}" ${stale ? 'disabled' : ''}>
+        <span class="ntag ${it.kind}">${it.kind === 'see' ? 'Look' : 'Question'}</span><b>${esc(it.title)}</b><span>${esc(it.text)}</span></button></li>`).join('')}</ol>
+      ${more > 0 ? `<button class="nmore" data-act="nall">Show ${more} more</button>` : ''}`;
+  return `<section class="card npanel${stale ? ' stale' : ''}" role="region" aria-label="Notice">
+    <div class="nhead"><h2>Notice</h2><button class="nclose" data-act="nclose" aria-label="Close">${ICON.x}</button></div>
+    ${stale ? `<div class="nstale">You've changed the build since. <button data-act="notice">Notice again</button></div>` : ''}
+    ${body}</section>`;
+}
+
+/* The key: the layers as a small stack of bricks, top course first, like the build.
+   Each row is a button: click to solo that layer (everything above it fades and lets clicks through). */
+function layerKey() {
+  const rep = MEDIA[MEDIUM].rep;
+  const selLayer = ui.sel && find(ui.sel) ? find(ui.sel).layer : null;
+  const rows = LAYERS.slice().reverse().map(L => {
+    const ed = L.key === 'editorial', solo = ui.solo === L.key;
+    const g = geom(3, 2, ed ? 4 : 9, true, 8, 2);
+    return `<button class="kr${selLayer === L.key || solo ? ' on' : ''}${solo ? ' solo' : ''}" data-layer="${L.key}" data-act="solo" data-arg="${L.key}" aria-pressed="${solo}"
+        title="${solo ? 'Show all layers' : 'Work on ' + L.name.toLowerCase() + ': fade the layers above it'}">${svgBox(g, { ...colours(rep[L.key]), sw:.7, ssw:.5 }, 'aria-hidden="true"')}
+      <span>${L.name}<small>${esc(L.blurb.toLowerCase())}</small></span></button>`;
+  }).join('');
+  return `<div class="card lkey${selLayer || ui.solo ? ' hot' : ''}" id="lkey" role="group" aria-label="Layers, top to bottom. Click one to work on it.">${rows}
+    ${ui.solo ? `<div class="khint">Working on ${esc(LAYERS.find(L => L.key === ui.solo).name.toLowerCase())}. Click it again to show all.</div>` : ''}</div>`;
+}
+
+function render() {
+  const app = document.getElementById('app');
+  const scrolls = [...document.querySelectorAll('.scroll')].map(el => el.scrollTop);
+  const sc0 = document.getElementById('scroller'), stageScroll = sc0 ? [sc0.scrollLeft, sc0.scrollTop] : null;
+  const focusedId = document.activeElement && document.activeElement.dataset && document.activeElement.dataset.id;
+  const l = {}; LAYERS.forEach(L => l[L.key] = layerLen(L.key));
+  const maxLen = Math.max(1, ...Object.values(l));
+  const total = LAYERS.reduce((a,L) => a + story[L.key].length, 0);
+
+  app.innerHTML = `
+    ${renderHeader()}
+    <div class="main${ui.drawer ? '' : ' closed'}">
+      <aside class="left" id="drawer" aria-label="Brick box">
+        ${ui.drawer ? `
+        <div class="drawerhead"><h2>Bricks</h2>
+          <button class="dbtn" data-act="drawer" aria-expanded="true" aria-controls="drawer" aria-label="Close the brick box">${ICON.left}</button></div>
+        <div class="palette scroll">${renderPalette()}</div>
+        <div class="info" id="info">${infoHTML()}</div>` : `
+        <button class="rail" data-act="drawer" aria-expanded="false" aria-controls="drawer" aria-label="Open the brick box">
+          ${ICON.right}<span class="tab">Bricks</span>
+          <span class="dots" aria-hidden="true">${LAYERS.slice().reverse().map(L => `<i style="background:${L.chip}"></i>`).join('')}</span>
+        </button>`}
+      </aside>
+      <main class="stage" id="stage" aria-label="Build area">
+        <div class="scroller" id="scroller"><div class="world" id="world"></div></div>
+        ${layerKey()}
+        ${noticePanel()}
+        <div class="hud">
+          <button class="card nbtn" data-act="notice" title="Step back and look again at what you've built">${ICON.eye}Notice</button>
+          <div class="card zoom" role="group" aria-label="Zoom">
+            <button data-act="zoom" data-arg="-1" aria-label="Zoom out" ${ui.zoom<=1?'disabled style="opacity:.35"':''}>${ICON.minus}</button>
+            <button data-act="zoom" data-arg="0" aria-label="Fit the whole story">Fit</button>
+            <button data-act="zoom" data-arg="1" aria-label="Zoom in">${ICON.plus}</button>
+            <i class="zsep" aria-hidden="true"></i>
+            <button data-act="resetView" aria-label="Straighten the view" title="Straighten the view (or double-click the stage)" ${isIso() ? 'disabled' : ''}>${ICON.reset}</button>
+          </div>
+        </div>
+        ${!total ? `<div class="empty"><div class="card"><h3>${esc(MEDIA[MEDIUM].empty[0])}</h3><p>${esc(MEDIA[MEDIUM].empty[1])}</p></div></div>` : ''}
+        ${ui.msg ? `<div class="caption" role="status"><div>${esc(ui.msg)}</div></div>` : ''}
+      </main>
+    </div>`;
+  redrawStage();
+  if (stageScroll) { const sc = document.getElementById('scroller'); sc.scrollLeft = stageScroll[0]; sc.scrollTop = stageScroll[1]; }
+  revealSelected();
+  document.querySelectorAll('.scroll').forEach((el,i) => { if (scrolls[i] != null) el.scrollTop = scrolls[i]; });
+  if (focusedId) focusBrick(focusedId);
+}
+/* Redraw just the stage (used on its own while turning the model, so the rest of the page stays put). */
+function redrawStage() {
+  const stage = document.getElementById('stage'), world = document.getElementById('world'); if (!stage || !world) return;
+  world.innerHTML = renderStage(stage);
+  world.style.width = geomCache.worldW + 'px'; world.style.height = geomCache.worldH + 'px';
+  // roll is a plain 2D turn of the whole picture around its middle
+  world.style.transformOrigin = '50% 50%';
+  world.style.transform = ui.roll ? `rotate(${ui.roll.toFixed(2)}deg)` : '';
+  const rb = document.querySelector('[data-act="resetView"]');
+  if (rb) rb.disabled = isIso();
+}
+const isIso = () => Math.abs(ui.az - ISO_AZ) < .05 && Math.abs(ui.el - ISO_EL) < .05 && Math.abs(ui.roll) < .05;
+let rafPending = false;
+function scheduleStage() { if (rafPending) return; rafPending = true; requestAnimationFrame(() => { rafPending = false; redrawStage(); }); }
+
+function focusBrick(id) { const el = document.querySelector(`.brick[data-id="${id}"]`); if (el && document.activeElement !== el) el.focus({ preventScroll:true }); }
+// keep the selected brick visible when the drawer narrows the stage
+function revealSelected() {
+  if (!ui.sel || (drag && drag.moved)) return;
+  const el = document.querySelector(`.brick[data-id="${ui.sel}"]`), sc = document.getElementById('scroller'); if (!el || !sc) return;
+  const l = parseFloat(el.style.left), w = el.getBoundingClientRect().width, pad = 30;
+  if (l + w > sc.scrollLeft + sc.clientWidth - pad) sc.scrollLeft = l + w - sc.clientWidth + pad;
+  else if (l < sc.scrollLeft + pad) sc.scrollLeft = Math.max(0, l - pad);
+  // and keep the floating toolbar on screen
+  const tb = document.querySelector('.tbar'); if (!tb) return;
+  const r = tb.getBoundingClientRect(), s = sc.getBoundingClientRect();
+  if (r.top < s.top + 8) sc.scrollTop -= (s.top + 8 - r.top);
+  if (r.left < s.left + 8) sc.scrollLeft -= (s.left + 8 - r.left);
+  else if (r.right > s.right - 8) sc.scrollLeft += (r.right - s.right + 8);
+}
+
+/* ---------------- INTERACTION ---------------- */
+document.addEventListener('click', e => {
+  if (drag && drag.moved) return;
+  const el = e.target.closest('[data-act]');
+  if (el) { const fn = actions[el.dataset.act]; const a = el.dataset.arg; if (fn) fn(a !== undefined && /^-?\d+$/.test(a) ? +a : a); return; }
+  if (e.target.closest('#stage') && !e.target.closest('.hud') && !e.target.closest('.tbar') && !e.target.closest('.lkey') && !e.target.closest('.npanel') && ui.sel && !e.target.closest('.grip')) actions.deselect();
+});
+document.addEventListener('mouseover', e => { const el = e.target.closest('[data-hover]'); if (el) actions.hover(el.dataset.hover); });
+// hovering or focusing a brick lights up its layer in the key (a DOM tweak, no re-render)
+function lightKey(layer) {
+  const k = document.getElementById('lkey'); if (!k) return;
+  k.classList.toggle('hot', !!layer || !!ui.solo);
+  k.querySelectorAll('.kr').forEach(r => r.classList.toggle('on', r.dataset.layer === layer || r.dataset.layer === ui.solo));
+}
+// hovering a notice shows where it is on the build (pinning it with a click keeps it shown)
+document.addEventListener('mouseover', e => {
+  if (!ui.notice) return;
+  const it = e.target.closest && e.target.closest('[data-nitem]'), v = it && !it.disabled ? +it.dataset.nitem : null;
+  if (v !== ui.nhover) { ui.nhover = v; scheduleStage(); }
+});
+document.addEventListener('focusin', e => {
+  if (!ui.notice) return; const it = e.target.closest && e.target.closest('[data-nitem]');
+  const v = it ? +it.dataset.nitem : null; if (v !== ui.nhover) { ui.nhover = v; scheduleStage(); }
+});
+document.addEventListener('mouseover', e => { const b = e.target.closest && e.target.closest('.brick'); lightKey(b ? b.dataset.layer : (ui.sel && find(ui.sel) ? find(ui.sel).layer : null)); });
+document.addEventListener('focusin',   e => { const b = e.target.closest && e.target.closest('.brick'); if (b) lightKey(b.dataset.layer); });
+document.addEventListener('focusin',   e => { const el = e.target.closest('[data-hover]'); if (el) actions.hover(el.dataset.hover); });
+
+/* Two drags, both projected onto the brick's long (x) axis and snapped to whole studs:
+   - the round grip resizes (growing shoves touching bricks along)
+   - the brick itself lifts and moves anywhere along its layer (landing on bricks shoves them along)
+   Each drag is recomputed from the story as it was at pointerdown, so shoved bricks spring back
+   if you drag away again. One drag = one undo step. */
+let drag = null;
+document.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const g = e.target.closest('[data-grip]');
+  const br = !g && e.target.closest('.brick');
+  if (!g && !br) {
+    // empty stage: pick up the whole model to turn it
+    if (e.target.closest('#scroller') && !e.target.closest('.tbar')) {
+      drag = { kind:'orbit', x:e.clientX, y:e.clientY, az0:ui.az, el0:ui.el, roll0:ui.roll, moved:false };
+    }
+    return;
+  }
+  const f0 = find(g ? g.dataset.grip : br.dataset.id); if (!f0) return;
+  if (g) e.preventDefault();
+  drag = { kind: g ? 'resize' : 'move', id:f0.block.id, layer:f0.layer, x:e.clientX, y:e.clientY,
+           origLen:f0.block.len, origX:f0.block.x, val: g ? f0.block.len : f0.block.x, base:story, moved:false };
+  if (g) document.body.classList.add('resizing');
+});
+window.addEventListener('pointermove', e => {
+  if (!drag) return;
+  const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.moved && Math.hypot(dx, dy) < 5) return;          // a click, not a drag (yet)
+  if (!drag.moved) {
+    drag.moved = true;
+    if (drag.kind === 'orbit') document.body.classList.add('orbiting');
+    else { ui.sel = drag.id; if (drag.kind === 'move') document.body.classList.add('moving'); }
+  }
+  if (drag.kind === 'orbit') {
+    // left/right turns, up/down tilts, Shift rolls. Small, clamped movements: this is a nudge, not a spin.
+    const cl = (v, [a,b]) => Math.max(a, Math.min(b, v));
+    if (e.shiftKey) ui.roll = cl(drag.roll0 + dx * 0.06, TURN.roll);
+    else { ui.az = cl(drag.az0 + dx * 0.1, TURN.az); ui.el = cl(drag.el0 + dy * 0.08, TURN.el); }
+    scheduleStage(); return;
+  }
+  // Measure the pointer along the brick's long axis as it is currently drawn (turned and rolled).
+  const r = -ui.roll * Math.PI/180, rdx = dx*Math.cos(r) - dy*Math.sin(r), rdy = dx*Math.sin(r) + dy*Math.cos(r);
+  const V = geomCache.V, U = geomCache.U, ax = V.xs*U, ay = V.ys*V.se*U;
+  // Follow the pointer's left-right movement only: a brick's start then tracks the cursor exactly,
+  // in either direction, and the vertical drift of a hand moving sideways no longer eats into it.
+  // (Projecting onto the diagonal axis made the brick slide diagonally under a horizontal hand.)
+  const along = Math.round(rdx / ax);
+  const s = cloneStory(drag.base), g = find(drag.id, s);
+  let val;
+  if (drag.kind === 'resize') { val = Math.max(1, drag.origLen + along); grow(s[g.layer], g.block, val); }
+  else { val = Math.max(0, drag.origX + along); put(s[g.layer], g.block, val); val = g.block.x; }
+  // redraw the stage only (the whole page is rebuilt once, on release)
+  if (val !== drag.val || !drag.shown) { drag.val = val; drag.shown = true; story = s; scheduleStage(); }
+});
+window.addEventListener('pointerup', () => {
+  if (!drag) return;
+  document.body.classList.remove('resizing', 'moving', 'orbiting');
+  if (drag.kind === 'orbit') { drag.kind = 'done'; setTimeout(() => { drag = null; }, 0); redrawStage(); return; }
+  const changed = drag.moved && JSON.stringify(story) !== JSON.stringify(drag.base);
+  if (changed) { past.push(drag.base); if (past.length > 60) past.shift(); future = []; save(); }
+  const id = drag.id, moved = drag.moved;
+  drag.kind = 'done';                       // stop the lifted look, but keep drag.moved until the click is swallowed
+  setTimeout(() => { drag = null; }, 0);
+  if (moved) { render(); focusBrick(id); }
+});
+
+document.addEventListener('dblclick', e => {
+  if (e.target.closest('#scroller') && !e.target.closest('.brick') && !e.target.closest('.tbar') && !isIso()) actions.resetView();
+});
+
+document.addEventListener('keydown', e => {
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? actions.redo() : actions.undo(); return; }
+  if (e.key === 'Escape' && !ui.sel && ui.notice) { actions.nclose(); return; }
+  if (e.key === 'Escape' && ui.sel) { const id = ui.sel; actions.deselect(); const el = document.querySelector(`.brick[data-id="${id}"]`); if (el) el.focus({ preventScroll:true }); return; }
+  const br = e.target.closest && e.target.closest('.brick'); if (!br) return;
+  const id = br.dataset.id;
+  const ensure = () => { if (ui.sel !== id) { ui.sel = id; } };
+  if (e.key === '[' || e.key === ']') { e.preventDefault(); ensure(); actions.studs(e.key === ']' ? 1 : -1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); ensure(); actions[e.shiftKey ? 'swap' : 'nudge'](e.key === 'ArrowLeft' ? -1 : 1); }
+  else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); ensure(); actions.remove(); }
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id !== 'importInput') return;
+  const f = e.target.files && e.target.files[0]; e.target.value = '';
+  if (f) importChosen(f);
+});
+
+let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(render, 80); });
+
+/* ---------------- BOOT ---------------- */
+render();
+</script>
+</body>
+</html>

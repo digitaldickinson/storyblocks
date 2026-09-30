@@ -1,0 +1,24 @@
+{
+  "app": "storyblocks",
+  "version": 1,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "ATM",
+        "x": 0,
+        "len": 6
+      }
+    ],
+    "script": [],
+    "editorial": []
+  },
+  "_about": "A real silent stretch at the end: Nothing to hear."
+}

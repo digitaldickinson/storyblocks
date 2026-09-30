@@ -1,0 +1,61 @@
+{
+  "_about": "Notices each fixture should produce, in the order Notice shows them (by rule id). Regenerate only when a change to the rules is intended.",
+  "valid": {
+    "audio-dry-cue.json": [
+      "nothing-to-hear"
+    ],
+    "claim-challenged.json": [],
+    "cue-over-gvs.json": [
+      "in-or-out"
+    ],
+    "example-audio-rcue.json": [
+      "the-place"
+    ],
+    "example-audio-rpkg.json": [
+      "claim",
+      "the-place"
+    ],
+    "example-video-oov.json": [
+      "two-voices",
+      "whose-voice",
+      "words-past-pictures"
+    ],
+    "example-video-pkg.json": [
+      "words-past-pictures",
+      "claim",
+      "the-place"
+    ],
+    "mcus-under-sot.json": [
+      "shot-sizes",
+      "the-place"
+    ],
+    "old-export-iv.json": [],
+    "picture-gaps.json": [
+      "nothing-to-see"
+    ],
+    "placed-silence.json": [],
+    "run-half-voiced.json": [
+      "whose-voice"
+    ],
+    "shots-with-gap.json": [
+      "nothing-to-see"
+    ],
+    "silent-gap.json": [
+      "nothing-to-hear"
+    ],
+    "two-voices.json": [
+      "two-voices"
+    ],
+    "vo-over-own-ptc.json": [
+      "in-or-out"
+    ],
+    "vox-mcus.json": [
+      "the-place"
+    ]
+  },
+  "invalid": {
+    "invalid-not-storyblocks.json": "That isn't a StoryBlocks file.",
+    "invalid-bricks.json": "Couldn't open that file",
+    "invalid-not-json.json": "That file isn't readable JSON."
+  }
+}
