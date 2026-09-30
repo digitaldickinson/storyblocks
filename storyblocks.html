@@ -37,8 +37,6 @@ header .tbtn{padding:0 13px;white-space:nowrap;flex-shrink:0}
 .hsep{width:1px;height:28px;background:var(--line2)}
 .tbtn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
 .tbtn.primary:hover{background:#2c2b28}
-/* three example buttons: tighten up below 1360px so the header still fits */
-@media (max-width:1360px){header{gap:7px;padding:0 14px} header .tbtn{padding:0 10px} .medium{margin-left:4px}}
 
 /* layout */
 .main{display:grid;grid-template-columns:360px minmax(0,1fr);min-height:0}
@@ -282,42 +280,16 @@ const STRUCTURES = {
   pivot: { label:'With a pivot', said:'a structure with a pivot', beats:[['NEWS',8],['BECAUSE',8],['PERSON',10],['AND',2],['UNSET',8],['PERSON',10],['NEXT',6]] }
 };
 
-/* Media: which layers, which examples, and the brick that stands for each layer in the key.
-   ['GAP', n] in an example leaves n empty studs. */
+/* Media: which layers, their wording, and the brick that stands for each layer in the key. */
 const MEDIA = {
   video: { name:'Video', layers:['picture','sound','script','editorial'],
     rep: { picture:'WS', sound:'SOT', script:'VO', editorial:'NEWS' },
     how: 'Four layers, stacked like courses of bricks: pictures at the bottom, then sound, then the script (reporter in red, presenter in dark red), with the story\'s structure on top.',
-    empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down some shots and build up. Then watch where the layers don\'t line up.'],
-    examples: {
-      sea: { label:'Sea Life', name:'Basic package: Sea Life stocktake',          // three mid shots cut together
-        picture:   [['GV',4],['WS',6],['MS',4],['MS',4],['MS',4],['MCU',10]],
-        sound:     [['NAT',10],['ATM',12],['SOT',10]],
-        script:    [['VO',22],['RUN',10]],
-        editorial: [['NEWS',10],['BECAUSE',12],['PERSON',10]] },
-      pump: { label:'Pumpkins', name:'Package with a pivot: small pumpkins',       // the last line runs past the pictures
-        picture:   [['WS',4],['CU',4],['GV',4],['CU',4],['MCU',10],['WS',5],['DET',5],['MCU',10],['WS',6]],
-        sound:     [['ATM',16],['SOT',10],['NAT',10],['SOT',10],['ATM',6]],
-        script:    [['VO',16],['RUN',10],['VO',10],['RUN',10],['VO',8]],
-        editorial: [['NEWS',8],['BECAUSE',8],['PERSON',10],['AND',2],['DEVELOP',8],['PERSON',10],['NEXT',6]] },
-      oov: { label:'OOV/SOT', name:'OOV/SOT: bus route cut',               // the OOV is written a touch long
-        picture:   [['INVIZ',6],['GV',5],['CU',4],['WS',5],['MCU',10],['INVIZ',4]],
-        sound:     [['GAP',6],['NAT',14],['SOT',10]],
-        script:    [['CUE',6],['OOV',16],['RUN',10],['BACK',4]],
-        editorial: [['NEWS',6],['BECAUSE',14],['PERSON',10],['UNSET',4]] } } },
+    empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down some shots and build up. Then watch where the layers don\'t line up.'] },
   audio: { name:'Audio', layers:['sound','script','editorial'],
     rep: { sound:'CLIP', script:'TRK', editorial:'NEWS' },
     how: 'Three layers, stacked like courses of bricks: the sound of the world at the bottom, then the script (reporter in red, presenter in dark red), with the story\'s structure on top. No pictures: the sound has to do that job.',
-    empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down the sound of the story and build up. Then watch where the layers don\'t line up.'],
-    examples: {
-      rpump: { label:'Pumpkins', name:'Radio package with a pivot: small pumpkins',   // ends on a dry sign-off, over nothing
-        sound:     [['GAP',4],['ACT',6],['ATM',6],['CLIP',10],['ACT',10],['CLIP',10],['ATM',6]],
-        script:    [['CUE',4],['TRK',12],['RUN',10],['TRK',10],['RUN',10],['TRK',6],['SIGN',3]],
-        editorial: [['NEWS',8],['BECAUSE',8],['PERSON',10],['AND',2],['DEVELOP',8],['PERSON',10],['NEXT',6]] },
-      rcue: { label:'Cue + clip', name:'Cue and clip: bus route cut',
-        sound:     [['GAP',8],['CLIP',12]],
-        script:    [['CUE',8],['RUN',12],['BACK',4]],
-        editorial: [['NEWS',8],['PERSON',12],['UNSET',4]] } } }
+    empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down the sound of the story and build up. Then watch where the layers don\'t line up.'] }
 };
 
 const B = {};
@@ -372,7 +344,6 @@ const is = (b, t) => B[b.code].traits.has(t);
 let MEDIUM = 'video';
 try { const m = localStorage.getItem('storystack.medium'); if (MEDIA[m]) MEDIUM = m; } catch(e) {}
 let LAYERS = ALL_LAYERS.filter(L => MEDIA[MEDIUM].layers.includes(L.key));
-let EXAMPLES = MEDIA[MEDIUM].examples;
 
 /* ---------------- STATE ---------------- */
 /* Every brick has x: its first stud. Layers can have gaps. No two bricks in a layer overlap.
@@ -382,12 +353,6 @@ const storeKey = m => 'storystack.v4.' + m;
 let seq = 1;
 const newBlock = (code, len, x=0) => ({ id: 'b' + (seq++), code, len: len ?? B[code].len, x });
 const emptyStory = () => { const s = {}; LAYERS.forEach(L => s[L.key] = []); return s; };
-// Example rows are laid end to end; ['GAP', n] leaves n empty studs.
-const exampleStory = (key = Object.keys(EXAMPLES)[0]) => {
-  const s = emptyStory(), E = EXAMPLES[key];
-  LAYERS.forEach(L => { let x = 0; s[L.key] = []; E[L.key].forEach(([c,l]) => { if (c !== 'GAP') s[L.key].push(newBlock(c,l,x)); x += l; }); });
-  return s;
-};
 
 let story = emptyStory(), past = [], future = [];
 let ui = { sel:null, hover:null, msg:'', zoom:1, drawer:true, az:45, el:35.264, roll:0, solo:null, notice:null, npin:null, nhover:null };
@@ -396,7 +361,7 @@ const TURN = { az:[25, 65], el:[20, 50], roll:[-10, 10] };
 try { ui.drawer = localStorage.getItem('storystack.drawer') !== 'closed'; } catch(e) {}
 let justAdded = null;
 
-function loadStory() {   // the saved story for the current medium, or its first example
+function loadStory() {   // the saved story for the current medium, or an empty board
   let saved = null;
   try {
     saved = JSON.parse(localStorage.getItem(storeKey(MEDIUM)));
@@ -408,14 +373,14 @@ function loadStory() {   // the saved story for the current medium, or its first
     seq = Math.max(seq, 1 + Math.max(0, ...LAYERS.flatMap(L => s[L.key].map(b => +String(b.id).slice(1) || 0))));
     return s;
   }
-  return exampleStory();
+  return emptyStory();
 }
 story = loadStory();
 
 function setMedium(m) {
   if (m === MEDIUM || !MEDIA[m]) return;
   save();
-  MEDIUM = m; LAYERS = ALL_LAYERS.filter(L => MEDIA[m].layers.includes(L.key)); EXAMPLES = MEDIA[m].examples;
+  MEDIUM = m; LAYERS = ALL_LAYERS.filter(L => MEDIA[m].layers.includes(L.key));
   try { localStorage.setItem('storystack.medium', m); } catch(e) {}
   story = loadStory(); past = []; future = [];
   ui.sel = null; ui.solo = null; ui.hover = null; ui.msg = ''; ui.notice = null; ui.npin = null; ui.nhover = null;
@@ -522,7 +487,6 @@ const actions = {
     commit(s);
     say(`Laid ${S.said}. Now build ${MEDIUM === 'audio' ? 'the sound and script' : 'the pictures and sound'} underneath it. Undo takes it back.`);
   },
-  example(key) { ui.sel = null; ui.notice = null; ui.npin = null; commit(exampleStory(key)); say(`${EXAMPLES[key].name}. Someone built this. Explore it: what do you notice? Then press Notice.`); },
   clear() { ui.sel = null; ui.notice = null; ui.npin = null; commit(emptyStory()); },
   exportFile() {
     const out = { app:'storyblocks', version:1, medium:MEDIUM, saved:new Date().toISOString(), layers:{} };
@@ -719,8 +683,6 @@ function renderHeader() {
       ${Object.entries(MEDIA).map(([k,m]) => `<button role="radio" aria-checked="${k === MEDIUM}" data-act="medium" data-arg="${k}">${k === 'audio' ? ICON.mic : ICON.cam}${m.name}</button>`).join('')}
     </div>
     <div class="spacer"></div>
-    <span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Examples</span>
-    ${Object.entries(EXAMPLES).map(([k,e]) => `<button class="tbtn primary" data-act="example" data-arg="${k}">${esc(e.label)}</button>`).join('')}
     <button class="tbtn" data-act="undo" ${past.length?'':'disabled'}>Undo</button>
     <button class="tbtn" data-act="redo" ${future.length?'':'disabled'}>Redo</button>
     <button class="tbtn" data-act="clear">Clear</button>

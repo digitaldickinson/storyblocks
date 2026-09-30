@@ -27,6 +27,9 @@ def check(ok, label, detail=""):
     if ok: passes += 1; print(f"  ok    {label}")
     else: failures.append(label); print(f"  FAIL  {label}  {detail}")
 
+def load(page, name):   # open a fixture the way a student opens a saved build
+    page.set_input_files("#importInput", os.path.join(FX, name)); page.wait_for_timeout(150)
+
 LAYERS_NOW = "LAYERS.map(L => L.key + ':' + story[L.key].map(b => b.code + '@' + b.x + '+' + b.len).join(',')).join(' | ')"
 
 with sync_playwright() as p:
@@ -36,6 +39,10 @@ with sync_playwright() as p:
     page.on("pageerror", lambda e: errors.append(str(e)))
     page.goto(APP)
     page.evaluate("localStorage.clear()"); page.reload(); page.wait_for_timeout(300)
+
+    print("\nFirst open")
+    check(page.evaluate("LAYERS.every(L => !story[L.key].length)") and page.is_visible(".empty"), "a first visit opens on an empty board")
+    check(page.locator('[data-act="example"]').count() == 0, "there are no example builds to load")
 
     print("\nFixtures: notices")
     for name, want in expected["valid"].items():
@@ -56,9 +63,9 @@ with sync_playwright() as p:
     check(page.evaluate("story.picture.map(b => b.code)") == ["INVIZ"], "IV becomes INVIZ")
 
     print("\nStarting structures")
-    for medium, key in [("video", "sea"), ("audio", "rpump")]:
+    for medium, fixture in [("video", "example-video-sealife.json"), ("audio", "example-audio-pumpkins.json")]:
         for s, beats in [("basic", ["NEWS", "BECAUSE", "PERSON"]), ("pivot", ["NEWS", "BECAUSE", "PERSON", "AND", "UNSET", "PERSON", "NEXT"])]:
-            page.evaluate(f"setMedium('{medium}'); actions.example('{key}')")
+            load(page, fixture)
             lower = "LAYERS.filter(L => L.key !== 'editorial').map(L => story[L.key].map(b => b.code + '@' + b.x + '+' + b.len).join(',')).join(' | ')"
             before, all_before = page.evaluate(lower), page.evaluate(LAYERS_NOW)
             page.click(f'.sbtn[data-arg="{s}"]')
@@ -69,17 +76,17 @@ with sync_playwright() as p:
     check("seconds" not in page.evaluate("document.body.innerText.replace('not seconds', '')").lower(), "nothing on screen mentions seconds")
 
     print("\nExport then import round trip")
-    for medium, key in [("video", "pump"), ("audio", "rpump")]:
-        page.evaluate(f"setMedium('{medium}')"); page.evaluate(f"actions.example('{key}')")
+    for medium, fixture in [("video", "example-video-pumpkins.json"), ("audio", "example-audio-pumpkins.json")]:
+        load(page, fixture)
         before = page.evaluate(LAYERS_NOW)
         with page.expect_download() as d: page.click('[data-act="exportFile"]')
         path = os.path.join(tempfile.mkdtemp(), d.value.suggested_filename); d.value.save_as(path)
         page.evaluate("actions.clear()")
         page.set_input_files("#importInput", path); page.wait_for_timeout(150)
-        check(page.evaluate(LAYERS_NOW) == before, f"{medium} {key} survives export and import")
+        check(page.evaluate(LAYERS_NOW) == before, f"{medium} {fixture} survives export and import")
 
     print("\nWithout dragging or sight")
-    page.evaluate("setMedium('video'); actions.example('oov'); ui.msg = ''; render()")
+    load(page, "oov-sot.json"); page.evaluate("ui.msg = ''; render()")
     sound = page.evaluate("[...document.querySelectorAll('#orderHead ~ h3')].find(h => h.textContent === 'Sound layer').nextElementSibling.innerText.split('\\n')")
     check(sound == ["Gap, 6 studs", "Natural sound, 14 studs", "Interview (sync), 10 studs", "Gap to the end, 6 studs"], "hidden running order lists the sound layer with its gaps", sound)
     check(page.evaluate("document.querySelector('.sr-only').getBoundingClientRect().width") <= 1, "running order isn't shown on screen")

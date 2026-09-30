@@ -1,6 +1,7 @@
 """Automated accessibility check for StoryBlocks, using axe-core (WCAG 2.2 A/AA plus best practice).
 
-Checks three states: video example with nothing selected; a brick selected with Notice open; audio mode.
+Checks four states: the empty board a student first sees; a video build with nothing selected;
+a brick selected with Notice open; an audio build. The builds are imported from fixtures/.
 axe can't judge whether the build's *meaning* is available without sight, or check text inside the
 bricks' SVG. See docs/accessibility.md for the manual checks that cover those.
 
@@ -36,15 +37,21 @@ with sync_playwright() as p:
     page = browser.new_page(viewport={"width": 1440, "height": 900})
     page.goto(APP); page.evaluate("localStorage.clear()"); page.reload(); page.wait_for_timeout(300)
 
-    page.evaluate("setMedium('video'); actions.example('oov'); ui.msg = ''; render()")
-    run(page, "Video example, nothing selected")
+    page.evaluate("render()")
+    run(page, "Empty board on first open")
+
+    page.set_input_files("#importInput", os.path.join(ROOT, "fixtures", "oov-sot.json")); page.wait_for_timeout(150)
+    page.evaluate("ui.msg = ''; render()")
+    run(page, "Video build, nothing selected")
 
     brick = page.evaluate("story.sound[0].id")
     page.evaluate(f"ui.sel = '{brick}'; render()"); page.click('[data-act="notice"]'); page.wait_for_timeout(200)
     run(page, "Brick selected, Notice open")
 
-    page.evaluate("ui.sel = null; ui.notice = null; setMedium('audio'); actions.example('rpump'); ui.msg = ''; render()")
-    run(page, "Audio example")
+    page.evaluate("ui.sel = null; ui.notice = null; render()")
+    page.set_input_files("#importInput", os.path.join(ROOT, "fixtures", "example-audio-pumpkins.json")); page.wait_for_timeout(150)
+    page.evaluate("ui.msg = ''; render()")
+    run(page, "Audio build")
     browser.close()
 
 print(f"\n{total} violation(s) in total")

@@ -78,11 +78,13 @@ After a change, the open notices go stale: they dim, and the panel offers "Notic
 
 *Status: built.*
 
-## 8. Examples are things to investigate
+## 8. Students build their own
 
-The examples are deliberately imperfect. They're framed as "Someone built this. Explore it: what do you notice? Then press Notice." Ideally students look first, then compare what they noticed with what StoryBlocks noticed. The software is not the definitive interpretation.
+There are no built-in examples: students found them confusing, and the point is to build and develop their own story. The board opens empty, with a starting structure to lay if they want one.
 
-*Status: built.*
+A tutor can still share a build as an exported file, opened with Import. If so, frame it as something to investigate, not a model answer: "Someone built this. What do you notice? Then press Notice." The software is not the definitive interpretation.
+
+*Status: built-in examples removed, 30 September 2026.*
 
 ## 9. No scoring
 

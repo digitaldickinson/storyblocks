@@ -41,6 +41,11 @@
       "the-place"
     ],
     "old-export-iv.json": [],
+    "oov-sot.json": [
+      "two-voices",
+      "whose-voice",
+      "words-past-pictures"
+    ],
     "person-over-atm.json": [
       "who-explains"
     ],

@@ -30,7 +30,7 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 - Put each layer's bricks in a group (`role="group"`, `aria-label="Sound layer"`) so screen readers can navigate layer by layer.
 - Consider adding what's above and below to a brick's accessible description (`aria-describedby`), e.g. "Under it: Voiceover. Over it: Wide shot."
 
-**Done when:** with VoiceOver on (Cmd+F5) and the screen off, someone can describe the OOV/SOT example's structure, including the gap under the cue and the OOV running into the SOT.
+**Done when:** with VoiceOver on (Cmd+F5) and the screen off, someone can describe the structure of `fixtures/oov-sot.json` (open it with Import), including the gap under the cue and the OOV running into the SOT.
 
 ### 2. Moving a brick needs dragging or a keyboard (must fix)
 
@@ -111,8 +111,8 @@ Turning, tilting and rolling the view is mouse- or touch-only. It isn't needed t
 
 ## How to check
 
-- `python tests/a11y_check.py` runs axe-core against the main states (nothing selected; a brick selected with Notice open; audio mode) and reports violations. See `tests/README.md`.
+- `python tests/a11y_check.py` runs axe-core against the main states (the empty first board; a video build with nothing selected; a brick selected with Notice open; an audio build) and reports violations. See `tests/README.md`.
 - axe can't judge meaning or SVG text. After any UI change, also:
   1. Unplug the mouse and do a full edit with the keyboard: add, move, resize, remove, Notice, import, export.
-  2. With VoiceOver on, listen to the OOV/SOT example.
+  2. With VoiceOver on, import `fixtures/oov-sot.json` and listen to it.
   3. Check at 200% browser zoom.

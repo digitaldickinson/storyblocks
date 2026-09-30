@@ -28,7 +28,7 @@ It's a teaching tool for journalism students at MMU. It is **not** a video edito
 
 Rough order, top to bottom:
 
-1. `PAL` colours → `ALL_LAYERS` → `BRICK_ROWS` (the brick list) → `MEDIA` (which layers, examples and wording per medium)
+1. `PAL` colours → `ALL_LAYERS` → `BRICK_ROWS` (the brick list) → `MEDIA` (which layers and wording per medium)
 2. `TRAITS`: what each brick means to Notice (see below)
 3. State: `story` (one array per layer, each brick `{id, code, len, x}`), `ui`, undo `past`/`future`
 4. Model: `put` (drop, shoving touching bricks right), `pushLeft`, `grow`, and `actions`

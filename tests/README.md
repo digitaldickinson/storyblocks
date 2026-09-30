@@ -43,7 +43,7 @@ It prints `ok` or `FAIL` for each check, and exits with 1 if anything failed.
 
 ## Accessibility check
 
-`a11y_check.py` runs axe-core (WCAG 2.2 A/AA plus best practice) against three states: nothing selected, a brick selected with Notice open, and audio mode.
+`a11y_check.py` runs axe-core (WCAG 2.2 A/AA plus best practice) against four states: the empty board a student first sees, a video build with nothing selected, a brick selected with Notice open, and an audio build.
 
 One-off setup, from the project folder (needs Node, no admin):
 
