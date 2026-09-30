@@ -76,12 +76,9 @@ Rough order, top to bottom:
 
 Target: WCAG 2.2 AA. Full findings, fixes and acceptance checks are in `docs/accessibility.md`; work through them **in priority order**. The principle: *the meaning of a build is its spatial relationships (what's above, below, overlapping, missing), so anything a sighted student can see must be available in another way.*
 
-Must-fix first:
+Done: the running order (the build as text for screen readers only, `orderText()`), ↑/↓ between layers (`stepLayer()`), move and swap buttons on the toolbar, the layer key's contrast, and the grip's size.
 
-1. **A text version of the build** for screen-reader users: each layer in stud order, gaps included, plus ↑/↓ to move to the brick above or below at the same point.
-2. **A non-drag way to move a brick** (WCAG 2.5.7): ← → buttons on the floating toolbar.
-
-Then: skip links, contrast (the dimmed layer key and small brick labels), grip target size, Notice focus and announcement, reflow at narrow widths.
+Next: skip links, contrast of the small brick labels, Notice focus and announcement, the Notice panel covering the selected brick, reflow at narrow widths.
 
 Rules that apply to every change:
 

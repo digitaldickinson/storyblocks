@@ -8,7 +8,7 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 
 - axe-core reports **no violations** on the main view.
 - Every control, brick and palette card is a real `<button>` with an accessible name. A brick's name gives its brick name, layer, length and start: "Presenter in vision, picture layer, 6 studs, starts at stud 0".
-- Keyboard: Tab to a brick; Enter selects; `[` `]` resize; ← → nudge; Shift+← → swap; Delete removes (leaving a gap); Escape deselects; Ctrl/Cmd+Z undoes. Focus stays on the brick after each change.
+- Keyboard: Tab to a brick; Enter selects; `[` `]` resize; ← → nudge; Shift+← → swap; ↑ ↓ move to the brick above or below; Delete removes (leaving a gap); Escape deselects; Ctrl/Cmd+Z undoes. Focus stays on the brick after each change.
 - Visible focus ring on bricks and controls.
 - Notices are text. The highlight on the build adds to them rather than replacing them.
 - `prefers-reduced-motion` switches off animation.
@@ -18,6 +18,8 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 ## Findings and fixes, in priority order
 
 ### 1. The build can't be perceived without sight (must fix)
+
+**Status (30 September 2026): done, except the optional `aria-describedby`.** A running order for screen readers only (hidden on screen, under a "Running order" heading) lists each layer, top to bottom, with its bricks and gaps. A visible panel was tried and dropped: it added little for sighted students. Stage bricks are grouped by layer, and ↑/↓ moves between layers (a gap is announced). Still to do: the VoiceOver check under "Done when".
 
 **Problem.** For a screen-reader user the stage is a flat list of buttons. Gaps don't exist for them, and there's no way to find what sits above or below a brick, which is the whole point of the tool. (WCAG 1.3.1 Info and Relationships.)
 
@@ -31,6 +33,8 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 **Done when:** with VoiceOver on (Cmd+F5) and the screen off, someone can describe the OOV/SOT example's structure, including the gap under the cue and the OOV running into the SOT.
 
 ### 2. Moving a brick needs dragging or a keyboard (must fix)
+
+**Status (30 September 2026): done.** The toolbar has ← → (one stud) and « » (swap with the brick before or after).
 
 **Problem.** The floating toolbar lets a mouse user add or remove studs, duplicate and remove, but not move. A student who can't drag (tremor, trackpad, switch access) and doesn't use the keyboard can't move anything. (WCAG 2.5.7 Dragging Movements.)
 
@@ -48,6 +52,8 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 
 ### 4. Contrast
 
+**Status (30 September 2026): the layer key is done** (its mini-bricks fade, its words don't). The brick labels inside the SVG are still to do.
+
 **Problems.**
 
 - **The dimmed layer key.** When a brick is selected, the other key rows drop to opacity 0.4, which puts their text at **2.55:1**. This is axe's only failure. (1.4.3)
@@ -64,6 +70,8 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 **Done when:** axe reports no contrast failures, and every brick label measures at least 4.5:1 against its face colour.
 
 ### 5. Resize grip target size
+
+**Status (30 September 2026): done** (26px).
 
 **Problem.** The round grip is 22×22px. (2.5.8 Target Size, minimum 24×24px.)
 
@@ -90,6 +98,12 @@ Target: **WCAG 2.2 AA**. Audited on 30 September 2026 with axe-core 4, a keyboar
 - the header controls wrap or collapse into a menu.
 
 Test at 320px and at 200% browser zoom.
+
+### 7a. The Notice panel can cover the selected brick
+
+**Problem.** Notice floats over the stage. When it's open over the selected brick, it hides the grip and part of the toolbar. (2.4.11 Focus Not Obscured; 2.5.8.)
+
+**Fix.** Not decided. Options: dock Notice as a column beside the stage; or move the toolbar and grip clear of it.
 
 ### 8. Pointer-only view turning (accept for now)
 

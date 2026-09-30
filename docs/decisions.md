@@ -15,6 +15,7 @@ Decisions already made, with the reason. Reverse one only deliberately, and reco
 | **A SIL brick means "this silence is meant".** | It fills the sound layer, so Nothing to hear stays quiet over it. It's the student's way of saying "deliberate" through the bricks. |
 | **No selected-brick panel.** A small translucent toolbar floats above the selected brick instead. | Play and exploration first; the stage gets the full width. |
 | **The brick box is a drawer** that can close to a thin strip. | Less clutter. |
+| **The running order is for screen readers only**: hidden on screen, plain text (no buttons), under a "Running order" heading. | A visible list added little for sighted students; the bricks already show it. No buttons, because hidden controls would take keyboard focus out of sight. |
 | **The layer key is fixed bottom-left** and doubles as a solo control. | Floating labels overlapped the board. The bottom-left corner is always empty in isometric. Solo fades higher layers and makes them click-through. |
 | **Faded bricks don't catch clicks.** | The brick you can see through the fade is the one you get. |
 | **View can turn ±20°, tilt ±15°, roll ±10°.** | Beyond that the drawing order and visible faces stop being correct. |

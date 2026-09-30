@@ -6,6 +6,7 @@
 - bad files are refused;
 - old exports still open;
 - export and import round-trip;
+- the build can be read and edited without dragging or sight (the hidden running order, toolbar move buttons, ↑/↓ between layers);
 - there are no JavaScript errors.
 
 ## One-off setup
@@ -56,4 +57,4 @@ This makes a `node_modules/` folder. It's only for testing and never ships, and 
 python tests/a11y_check.py
 ```
 
-At the time of the audit it reports two known problems, both listed in `docs/accessibility.md`: the dimmed layer key's contrast and the resize grip's size. axe can't judge whether the build makes sense without sight, or check text inside the bricks. `docs/accessibility.md` lists the manual checks for those.
+It should report no violations. axe can't judge whether the build makes sense without sight, or check text inside the bricks. `docs/accessibility.md` lists the manual checks for those.

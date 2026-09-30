@@ -110,7 +110,7 @@ body.orbiting,body.orbiting *{cursor:grabbing!important}
 .pop{animation:pop .32s cubic-bezier(.2,.9,.3,1.2)}
 @keyframes pop{from{transform:translateY(-50px);opacity:0}to{transform:none;opacity:1}}
 .ghost{position:absolute;pointer-events:none}
-.grip{position:absolute;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;background:#fff;border:2px solid var(--ink);cursor:ew-resize;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(20,20,19,.25);z-index:5;padding:0}
+.grip{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#fff;border:2px solid var(--ink);cursor:ew-resize;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 0 rgba(20,20,19,.25);z-index:5;padding:0}
 .grip:hover{background:#EFEBE1}
 body.resizing,body.resizing *{cursor:ew-resize!important}
 body.moving,body.moving *{cursor:grabbing!important}
@@ -127,7 +127,7 @@ body.moving,body.moving *{cursor:grabbing!important}
 /* layer key: a fixed mini stack in the empty bottom-left corner of the stage */
 .lkey{position:absolute;left:20px;bottom:20px;padding:8px;display:flex;flex-direction:column;gap:0}
 .lkey .kr{display:flex;align-items:center;gap:10px;height:30px;border-radius:7px;padding:0 8px 0 4px;transition:background .12s,opacity .12s;border:0;background:none;cursor:pointer;text-align:left;color:inherit;font:inherit}
-.lkey .kr:hover{background:rgba(20,20,19,.06);opacity:1}
+.lkey .kr:hover{background:rgba(20,20,19,.06)}
 .lkey .kr.solo{background:rgba(20,20,19,.1);box-shadow:inset 0 0 0 1.5px var(--ink)}
 .lkey .khint{font-size:11px;color:var(--muted);padding:6px 6px 2px;max-width:230px;line-height:1.35}
 /* medium switch */
@@ -160,8 +160,11 @@ body.moving,body.moving *{cursor:grabbing!important}
 .lkey .kr svg{flex-shrink:0;display:block}
 .lkey .kr span{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
 .lkey .kr small{font-size:11px;color:var(--muted);font-weight:400;letter-spacing:0;text-transform:none;margin-left:2px}
-.lkey.hot .kr{opacity:.4}
-.lkey.hot .kr.on{opacity:1;background:rgba(20,20,19,.07)}
+.lkey.hot .kr:not(.on) svg{opacity:.4}
+.lkey.hot .kr.on{background:rgba(20,20,19,.07)}
+
+/* read by screen readers, not shown: the running order */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -650,6 +653,8 @@ const ICON = {
   right: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg>',
   plus:  '<svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>',
   minus: '<svg width="16" height="16" viewBox="0 0 16 16" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 8h10"/></svg>',
+  swapL: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3L3 8l5 5M13 3L8 8l5 5"/></svg>',
+  swapR: '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l5 5-5 5M8 3l5 5-5 5"/></svg>',
   grip:  '<svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none" aria-hidden="true"><path d="M3.5 2L1 5l2.5 3M6.5 2L9 5 6.5 8"/></svg>'
 };
 
@@ -659,7 +664,7 @@ function renderHeader() {
     <div style="position:absolute;left:2px;top:14px">${svgBox(lg, colours('WS'))}</div>
     <div style="position:absolute;left:9px;top:2px">${svgBox(lg, colours('SOT'))}</div></div>`;
   return `<header>
-    <div class="brand">${logo}<div><h1>StoryBlocks</h1><p>${MEDIUM === 'audio' ? 'Sound, script and meaning' : 'Picture, sound, script and meaning'}, layer by layer</p></div></div>
+    <div class="brand">${logo}<div><h1>StoryBlocks</h1><p>Building blocks for multimedia stories</p></div></div>
     <div class="medium" role="radiogroup" aria-label="Medium">
       ${Object.entries(MEDIA).map(([k,m]) => `<button role="radio" aria-checked="${k === MEDIUM}" data-act="medium" data-arg="${k}">${k === 'audio' ? ICON.mic : ICON.cam}${m.name}</button>`).join('')}
     </div>
@@ -748,6 +753,7 @@ function renderStage(stageEl) {
     // layers above the one you're working on fade and stop catching clicks
     const soloLevel = ui.solo ? LAYERS.findIndex(x => x.key === ui.solo) : -1;
     const faded = (sel && li > selLevel) || (ui.solo && li > soloLevel);
+    html += `<div role="group" aria-label="${L.name} layer">`;
     items.forEach(it => {
       if (it.gap) {   // nothing here: a dashed ghost
         const g = geom(it.gap, 2, HT[L.key], false, U, HS, V);
@@ -762,6 +768,7 @@ function renderStage(stageEl) {
       const aria = `${B[b.code].name}, ${L.name.toLowerCase()} layer, ${b.len} stud${b.len===1?'':'s'}, starts at stud ${b.x}`;
       html += `<button class="brick${faded?' faded':''}${b.id===justAdded?' pop':''}${lifting===b.id?' lifted':''}${noticed.has(b.id)?' noticed':''}" style="${at(g, b.x, 0, Z[L.key], lift)}" data-act="select" data-arg="${b.id}" data-id="${b.id}" data-layer="${L.key}" aria-pressed="${isSel}" aria-label="${esc(aria)}">${svgBox(g,o)}</button>`;
     });
+    html += `</div>`;
   });
 
   // (layer names live in the fixed key, bottom-left of the stage — see layerKey())
@@ -784,13 +791,18 @@ function renderStage(stageEl) {
     html += `<button class="grip" data-grip="${sel.block.id}" style="left:${f(OX+p[0])}px;top:${f(OY+p[1]-lift)}px" aria-label="Drag to add or remove studs">${ICON.grip}</button>`;
     // toolbar floats above the middle of the brick's top face, kept inside the world
     const t = P(sel.block.x + sel.block.len/2, 1, Z[sel.layer] + HT[sel.layer]);
-    const tx = Math.max(170, Math.min(geomCache.worldW - 170, OX + t[0])), ty = Math.max(56, OY + t[1] - lift - 12);
-    const b = B[sel.block.code], n = sel.block.len;
+    const tx = Math.max(280, Math.min(geomCache.worldW - 280, OX + t[0])), ty = Math.max(56, OY + t[1] - lift - 12);
+    const b = B[sel.block.code], n = sel.block.len, row = story[sel.layer];
     html += `<div class="tbar" role="toolbar" aria-label="${esc(b.name)}" style="left:${f(tx)}px;top:${f(ty)}px">
       <b>${esc(b.name)}</b>
       <button data-act="studs" data-arg="-1" aria-label="Take away a stud" ${n <= 1 ? 'disabled' : ''}>${ICON.minus}</button>
       <span class="n">${n} stud${n===1?'':'s'}</span>
       <button data-act="studs" data-arg="1" aria-label="Add a stud">${ICON.plus}</button>
+      <span class="sep"></span>
+      <button data-act="nudge" data-arg="-1" aria-label="Move left one stud" title="Move left one stud" ${sel.block.x === 0 ? 'disabled' : ''}>${ICON.left}</button>
+      <button data-act="nudge" data-arg="1" aria-label="Move right one stud" title="Move right one stud">${ICON.right}</button>
+      <button data-act="swap" data-arg="-1" aria-label="Swap with the brick before" title="Swap with the brick before" ${sel.index === 0 ? 'disabled' : ''}>${ICON.swapL}</button>
+      <button data-act="swap" data-arg="1" aria-label="Swap with the brick after" title="Swap with the brick after" ${sel.index === row.length - 1 ? 'disabled' : ''}>${ICON.swapR}</button>
       <span class="sep"></span>
       <button data-act="dup" aria-label="Duplicate" title="Duplicate">${ICON.dup}</button>
       <button data-act="remove" aria-label="Remove" title="Remove (leaves a gap)">${ICON.bin}</button>
@@ -972,6 +984,25 @@ function noticePanel() {
     ${body}</section>`;
 }
 
+/* The running order: the build as text for screen readers (hidden on screen), top layer first,
+   each layer left to right with its gaps. What the picture shows by position is here in words. */
+function orderText() {
+  const maxLen = Math.max(0, ...LAYERS.map(L => layerLen(L.key)));
+  const gap = (n, last) => `<li>Gap${last ? ' to the end' : ''}, ${pl(n)}</li>`;
+  const layers = LAYERS.slice().reverse().map(L => {
+    let cur = 0, items = '';
+    story[L.key].forEach(b => {
+      if (b.x > cur) items += gap(b.x - cur);
+      items += `<li>${esc(B[b.code].name)}, ${pl(b.len)}</li>`;
+      cur = b.x + b.len;
+    });
+    if (cur && cur < maxLen) items += gap(maxLen - cur, true);
+    return `<h3>${L.name} layer</h3>${items ? `<ol>${items}</ol>` : '<p>Nothing here yet.</p>'}`;
+  }).join('');
+  return `<section class="sr-only" aria-labelledby="orderHead"><h2 id="orderHead">Running order</h2>
+    <p>Each layer, top to bottom, read left to right.</p>${layers}</section>`;
+}
+
 /* The key: the layers as a small stack of bricks, top course first, like the build.
    Each row is a button: click to solo that layer (everything above it fades and lets clicks through). */
 function layerKey() {
@@ -1027,6 +1058,7 @@ function render() {
         </div>
         ${!total ? `<div class="empty"><div class="card"><h3>${esc(MEDIA[MEDIUM].empty[0])}</h3><p>${esc(MEDIA[MEDIUM].empty[1])}</p></div></div>` : ''}
         ${ui.msg ? `<div class="caption" role="status"><div>${esc(ui.msg)}</div></div>` : ''}
+        ${orderText()}
       </main>
     </div>`;
   redrawStage();
@@ -1070,7 +1102,12 @@ function revealSelected() {
 document.addEventListener('click', e => {
   if (drag && drag.moved) return;
   const el = e.target.closest('[data-act]');
-  if (el) { const fn = actions[el.dataset.act]; const a = el.dataset.arg; if (fn) fn(a !== undefined && /^-?\d+$/.test(a) ? +a : a); return; }
+  if (el) {
+    const fn = actions[el.dataset.act]; const a = el.dataset.arg; if (fn) fn(a !== undefined && /^-?\d+$/.test(a) ? +a : a);
+    // a toolbar button pressed from the keyboard keeps focus, so it can be pressed again
+    if (e.detail === 0 && el.closest('.tbar')) { const again = document.querySelector(`.tbar [data-act="${el.dataset.act}"]` + (a !== undefined ? `[data-arg="${a}"]` : '')); if (again && !again.disabled) again.focus({ preventScroll:true }); }
+    return;
+  }
   if (e.target.closest('#stage') && !e.target.closest('.hud') && !e.target.closest('.tbar') && !e.target.closest('.lkey') && !e.target.closest('.npanel') && ui.sel && !e.target.closest('.grip')) actions.deselect();
 });
 document.addEventListener('mouseover', e => { const el = e.target.closest('[data-hover]'); if (el) actions.hover(el.dataset.hover); });
@@ -1173,6 +1210,7 @@ document.addEventListener('keydown', e => {
   const ensure = () => { if (ui.sel !== id) { ui.sel = id; } };
   if (e.key === '[' || e.key === ']') { e.preventDefault(); ensure(); actions.studs(e.key === ']' ? 1 : -1); }
   else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); ensure(); actions[e.shiftKey ? 'swap' : 'nudge'](e.key === 'ArrowLeft' ? -1 : 1); }
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') { e.preventDefault(); stepLayer(id, e.key === 'ArrowUp' ? 1 : -1); }
   else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); ensure(); actions.remove(); }
 });
 
@@ -1181,6 +1219,19 @@ document.addEventListener('change', e => {
   const f = e.target.files && e.target.files[0]; e.target.value = '';
   if (f) importChosen(f);
 });
+
+/* ↑ / ↓ on a brick: move focus to the brick in the layer above or below, at the same point in the build
+   (the brick covering this one's first stud, or failing that any brick alongside it). */
+function stepLayer(id, dir) {
+  const f = find(id); if (!f) return;
+  const L = LAYERS[LAYERS.findIndex(x => x.key === f.layer) + dir];
+  if (!L) { say(dir > 0 ? 'This is the top layer.' : 'This is the bottom layer.'); return; }
+  const b = f.block, row = story[L.key];
+  const hit = row.find(o => o.x <= b.x && b.x < o.x + o.len) || row.find(o => o.x < b.x + b.len && b.x < o.x + o.len);
+  if (!hit) { say(`Nothing in the ${L.name.toLowerCase()} layer ${dir > 0 ? 'above' : 'below'} this brick.`); focusBrick(id); return; }
+  if (ui.msg) { ui.msg = ''; render(); }
+  focusBrick(hit.id);
+}
 
 let rT; window.addEventListener('resize', () => { clearTimeout(rT); rT = setTimeout(render, 80); });
 
