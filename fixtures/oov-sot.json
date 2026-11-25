@@ -40,11 +40,6 @@
         "code": "NAT",
         "x": 6,
         "len": 14
-      },
-      {
-        "code": "SOT",
-        "x": 20,
-        "len": 10
       }
     ],
     "script": [
@@ -59,7 +54,7 @@
         "len": 16
       },
       {
-        "code": "RUN",
+        "code": "SOT",
         "x": 22,
         "len": 10
       },
@@ -92,5 +87,6 @@
       }
     ]
   },
-  "_about": "OOV/SOT: bus route cut, with the current structure beats. The OOV is written a touch long. Used by the keyboard tests and the VoiceOver check."
+  "_about": "OOV/SOT: bus route cut, with the current structure beats. The OOV is written a touch long, so the SOT starts two studs after its MCU and the BACK runs past the pictures. Used by the keyboard tests and the VoiceOver check.",
+  "layout": 2
 }

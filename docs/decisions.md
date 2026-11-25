@@ -6,9 +6,11 @@ Decisions already made, with the reason. Reverse one only deliberately, and reco
 |---|---|
 | **Isometric look, not a flat timeline.** | Tried a flat front-on timeline (`archive/journalism-blocks.html`); it lost the feel. Long stories are handled with Fit and zoom instead. |
 | **Relative length (studs), never time.** | What matters is how long things are against each other, not seconds. |
-| **Four video layers: picture, sound, script, structure.** Three for audio (no picture). | Script was split from sound so the reporter's words aren't laid down twice. |
-| **Presenter and reporter words both live in Script**, in different colours. No separate presenter-audio brick. | Same reason: no double entry. The sound under an in-vision presenter is silence or natural sound. |
-| **No multitrack mixing.** A sound brick is the *foreground* sound. | Mix levels are finishing detail and push it towards an editor. A future "NAT under" tile on a brick was discussed, not built; wait to see if students ask for it. |
+| **Four video layers: picture, sound, editorial, structure.** Three for audio (no picture). | Editorial holds everyone who speaks (script, interviews, vox pops); sound holds the place under them. Words were split from sound so they aren't laid down twice. |
+| **Presenter and reporter words both live in Editorial**, in different colours. No separate presenter-audio brick. | Same reason: no double entry. The sound under an in-vision presenter is silence or natural sound. |
+| **Two audio rows: Editorial (who speaks) over Sound (the place).** Interviews and vox pops sit on the Editorial layer with the script; NAT, atmos, music and silence sit underneath. Still no mix levels. | Replaced "No multitrack mixing" (Nov 2026): the editorial voice of a piece and its natural sound are separate decisions, and NAT under a voiceover had nowhere to go. Mix levels stay out: finishing detail. |
+| **RUN, Two voices and Whose voice? retired** with that change. | A clip now sits on the Editorial layer itself, so RUN isn't needed. Words and an interview can't overlap on one layer: the bricks shove instead of Notice pointing it out. Accepted. |
+| **Older builds are converted as they open, simply.** Saves move from `storystack.v4.` to `storystack.v5.`; v4 is never overwritten. | Old builds weren't a priority; a clash between words and an interview is resolved by shoving the later brick along. |
 | **Cutaways need no special handling.** | Layers are what the audience gets, not what was recorded. A cutaway's own sound isn't heard, so a CU over a running SOT is correct. |
 | **Free placement with gaps; bricks shove their touching neighbours.** | Physical, LEGO-like behaviour. A gap absorbs a shove. Removing leaves a gap. Chosen over strict "no room, no drop". |
 | **No transparent "gap" brick.** | Empty space *is* the gap. |

@@ -211,8 +211,8 @@ const PAL = {
 // Every layer there is, bottom to top. Each medium uses some of them (MEDIA below).
 const ALL_LAYERS = [
   { key:'picture',   name:'Picture',   blurb:'What the audience sees', chip:PAL.yellow.front },
-  { key:'sound',     name:'Sound',     blurb:'Everything but the reporter', chip:PAL.blue.front },
-  { key:'script',    name:'Script',    blurb:'Words read from a script', chip:PAL.red.front },
+  { key:'sound',     name:'Sound',     blurb:'The sound of the place, under the words', chip:PAL.green.front },
+  { key:'script',    name:'Editorial', blurb:'Who speaks: script and interviews', chip:PAL.red.front },   // key kept: saves and exports use it
   { key:'editorial', name:'Structure', blurb:'How the story is built', chip:PAL.purple.front }   // key kept: saves and exports use it
 ];
 
@@ -230,9 +230,9 @@ const BRICK_ROWS = [
   ['INVIZ','picture','inVIZ','Presenter in vision',6,'gold','The presenter on camera in the studio.'],
   ['WALL','picture','WALL','Studio screen',5,'gold','A two-shot with the studio screen or graphic wall behind the presenter.'],
 
-  ['SOT','sound','SOT','Interview (sync)',10,'blue','Someone speaking on camera, in sync.','v'],
-  ['CLIP','sound','CLIP','Interview clip',10,'blue','A contributor\'s recorded voice. Pick the moment of feeling or first-hand fact, not the explanation you could write yourself.','a'],
-  ['VOX','sound','VOX','Vox pops',6,'sky','Quick street voices. Colour, not evidence.'],
+  ['SOT','script','SOT','Interview (sync)',10,'blue','Someone speaking on camera, in sync.','v'],
+  ['CLIP','script','CLIP','Interview clip',10,'blue','A contributor\'s recorded voice. Pick the moment of feeling or first-hand fact, not the explanation you could write yourself.','a'],
+  ['VOX','script','VOX','Vox pops',6,'sky','Quick street voices. Colour, not evidence.'],
   ['NAT','sound','NAT','Natural sound',3,'green','Actuality up full: a door, a crowd, a machine.','v'],
   ['ACT','sound','ACT','Actuality',4,'green','The sound of the thing happening: the protest, the machine, the crowd. Radio\'s pictures.','a'],
   ['ATM','sound','ATM','Atmos',3,'green','The background sound of the place.'],
@@ -272,7 +272,7 @@ const BRICK_ROWS = [
 ];
 
 // no longer offered in the brick box; old work containing them still opens
-const RETIRED = new Set(['CONTEXT','CLAIM','EVIDENCE','CONSEQ','EXPLAIN']);
+const RETIRED = new Set(['CONTEXT','CLAIM','EVIDENCE','CONSEQ','EXPLAIN','RUN']);
 
 /* Starting structures: lay the lecture beats on the structure layer, replacing only that layer. */
 const STRUCTURES = {
@@ -283,12 +283,12 @@ const STRUCTURES = {
 /* Media: which layers, their wording, and the brick that stands for each layer in the key. */
 const MEDIA = {
   video: { name:'Video', layers:['picture','sound','script','editorial'],
-    rep: { picture:'WS', sound:'SOT', script:'VO', editorial:'NEWS' },
-    how: 'Four layers, stacked like courses of bricks: pictures at the bottom, then sound, then the script (reporter in red, presenter in dark red), with the story\'s structure on top.',
+    rep: { picture:'WS', sound:'NAT', script:'VO', editorial:'NEWS' },
+    how: 'Four layers, stacked like courses of bricks: pictures at the bottom, then the sound of the place, then editorial: everyone who speaks (reporter in red, presenter in dark red, interviews in blue). The story\'s structure goes on top.',
     empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down some shots and build up. Then watch where the layers don\'t line up.'] },
   audio: { name:'Audio', layers:['sound','script','editorial'],
-    rep: { sound:'CLIP', script:'TRK', editorial:'NEWS' },
-    how: 'Three layers, stacked like courses of bricks: the sound of the world at the bottom, then the script (reporter in red, presenter in dark red), with the story\'s structure on top. No pictures: the sound has to do that job.',
+    rep: { sound:'ACT', script:'TRK', editorial:'NEWS' },
+    how: 'Three layers, stacked like courses of bricks: the sound of the place at the bottom, then editorial: everyone who speaks (reporter in red, presenter in dark red, interviews in blue). The story\'s structure goes on top. No pictures: the sound has to do that job.',
     empty: ['Start with the story', 'Lay a starting structure from the brick box, or put down the sound of the story and build up. Then watch where the layers don\'t line up.'] }
 };
 
@@ -297,6 +297,29 @@ BRICK_ROWS.forEach(r => B[r[0]] = { code:r[0], layer:r[1], label:r[2], name:r[3]
 // renamed bricks: old saves and exported files still open
 const CODE_ALIASES = { IV:'INVIZ' };
 const canon = b => (b && CODE_ALIASES[b.code] ? { ...b, code: CODE_ALIASES[b.code] } : b);
+/* Builds made before interviews and vox pops moved up to the editorial layer: move each brick to the
+   layer it now belongs on and drop RUN bricks (a clip now sits on the editorial layer itself).
+   Where a moved brick lands on another, the later one is shoved along. Takes and returns plain
+   { layerKey: [bricks] }; layers it doesn't change come back as they were. */
+function relayer(layers) {
+  if (!layers || typeof layers !== 'object') return layers;
+  const out = {}, moved = new Set();
+  for (const k of Object.keys(layers)) out[k] = Array.isArray(layers[k]) ? [] : layers[k];
+  for (const k of Object.keys(layers)) if (Array.isArray(layers[k])) layers[k].forEach(r => {
+    const b = canon(r), home = b && B[b.code] && B[b.code].layer;
+    if (b && b.code === 'RUN') { moved.add(k); return; }
+    if (home && home !== k && ['sound','script'].includes(home) && ['sound','script'].includes(k)) {
+      (out[home] = Array.isArray(out[home]) ? out[home] : []).push(b); moved.add(home); return;
+    }
+    out[k].push(b);
+  });
+  for (const k of moved) {
+    out[k].sort((a, b) => a.x - b.x);
+    let cursor = 0;
+    for (const b of out[k]) { if (Number.isInteger(b.x) && b.x < cursor) b.x = cursor; if (Number.isInteger(b.x) && Number.isInteger(b.len)) cursor = b.x + b.len; }
+  }
+  return out;
+}
 const inMedium = (code, m) => B[code].media.includes(m === 'audio' ? 'a' : 'v');
 
 /* ---------------- TRAITS: what each brick means to Notice ----------------
@@ -307,17 +330,16 @@ const inMedium = (code, m) => B[code].media.includes(m === 'audio' ? 'a' : 'v');
                 presenter            the presenter is on screen
                 reporter             the reporter is on screen
                 graphic              made-up pictures: data, maps, quotes
-     sound      voice                someone speaking (interview, vox)
-                place                the sound of the place (natural sound, actuality, atmos)
+     sound      place                the sound of the place (natural sound, actuality, atmos)
                 music | silence
-                repeat-wide | repeat-mid | repeat-close
-                                     shots of that size cut together under this sound are the
-                                     convention (a vox pop is a string of MCUs), so not noticed
-     script     words                something is read out
-                reporter | presenter who reads it
-                inviz                read on screen: the reader should be in the picture underneath
+     editorial  words                something is read out
+     (key       reporter | presenter who reads it
+      script)   inviz                read on screen: the reader should be in the picture underneath
                 oov                  read over pictures, the reader not on screen
-                no-words             nothing read here: a clip carries it
+                voice                someone else speaking (interview, vox)
+                repeat-wide | repeat-mid | repeat-close
+                                     shots of that size cut together under this voice are the
+                                     convention (a vox pop is a string of MCUs), so not noticed
      structure  beat-news | beat-because | beat-person   the basic beats
                 pivot                AND or BUT: where the story moves on
                 beat-more            the second half's related thing (context, illustrate, develop, challenge)
@@ -332,7 +354,6 @@ const TRAITS = {
   SOT:'voice', CLIP:'voice', VOX:'voice repeat-mid', NAT:'place', ACT:'place', ATM:'place', MUS:'music', SIL:'silence',
   CUE:'words presenter inviz', OOV:'words presenter oov', BACK:'words presenter inviz',
   VO:'words reporter oov', TRK:'words reporter', PTM:'words reporter', LINK:'words reporter', PTCW:'words reporter inviz', SIGN:'words reporter',
-  RUN:'no-words',
   NEWS:'beat-news', BECAUSE:'beat-because', PERSON:'beat-person', AND:'pivot', BUT:'pivot',
   MORE:'beat-more', ILLUS:'beat-more', DEVELOP:'beat-more', CHALLENGE:'beat-more challenge', NEXT:'beat-next',
   CLAIM:'claim', UNSET:'unlabelled'
@@ -349,7 +370,7 @@ let LAYERS = ALL_LAYERS.filter(L => MEDIA[MEDIUM].layers.includes(L.key));
 /* Every brick has x: its first stud. Layers can have gaps. No two bricks in a layer overlap.
    Each layer array is kept sorted by x. */
 // Each medium keeps its own story, so switching between them loses nothing.
-const storeKey = m => 'storystack.v4.' + m;
+const storeKey = m => 'storystack.v5.' + m;   // v5: interviews on the editorial layer. v4 saves are read (and converted), never overwritten
 let seq = 1;
 const newBlock = (code, len, x=0) => ({ id: 'b' + (seq++), code, len: len ?? B[code].len, x });
 const emptyStory = () => { const s = {}; LAYERS.forEach(L => s[L.key] = []); return s; };
@@ -365,7 +386,8 @@ function loadStory() {   // the saved story for the current medium, or an empty 
   let saved = null;
   try {
     saved = JSON.parse(localStorage.getItem(storeKey(MEDIUM)));
-    if (!saved && MEDIUM === 'video') saved = JSON.parse(localStorage.getItem('storystack.layers.v3'));  // carry over older saves
+    if (!saved) saved = relayer(JSON.parse(localStorage.getItem('storystack.v4.' + MEDIUM)));
+    if (!saved && MEDIUM === 'video') saved = relayer(JSON.parse(localStorage.getItem('storystack.layers.v3')));  // carry over older saves
   } catch(e) { saved = null; }
   if (saved && LAYERS.every(L => Array.isArray(saved[L.key]))) {
     const s = {};
@@ -485,11 +507,11 @@ const actions = {
     s.editorial = S.beats.map(([c, l]) => { const b = newBlock(c, l, x); x += l; return b; });
     if (ui.sel && !find(ui.sel, s)) ui.sel = null;
     commit(s);
-    say(`Laid ${S.said}. Now build ${MEDIUM === 'audio' ? 'the sound and script' : 'the pictures and sound'} underneath it. Undo takes it back.`);
+    say(`Laid ${S.said}. Now build ${MEDIUM === 'audio' ? 'the voices and sound' : 'the pictures, voices and sound'} underneath it. Undo takes it back.`);
   },
   clear() { ui.sel = null; ui.notice = null; ui.npin = null; commit(emptyStory()); },
   exportFile() {
-    const out = { app:'storyblocks', version:1, medium:MEDIUM, saved:new Date().toISOString(), layers:{} };
+    const out = { app:'storyblocks', version:1, layout:2, medium:MEDIUM, saved:new Date().toISOString(), layers:{} };
     LAYERS.forEach(L => out.layers[L.key] = story[L.key].map(b => ({ code:b.code, x:b.x, len:b.len })));
     const blob = new Blob([JSON.stringify(out, null, 2)], { type:'application/json' });
     const a = document.createElement('a');
@@ -543,6 +565,7 @@ function readImport(data) {
   if (data.version !== 1) return { error:'That file comes from a different version of StoryBlocks.' };
   const m = data.medium;
   if (!MEDIA[m]) return { error:'That file is for a medium StoryBlocks doesn\'t know.' };
+  if (data.layout !== 2) data = { ...data, layers: relayer(data.layers) };   // made before interviews moved to the editorial layer
   const keys = MEDIA[m].layers, problems = [];
   const extra = Object.keys(data.layers).filter(k => !keys.includes(k));
   if (extra.length) problems.push(`it has a ${extra[0]} layer, which ${MEDIA[m].name.toLowerCase()} doesn't use`);
@@ -867,7 +890,7 @@ function noticeContext(s) {
 }
 
 const NOTICE_RULES = [
-  /* Script words that run on after the last picture. Only words count: a RUN brick reads nothing. */
+  /* Script words that run on after the last picture. Only words count: an interview running on is Nothing to see. */
   { id:'words-past-pictures', kind:'see', media:'video', find(c) {
       const pe = c.end('picture'); if (!pe) return null;
       const over = c.lay('script').filter(b => is(b, 'words') && b.x + b.len > pe);
@@ -876,13 +899,14 @@ const NOTICE_RULES = [
       return { title:'Writing to pictures', text:`The script carries on for ${pl(n)} after the last picture. What would the audience see while it's read?`,
                spans:[[pe, pe + n]], layers:['picture','script'], bricks: over.map(b => b.id) }; } },
 
-  /* Stretches with no picture but something to hear. Inside the pictures, and sound (not script) running on after them. */
+  /* Stretches with no picture but something to hear. Inside the pictures; and after them, sound or a voice
+     (not script words: Writing to pictures covers those) running on. */
   { id:'nothing-to-see', kind:'see', media:'video', find(c) {
       const pe = c.end('picture');
       const inside = c.runs(x => !c.at('picture', x) && (c.at('sound', x) || c.at('script', x)), 0, pe);
-      const after  = c.runs(x => c.at('sound', x) && !(c.at('script', x) && is(c.at('script', x), 'words')), pe, c.end('sound'));
+      const after  = c.runs(x => { const e = c.at('script', x); return !(e && is(e, 'words')) && (c.at('sound', x) || e); }, pe, Math.max(c.end('sound'), c.end('script')));
       const spans = [...inside, ...after]; if (!spans.length) return null;
-      return { title:'Nothing to see', text:`For ${pl(c.total(spans))}${places(spans.length)}${c.whereAll(spans)}, there's sound or script but no picture. What's on screen there?`,
+      return { title:'Nothing to see', text:`For ${pl(c.total(spans))}${places(spans.length)}${c.whereAll(spans)}, there's something to hear but no picture. What's on screen there?`,
                spans, layers:['picture','sound','script'], bricks:[] }; } },
 
   /* Nothing in sound or script. Video: only where there's a picture. Audio: anywhere inside the piece.
@@ -894,33 +918,9 @@ const NOTICE_RULES = [
       if (!spans.length) return null;
       const n = c.total(spans), w = `${pl(n)}${places(spans.length)}${c.whereAll(spans)}`;
       return { title:'Nothing to hear', text: c.video
-                 ? `For ${w}, there's a picture but nothing in the sound or script layers above it. Is that silence meant?`
-                 : `For ${w}, there's nothing in the sound or script layers. Is that silence meant?`,
+                 ? `For ${w}, there's a picture but nothing in the sound or editorial layers above it. Is that silence meant?`
+                 : `For ${w}, there's nothing in the sound or editorial layers. Is that silence meant?`,
                spans, layers: c.video ? ['picture','sound','script'] : ['sound','script'], bricks:[] }; } },
-
-  /* Words read over someone else's recorded voice: measured overlap, not mere proximity. */
-  { id:'two-voices', kind:'see', find(c) {
-      const hits = [];
-      for (const w of c.lay('script')) if (is(w, 'words')) for (const v of c.lay('sound')) if (is(v, 'voice')) {
-        const o = c.overlap(w, v); if (o) hits.push({ w, v, o, span:[Math.max(w.x, v.x), Math.max(w.x, v.x) + o] });
-      }
-      if (!hits.length) return null;
-      const h = hits[0], more = hits.length > 1 ? ` (and ${hits.length - 1} more place${hits.length > 2 ? 's' : ''} like it)` : '';
-      return { title:'Two voices', text:`${B[h.w.code].name} and ${B[h.v.code].name.toLowerCase()} overlap for ${pl(h.o)}${more}. Who does the audience hear there?`,
-               spans: hits.map(x => x.span), layers:['sound','script'], bricks:[...new Set(hits.flatMap(x => [x.w.id, x.v.id]))] }; } },
-
-  /* The script hands over to a clip (RUN): how much of that stretch actually has a voice under it? */
-  { id:'whose-voice', kind:'see', find(c) {
-      for (const r of c.lay('script')) if (is(r, 'no-words')) {
-        const voiced = c.lay('sound').filter(v => is(v, 'voice')).reduce((a, v) => a + c.overlap(r, v), 0);
-        if (voiced >= r.len) continue;
-        const gaps = c.runs(x => { const v = c.at('sound', x); return !(v && is(v, 'voice')); }, r.x, r.x + r.len);
-        return { title:'Whose voice?', text: voiced
-                   ? `The script hands over to a clip for ${pl(r.len)}, but there's a voice in the sound layer under only ${voiced} of them. What fills the rest?`
-                   : `The script hands over to a clip for ${pl(r.len)}, but nothing in the sound layer underneath is a voice. Who is speaking?`,
-                 spans: gaps, layers:['sound','script'], bricks:[r.id] };
-      }
-      return null; } },
 
   /* Who's on screen? Words read in vision need their reader in the picture; words read out of vision shouldn't have them there. */
   { id:'in-or-out', kind:'see', media:'video', find(c) {
@@ -946,7 +946,7 @@ const NOTICE_RULES = [
         const sz = ['wide','mid','close'].find(t => [a, b, d].every(q => is(q, t)));
         if (!sz) continue;
         // not worth noticing if each shot sits mostly under a sound whose convention is exactly this (e.g. MCUs under a vox pop)
-        const expected = q => c.lay('sound').some(v => is(v, 'repeat-' + sz) && c.overlap(q, v) * 2 >= q.len);
+        const expected = q => c.lay('script').some(v => is(v, 'repeat-' + sz) && c.overlap(q, v) * 2 >= q.len);
         if ([a, b, d].every(expected)) continue;
         return { title:'Shot sizes', text:`Three ${sz} shots cut straight into each other. What would a change of size tell the viewer?`,
                          spans:[[a.x, d.x + d.len]], layers:['picture'], bricks:[a.id, b.id, d.id] };
@@ -962,19 +962,18 @@ const NOTICE_RULES = [
       // video: words read out of vision; audio: the reporter's own words (a studio cue is dry by nature)
       const vo = c.lay('script').filter(w => is(w, 'words') && (c.video ? is(w, 'oov') : is(w, 'reporter')));
       const dry = []; vo.forEach(w => dry.push(...c.runs(x => !c.at('sound', x), w.x, w.x + w.len)));
-      const n = c.total(dry); if (!n || !snd.length) return null;
+      const n = c.total(dry); if (!n) return null;
       return { title:'The place itself', text:`For ${pl(n)}${places(dry.length)}, ${c.video ? 'words read out of vision have' : 'the reporter\'s words have'} nothing under them in the sound layer. What would the ${ear} hear of the place there?`,
                spans: dry, layers:['sound','script'], bricks: vo.filter(w => dry.some(([a,b]) => w.x < b && a < w.x + w.len)).map(w => w.id) }; } },
 
   /* The structure layer's beats. None of these checks a sequence of beats: they look at what's under
      a PERSON beat, what lies between two of them, and what comes after a pivot. */
-  /* A person explains, but nobody speaks under it. Skipped where a RUN sits under it: Whose voice? already says so. */
+  /* A person explains, but no interview or vox pop sits under it. */
   { id:'who-explains', kind:'see', find(c) {
       for (const p of c.lay('editorial')) if (is(p, 'beat-person')) {
-        if (c.lay('sound').some(v => is(v, 'voice') && c.overlap(p, v))) continue;
-        if (c.lay('script').some(r => is(r, 'no-words') && c.overlap(p, r))) continue;
-        return { title:'Who explains?', text:'The structure says a person explains here, but nothing in the sound layer underneath is a voice. Who is speaking?',
-                 spans:[[p.x, p.x + p.len]], layers:['sound','editorial'], bricks:[p.id] };
+        if (c.lay('script').some(v => is(v, 'voice') && c.overlap(p, v))) continue;
+        return { title:'Who explains?', text:'The structure says a person explains here, but nothing in the editorial layer underneath is an interview or vox pop. Who is speaking?',
+                 spans:[[p.x, p.x + p.len]], layers:['script','editorial'], bricks:[p.id] };
       }
       return null; } },
 
@@ -993,9 +992,9 @@ const NOTICE_RULES = [
   { id:'after-the-turn', kind:'ask', find(c) {
       const end = Math.max(c.pieceEnd, c.end('editorial'));
       for (const q of c.lay('editorial')) if (is(q, 'pivot')) {
-        if (c.lay('sound').some(v => is(v, 'voice') && v.x >= q.x)) continue;
-        return { title:'After the turn', text:`After the ${B[q.code].label}, no new voice starts in the sound layer. Who could speak to the second part?`,
-                 spans:[[q.x, Math.max(end, q.x + q.len)]], layers:['sound','editorial'], bricks:[q.id] };
+        if (c.lay('script').some(v => is(v, 'voice') && v.x >= q.x)) continue;
+        return { title:'After the turn', text:`After the ${B[q.code].label}, no new interview or vox pop starts in the editorial layer. Who could speak to the second part?`,
+                 spans:[[q.x, Math.max(end, q.x + q.len)]], layers:['script','editorial'], bricks:[q.id] };
       }
       return null; } },
 

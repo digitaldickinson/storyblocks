@@ -14,17 +14,12 @@
       {
         "code": "ATM",
         "x": 0,
-        "len": 10
+        "len": 8
       },
       {
         "code": "SOT",
-        "x": 10,
-        "len": 4
-      },
-      {
-        "code": "ATM",
-        "x": 14,
-        "len": 6
+        "x": 8,
+        "len": 12
       }
     ],
     "script": [
@@ -41,5 +36,5 @@
     ],
     "editorial": []
   },
-  "_about": "A RUN with a voice under only part of it: Whose voice?"
+  "_about": "Older layout: a VO overlaps the start of an SOT by 2 studs. On opening, the SOT moves up to the editorial layer and is shoved along, past the end of the pictures."
 }

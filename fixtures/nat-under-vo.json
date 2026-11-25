@@ -1,0 +1,52 @@
+{
+  "_about": "Natural sound under a voiceover, then an interview under a PERSON beat. Nothing to notice: the place is heard and a person explains.",
+  "app": "storyblocks",
+  "version": 1,
+  "layout": 2,
+  "medium": "video",
+  "layers": {
+    "picture": [
+      {
+        "code": "WS",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "MCU",
+        "x": 10,
+        "len": 10
+      }
+    ],
+    "sound": [
+      {
+        "code": "NAT",
+        "x": 0,
+        "len": 10
+      }
+    ],
+    "script": [
+      {
+        "code": "VO",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "SOT",
+        "x": 10,
+        "len": 10
+      }
+    ],
+    "editorial": [
+      {
+        "code": "NEWS",
+        "x": 0,
+        "len": 10
+      },
+      {
+        "code": "PERSON",
+        "x": 10,
+        "len": 10
+      }
+    ]
+  }
+}

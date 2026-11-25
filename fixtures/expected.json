@@ -12,17 +12,14 @@
     "example-audio-pumpkins.json": [
       "the-place"
     ],
-    "example-audio-rcue.json": [
-      "the-place"
-    ],
+    "example-audio-rcue.json": [],
     "example-audio-rpkg.json": [
       "claim",
       "the-place"
     ],
     "example-video-oov.json": [
-      "two-voices",
-      "whose-voice",
-      "words-past-pictures"
+      "words-past-pictures",
+      "the-place"
     ],
     "example-video-pkg.json": [
       "words-past-pictures",
@@ -37,20 +34,23 @@
       "shot-sizes"
     ],
     "mcus-under-sot.json": [
-      "shot-sizes",
+      "shot-sizes"
+    ],
+    "nat-under-vo.json": [],
+    "old-export-iv.json": [],
+    "old-layout-voice-clash.json": [
+      "nothing-to-see",
       "the-place"
     ],
-    "old-export-iv.json": [],
     "oov-sot.json": [
-      "two-voices",
-      "whose-voice",
-      "words-past-pictures"
+      "words-past-pictures",
+      "the-place"
     ],
     "person-over-atm.json": [
       "who-explains"
     ],
     "person-over-silent-run.json": [
-      "whose-voice"
+      "who-explains"
     ],
     "picture-gaps.json": [
       "nothing-to-see"
@@ -63,9 +63,6 @@
       "after-the-turn"
     ],
     "placed-silence.json": [],
-    "run-half-voiced.json": [
-      "whose-voice"
-    ],
     "shots-with-gap.json": [
       "nothing-to-see"
     ],
@@ -75,15 +72,10 @@
     "two-persons-no-pivot.json": [
       "no-pivot"
     ],
-    "two-voices.json": [
-      "two-voices"
-    ],
     "vo-over-own-ptc.json": [
       "in-or-out"
     ],
-    "vox-mcus.json": [
-      "the-place"
-    ]
+    "vox-mcus.json": []
   },
   "invalid": {
     "invalid-not-storyblocks.json": "That isn't a StoryBlocks file.",
