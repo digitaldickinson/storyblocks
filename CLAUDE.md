@@ -8,13 +8,20 @@ It's a teaching tool for journalism students at MMU. It is **not** a video edito
 
 | Path | What it is |
 |---|---|
-| `storyblocks.html` | The whole app. The only file that ships. |
+| `storyblocks.html` | The whole app. |
+| `storytape.html` | **StoryTape**, a separate tool: see below. |
 | `docs/traits.md` | Every brick, its traits, and which Notice rules read which traits. Keep in step with the `TRAITS` table. |
 | `docs/notice-principles.md` | The pedagogy behind Notice: Build → Notice → Rebuild. Read before changing any rule or message. |
 | `docs/decisions.md` | Design decisions already made, with reasons. Read before proposing to reverse one. |
 | `fixtures/` | Saved builds (StoryBlocks export format) and the notices each one should produce. |
 | `tests/` | Browser checks. Run them after every change. |
 | `archive/` | Earlier versions and the original brief. **History, not instructions.** The original brief contradicts the current design in several places (pre-rendered sprites, SortableJS, packed tracks with no free placement). Do not follow it. |
+
+## StoryTape (`storytape.html`)
+
+A separate board that mirrors a physical exercise with magnetic tape students cut up and write on: coloured strips on four lanes (Structure, Editorial voice, Sound, Picture; no Picture for audio), a two-column script export. It is **not connected** to StoryBlocks (no shared builds, no import between them) and saves under its own `storytape.` keys.
+
+From StoryBlocks it follows: **no time** (lengths are squares of the board's grid; stored numbers are half-squares, the original format), **no built-in examples**, the **accessibility** rules below (strips are buttons, keyboard moves and resizes them, running order for screen readers, 4.5:1 text), and **undo** for every change. It deliberately differs: strips may overlap and don't shove, there is no Notice or Plan the shoot, and the marker-pen font is intended. Check it with `python tests/storytape_check.py`.
 
 ## Hard constraints
 

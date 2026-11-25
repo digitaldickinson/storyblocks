@@ -1,0 +1,980 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>StoryTape — Magnetic Storyboard</title>
+<style>
+:root{
+  --ink:#141413; --muted:#5E5A50; --faint:#6B665A; --paper:#FAF9F5; --ground:#EDE9DF;
+  --line:#DCD6C8; --line2:#CFC8B8; --board:#F7F5F0; --grid:rgba(20,20,19,.06);
+}
+*{box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--ink);background:var(--ground);user-select:none}
+button,input,textarea{font-family:inherit;color:inherit}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid #1D5FAE;outline-offset:2px}
+
+.app{height:100vh;display:grid;grid-template-rows:64px 66px minmax(0,1fr)}
+
+/* Header */
+header{display:flex;align-items:center;gap:10px;padding:0 20px;background:var(--paper);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.logo-mark{width:38px;height:38px;border-radius:9px;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;justify-content:center;gap:4px;padding:7px}
+.logo-mark span{display:block;height:5px;border-radius:2px}
+.brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.spacer{flex:1}
+
+.medium{display:flex;background:#fff;border:1px solid var(--line2);border-radius:11px;padding:3px;gap:2px;margin-left:8px}
+.medium button{height:34px;padding:0 12px;border:0;border-radius:8px;background:none;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+.medium button[aria-checked="true"]{background:var(--ink);color:var(--paper)}
+.medium button:not([aria-checked="true"]):hover{background:#EFEBE1}
+
+.tbtn{height:38px;padding:0 13px;border-radius:9px;border:1px solid var(--line2);background:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tbtn:hover:not(:disabled){background:#EFEBE1}
+.tbtn:disabled{opacity:.4;cursor:default}
+.tbtn.primary{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.tbtn.primary:hover{background:#2c2b28}
+.hsep{width:1px;height:24px;background:var(--line2);margin:0 2px}
+
+/* Dispenser Bar */
+.dispensers{display:flex;align-items:center;gap:10px;padding:0 20px;background:var(--paper);border-bottom:1px solid var(--line);overflow-x:auto}
+.dlabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin-right:4px;white-space:nowrap}
+.roll{display:flex;align-items:center;gap:8px;height:42px;padding:0 12px 0 8px;border-radius:10px;border:1px solid var(--line2);background:#fff;cursor:pointer;transition:transform .1s,box-shadow .1s;white-space:nowrap}
+.roll:hover{transform:translateY(-1px);box-shadow:0 3px 0 #D8D2C3}
+.roll:active{transform:translateY(0)}
+.swatch{width:26px;height:22px;border-radius:4px;border:1px solid rgba(20,20,19,.2);position:relative;flex-shrink:0}
+.swatch::after{content:'';position:absolute;right:-3px;top:2px;bottom:2px;width:3px;background:repeating-linear-gradient(to bottom,rgba(20,20,19,.35) 0 2px,transparent 2px 4px)}
+.roll-txt{text-align:left}
+.roll-txt b{display:block;font-size:12.5px;line-height:1.1}
+.roll-txt small{display:block;font-size:10.5px;color:var(--muted)}
+.tip{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.tip kbd{background:#fff;border:1px solid var(--line2);border-radius:4px;padding:1px 5px;font-size:11px;font-weight:600}
+
+/* Board Workspace */
+main{display:contents}
+.board-wrap{position:relative;overflow:auto;background:var(--ground);padding:20px}
+.board{position:relative;background:var(--board);border:2px solid #B8B1A2;border-radius:14px;box-shadow:0 8px 24px rgba(20,20,19,.08),inset 0 1px 0 #fff;min-width:100%;display:flex;flex-direction:column}
+
+/* Ruler */
+.ruler-row{display:flex;height:34px;border-bottom:1px solid var(--line2);background:rgba(20,20,19,.025);border-radius:12px 12px 0 0}
+.lane-stub{width:170px;flex-shrink:0;border-right:1px solid var(--line2);display:flex;align-items:center;justify-content:space-between;padding:0 14px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.ruler-track{position:relative;flex:1;overflow:hidden}
+.tick{position:absolute;top:0;bottom:0;border-left:1px solid rgba(20,20,19,.14);padding-left:5px;padding-top:8px;font-size:11px;color:var(--faint)}
+.tick.minor{border-left-color:rgba(20,20,19,.06)}
+
+/* Swimlanes */
+.lane{display:flex;border-bottom:1px solid var(--line);position:relative;transition:background .15s}
+.lane:first-child{border-radius:12px 12px 0 0}
+.lane:first-child .lane-head{border-radius:12px 0 0 0}
+.empty-hint{margin:0 0 14px;padding:12px 16px;background:#fff;border:1px dashed var(--line2);border-radius:10px;font-size:13.5px;color:var(--muted);max-width:720px}
+.empty-hint b{color:var(--ink)}
+.lane:last-child{border-bottom:0;border-radius:0 0 12px 12px}
+.lane-head{width:170px;flex-shrink:0;border-right:1px solid var(--line2);padding:14px;background:rgba(255,255,255,.55);display:flex;flex-direction:column;justify-content:center;gap:3px}
+.lane-head h2{margin:0;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.lane-head p{margin:0;font-size:11.5px;color:var(--muted);line-height:1.3}
+.lane-track{position:relative;flex:1;background-image:linear-gradient(to right,var(--grid) 1px,transparent 1px);cursor:crosshair}
+
+/* Magnetic Tape Strips */
+.strip{position:absolute;top:10px;bottom:10px;margin:0;font:inherit;text-align:left;appearance:none;-webkit-appearance:none;border-radius:6px;padding:7px 12px 7px 10px;display:flex;flex-direction:column;justify-content:space-between;cursor:grab;box-shadow:0 2px 5px rgba(20,20,19,.14),inset 0 1px 0 rgba(255,255,255,.45);border:1.5px solid rgba(20,20,19,.22);transition:box-shadow .12s,transform .08s;overflow:hidden}
+.strip:hover{box-shadow:0 4px 10px rgba(20,20,19,.2),inset 0 1px 0 rgba(255,255,255,.5)}
+.strip:focus-visible{outline:3px solid #1D5FAE;outline-offset:2px;z-index:6}
+.strip.selected{outline:2.5px solid var(--ink);outline-offset:1px;z-index:5;box-shadow:0 6px 16px rgba(20,20,19,.24)}
+.strip.dragging{cursor:grabbing;opacity:.92;z-index:10;transform:scale(1.01)}
+
+/* Serrated tape ends */
+.strip::before,.strip::after{content:'';position:absolute;top:0;bottom:0;width:4px;pointer-events:none;opacity:.35}
+.strip::before{left:0;background:repeating-linear-gradient(to bottom,#000 0 2px,transparent 2px 5px)}
+.strip::after{right:0;background:repeating-linear-gradient(to bottom,#000 0 2px,transparent 2px 5px)}
+
+.strip-top{display:flex;align-items:center;justify-content:space-between;gap:6px;pointer-events:none}
+.strip-role{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em}
+.strip-note{font-size:13px;font-weight:600;line-height:1.25;word-break:break-word;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;font-family:'Comic Sans MS','Chalkboard SE','Marker Felt',system-ui,sans-serif;letter-spacing:.01em}
+.strip-note.empty{font-style:italic;font-weight:400;font-family:inherit;font-size:12px}
+
+/* Inline Marker Input */
+.marker-input{width:100%;height:100%;border:0;background:rgba(255,255,255,.85);color:#141413;border-radius:4px;padding:4px 6px;font-size:13px;font-weight:600;resize:none;outline:2px solid var(--ink);font-family:'Comic Sans MS','Chalkboard SE','Marker Felt',system-ui,sans-serif}
+
+/* Resize Handle */
+.trim-handle{position:absolute;top:0;right:0;bottom:0;width:10px;cursor:ew-resize;z-index:3}
+.trim-handle:hover{background:rgba(20,20,19,.15)}
+
+/* Ghost Strip while tearing */
+.tear-ghost{position:absolute;top:10px;bottom:10px;border-radius:6px;border:2px dashed var(--ink);opacity:.65;pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+
+/* Floating Strip Toolbar */
+.sbar{position:fixed;z-index:30;display:flex;align-items:center;gap:4px;padding:5px 8px;background:var(--ink);color:var(--paper);border-radius:10px;box-shadow:0 6px 18px rgba(20,20,19,.25);font-size:12.5px}
+.sbar button{height:28px;padding:0 8px;border:0;border-radius:6px;background:rgba(255,255,255,.12);color:inherit;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px}
+.sbar button:hover{background:rgba(255,255,255,.24)}
+.sbar .del:hover{background:#C8261B}
+.sbar .c-dot{width:24px;height:24px;border-radius:50%;border:2px solid #fff;cursor:pointer;padding:0}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(20,20,19,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal{background:var(--paper);border:1px solid var(--line2);border-radius:14px;width:100%;max-width:720px;max-height:86vh;display:flex;flex-direction:column;box-shadow:0 16px 40px rgba(20,20,19,.25)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--line)}
+.modal-head h3{margin:0;font-size:17px}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.script-box{width:100%;height:340px;padding:14px;border-radius:10px;border:1px solid var(--line2);background:#fff;font-size:13px;line-height:1.5;resize:vertical}
+.modal-foot{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px;border-top:1px solid var(--line)}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:60;box-shadow:0 4px 14px rgba(20,20,19,.22)}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<div id="live" class="sr-only" aria-live="polite"></div>
+
+<script>
+/* ==========================================================================
+   StoryTape — Magnetic Strip & Dry-Wipe Marker Storyboard
+   Zero-dependency single-file prototype with Video/Audio persistence,
+   JSON save/load, and offline OOXML (.docx) two-column script export.
+   ========================================================================== */
+
+const TAPE_ROLLS = {
+  structure: { key:'structure', label:'Structure',  role:'Beat',       bg:'#FFFFFF', ink:'#141413', hint:'NEWS, BECAUSE, PIVOT, NEXT' },
+  reporter:  { key:'reporter',  label:'Reporter',   role:'Reporter',   bg:'#C8261B', ink:'#FFFFFF', hint:'VO, Track, PTC, Link' },
+  contrib:   { key:'contrib',   label:'Interview',  role:'Contributor',bg:'#1D5FAE', ink:'#FFFFFF', hint:'SOT, Clip, Vox Pop' },
+  sound:     { key:'sound',     label:'Sound',      role:'Sound',      bg:'#1B7A43', ink:'#FFFFFF', hint:'NAT, Atmos, Actuality, Music' },
+  picture:   { key:'picture',   label:'Picture',    role:'Picture',    bg:'#FFDB45', ink:'#231B00', hint:'WS, MCU, GV, Detail' },
+  graphic:   { key:'graphic',   label:'Graphic',    role:'Graphic',    bg:'#FFA95C', ink:'#231B00', hint:'Map, Data, Astons' }   // white text on red, blue and green needs these darker shades (4.5:1)
+};
+
+const MEDIA_CONFIG = {
+  video: {
+    name: 'Video',
+    lanes: [
+      { key:'structure', name:'Structure',       desc:'Story beats & turns',     defaultRoll:'structure', height:64 },
+      { key:'editorial', name:'Editorial Voice', desc:'Reporter & contributors', defaultRoll:'reporter',  height:92 },
+      { key:'sound',     name:'Sound',           desc:'NAT, atmos & music',      defaultRoll:'sound',     height:78 },
+      { key:'picture',   name:'Picture',         desc:'Shots, PTC & graphics',   defaultRoll:'picture',   height:96 }
+    ],
+    rolls: ['structure','reporter','contrib','sound','picture','graphic']
+  },
+  audio: {
+    name: 'Audio',
+    lanes: [
+      { key:'structure', name:'Structure',       desc:'Story beats & turns',     defaultRoll:'structure', height:68 },
+      { key:'editorial', name:'Editorial Voice', desc:'Track, PTM & clips',      defaultRoll:'reporter',  height:104 },
+      { key:'sound',     name:'Sound',           desc:'Actuality & atmos',       defaultRoll:'sound',     height:92 }
+    ],
+    rolls: ['structure','reporter','contrib','sound']
+  }
+};
+
+/* Lengths are relative, never time: a strip is so many squares of the board's grid long.
+   Stored numbers (start, dur) are in half-squares, as the saved format always was; SQ is one square. */
+const PX_PER_SEC = 18;          // pixels per stored unit
+const SNAP_SEC = 2;             // one square, in stored units
+const BOARD_SECONDS = 90;       // the empty board's width, in stored units
+const squares = u => Math.round(u / SNAP_SEC);
+const plSq = u => { const n = squares(u); return n + (n === 1 ? ' square' : ' squares'); };
+
+let medium = 'video';
+try {
+  const savedMed = localStorage.getItem('storytape.medium');
+  if (MEDIA_CONFIG[savedMed]) medium = savedMed;
+} catch (e) {}
+
+const storeKey = m => 'storytape.v1.' + m;
+let seq = 100;
+let strips = [];
+let selectedId = null;
+let editingId = null;
+let activeRoll = 'picture';
+let modalOpen = false;
+let toastMsg = '';
+let toastTimer = null;
+let past = [], future = [];     // undo history: snapshots of the strips
+let focusId = null;             // the strip to put keyboard focus back on after a redraw
+
+function loadStrips(m) {
+  try {
+    const raw = localStorage.getItem(storeKey(m));
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch (e) {}
+  return [];   // a new board starts empty
+}
+
+function saveStrips() {
+  try {
+    localStorage.setItem(storeKey(medium), JSON.stringify(strips));
+  } catch (e) {}
+}
+
+strips = loadStrips(medium);
+
+function notify(msg) {
+  toastMsg = msg;
+  const live = document.getElementById('live'); if (live) live.textContent = msg;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toastMsg = ''; render(); }, 2800);
+  render();
+}
+
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const snap = sec => Math.max(0, Math.round(sec / SNAP_SEC) * SNAP_SEC);
+
+/* Every change goes through remember() first, so it can be undone. */
+const copy = a => JSON.parse(JSON.stringify(a));
+function remember(before = strips) { past.push(copy(before)); if (past.length > 60) past.shift(); future = []; }
+function undo() {
+  if (!past.length) return;
+  future.push(copy(strips)); strips = past.pop(); afterHistory('Undone');
+}
+function redo() {
+  if (!future.length) return;
+  past.push(copy(strips)); strips = future.pop(); afterHistory('Redone');
+}
+function afterHistory(msg) {
+  if (!strips.some(s => s.id === selectedId)) selectedId = null;
+  editingId = null; saveStrips(); notify(msg);
+}
+
+function setMedium(m) {
+  if (m === medium || !MEDIA_CONFIG[m]) return;
+  saveStrips();
+  medium = m;
+  try { localStorage.setItem('storytape.medium', m); } catch (e) {}
+  strips = loadStrips(m);
+  selectedId = null;
+  editingId = null;
+  past = []; future = [];
+  if (!MEDIA_CONFIG[m].rolls.includes(activeRoll)) {
+    activeRoll = MEDIA_CONFIG[m].rolls[0];
+  }
+  render();
+}
+
+/* ---------------- ACTIONS ---------------- */
+function addStripFromRoll(rollKey) {
+  activeRoll = rollKey;
+  const cfg = MEDIA_CONFIG[medium];
+  const targetLane =
+    rollKey === 'structure' ? 'structure' :
+    (rollKey === 'reporter' || rollKey === 'contrib') ? 'editorial' :
+    rollKey === 'sound' ? 'sound' : 'picture';
+
+  const laneStrips = strips.filter(s => s.lane === targetLane);
+  const endSec = laneStrips.reduce((max, s) => Math.max(max, s.start + s.dur), 0);
+  const dur = rollKey === 'structure' ? 8 : 10;
+  const id = 'st_' + (++seq);
+  remember();
+  strips.push({ id, lane: targetLane, roll: rollKey, start: endSec, dur, note: '' });
+  selectedId = id;
+  editingId = id;
+  saveStrips();
+  render();
+}
+
+function deleteSelected() {
+  if (!selectedId) return;
+  remember();
+  strips = strips.filter(s => s.id !== selectedId);
+  selectedId = null;
+  editingId = null;
+  saveStrips();
+  render();
+}
+
+function duplicateSelected() {
+  const s = strips.find(x => x.id === selectedId);
+  if (!s) return;
+  const id = 'st_' + (++seq);
+  remember();
+  strips.push({ ...s, id, start: s.start + s.dur });
+  selectedId = id;
+  saveStrips();
+  render();
+}
+
+function changeStripRoll(id, rollKey) {
+  const s = strips.find(x => x.id === id);
+  if (!s || s.roll === rollKey) return;
+  remember();
+  s.roll = rollKey;
+  saveStrips();
+  render();
+}
+
+/* Finish writing on a strip: keep what's in the box (one undo step if it changed). It doesn't redraw;
+   the caller does. While render() is replacing the page, the box's blur is ignored, so a redraw can't
+   start another redraw underneath itself (that left focus on a strip that no longer existed). */
+let rendering = false;
+function finishEditing() {
+  if (!editingId) return;
+  const id = editingId, inp = document.querySelector('.marker-input');
+  editingId = null;
+  const s = strips.find(x => x.id === id);
+  if (s && inp && s.note !== inp.value.trim()) { remember(); s.note = inp.value.trim(); saveStrips(); }
+}
+
+function clearBoard() {
+  if (!strips.length) return;
+  remember();
+  strips = [];
+  selectedId = null;
+  editingId = null;
+  saveStrips();
+  notify('Board cleared. Undo brings it back.');
+}
+
+/* ---------------- JSON EXPORT & IMPORT ---------------- */
+function exportJSON() {
+  const payload = {
+    app: 'storytape',
+    version: 1,
+    medium,
+    savedAt: new Date().toISOString(),
+    strips
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `storytape-${medium}-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  notify('Saved ' + a.download);
+}
+
+async function importJSON(file) {
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || data.app !== 'storytape' || !Array.isArray(data.strips)) {
+      notify('Not a valid StoryTape JSON file');
+      return;
+    }
+    const targetMed = MEDIA_CONFIG[data.medium] ? data.medium : medium;
+    if (targetMed !== medium) {
+      medium = targetMed;
+      try { localStorage.setItem('storytape.medium', medium); } catch (e) {}
+    }
+    const validLanes = new Set(MEDIA_CONFIG[medium].lanes.map(l => l.key));
+    past = []; future = [];
+    remember();
+    strips = data.strips
+      .filter(s => s && validLanes.has(s.lane) && TAPE_ROLLS[s.roll])
+      .map(s => ({
+        id: 'st_' + (++seq),
+        lane: s.lane,
+        roll: s.roll,
+        start: Math.max(0, Number(s.start) || 0),
+        dur: Math.max(SNAP_SEC, Number(s.dur) || 6),
+        note: String(s.note || '')
+      }));
+    selectedId = null;
+    editingId = null;
+    saveStrips();
+    notify(`Opened ${file.name}. Undo puts back what was here.`);
+  } catch (e) {
+    notify('Could not read JSON file');
+  }
+}
+
+/* ---------------- SCRIPT COMPILATION & OFFLINE .DOCX GENERATOR ---------------- */
+function getScriptSegments() {
+  const maxEnd = Math.max(10, ...strips.map(s => s.start + s.dur));
+  const cuts = new Set([0]);
+  strips.forEach(s => {
+    cuts.add(s.start);
+    cuts.add(s.start + s.dur);
+  });
+  const sortedCuts = [...cuts].filter(t => t <= maxEnd).sort((a,b) => a - b);
+  const rows = [];
+
+  for (let i = 0; i < sortedCuts.length - 1; i++) {
+    const t0 = sortedCuts[i], t1 = sortedCuts[i + 1];
+    const active = strips.filter(s => s.start < t1 && (s.start + s.dur) > t0);
+    if (!active.length) continue;
+
+    const getNotes = lane => active
+      .filter(s => s.lane === lane)
+      .map(s => s.note || `[${TAPE_ROLLS[s.roll].role}]`)
+      .join(' / ');
+
+    rows.push({
+      part: `Part ${rows.length + 1}`,
+      structure: getNotes('structure'),
+      picture: medium === 'video' ? getNotes('picture') : '',
+      sound: getNotes('sound'),
+      editorial: getNotes('editorial')
+    });
+  }
+  return rows;
+}
+
+function buildMarkdownScript() {
+  const rows = getScriptSegments();
+  if (!rows.length) return '# Empty Board\nAdd some magnetic strips first to generate a script outline.';
+  const lines = [`# StoryTape Rough Script (${MEDIA_CONFIG[medium].name.toUpperCase()})\n`];
+  rows.forEach(r => {
+    lines.push(`### ${r.part}${r.structure ? ` — ${r.structure}` : ''}`);
+    if (medium === 'video' && r.picture) lines.push(`- **VISION:** ${r.picture}`);
+    if (r.sound) lines.push(`- **SOUND:** ${r.sound}`);
+    if (r.editorial) lines.push(`- **EDITORIAL:** ${r.editorial}`);
+    lines.push('');
+  });
+  return lines.join('\n');
+}
+
+/* Minimal, zero-dependency ZIP writer (STORE method + CRC32) for valid client-side OOXML .docx */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let i = 0; i < 256; i++) {
+    let c = i;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[i] = c;
+  }
+  return t;
+})();
+
+function crc32(buf) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < buf.length; i++) c = CRC_TABLE[(c ^ buf[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function createStoredZip(files) {
+  const enc = new TextEncoder();
+  const entries = files.map(f => {
+    const nameBytes = enc.encode(f.name);
+    const dataBytes = typeof f.data === 'string' ? enc.encode(f.data) : f.data;
+    return { nameBytes, dataBytes, crc: crc32(dataBytes), offset: 0 };
+  });
+
+  let offset = 0;
+  entries.forEach(e => {
+    e.offset = offset;
+    offset += 30 + e.nameBytes.length + e.dataBytes.length;
+  });
+
+  const cdOffset = offset;
+  let cdSize = 0;
+  entries.forEach(e => { cdSize += 46 + e.nameBytes.length; });
+
+  const totalSize = offset + cdSize + 22;
+  const out = new Uint8Array(totalSize);
+  const view = new DataView(out.buffer);
+  let p = 0;
+
+  entries.forEach(e => {
+    view.setUint32(p, 0x04034b50, true); p += 4;
+    view.setUint16(p, 20, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint32(p, e.crc, true); p += 4;
+    view.setUint32(p, e.dataBytes.length, true); p += 4;
+    view.setUint32(p, e.dataBytes.length, true); p += 4;
+    view.setUint16(p, e.nameBytes.length, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    out.set(e.nameBytes, p); p += e.nameBytes.length;
+    out.set(e.dataBytes, p); p += e.dataBytes.length;
+  });
+
+  entries.forEach(e => {
+    view.setUint32(p, 0x02014b50, true); p += 4;
+    view.setUint16(p, 20, true); p += 2;
+    view.setUint16(p, 20, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint32(p, e.crc, true); p += 4;
+    view.setUint32(p, e.dataBytes.length, true); p += 4;
+    view.setUint32(p, e.dataBytes.length, true); p += 4;
+    view.setUint16(p, e.nameBytes.length, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint16(p, 0, true); p += 2;
+    view.setUint32(p, 0, true); p += 4;
+    view.setUint32(p, e.offset, true); p += 4;
+    out.set(e.nameBytes, p); p += e.nameBytes.length;
+  });
+
+  view.setUint32(p, 0x06054b50, true); p += 4;
+  view.setUint16(p, 0, true); p += 2;
+  view.setUint16(p, 0, true); p += 2;
+  view.setUint16(p, entries.length, true); p += 2;
+  view.setUint16(p, entries.length, true); p += 2;
+  view.setUint32(p, cdSize, true); p += 4;
+  view.setUint32(p, cdOffset, true); p += 4;
+  view.setUint16(p, 0, true); p += 2;
+
+  return new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+}
+
+const xmlEsc = s => String(s ?? '').replace(/[<>&'"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]));
+
+function downloadBroadcastDocx() {
+  const rows = getScriptSegments();
+  if (!rows.length) {
+    notify('Add strips to the board before exporting a .docx script');
+    return;
+  }
+
+  const wPara = (text, bold = false, color = '141413') =>
+    `<w:p><w:pPr><w:spacing w:after="80"/></w:pPr><w:r><w:rPr>${bold ? '<w:b/>' : ''}<w:color w:val="${color}"/><w:sz w:val="20"/></w:rPr><w:t xml:space="preserve">${xmlEsc(text)}</w:t></w:r></w:p>`;
+
+  const tableRowsXml = rows.map(r => {
+    const leftParas = [wPara(r.part, true, '5E5A50')];
+    if (r.structure) leftParas.push(wPara('BEAT: ' + r.structure, true, '7440B0'));
+    if (medium === 'video' && r.picture) leftParas.push(wPara('VISION: ' + r.picture, false, '141413'));
+    if (r.sound) leftParas.push(wPara('SOUND: ' + r.sound, false, '1B7A43'));
+
+    const rightParas = [
+      r.editorial ? wPara(r.editorial, false, '141413') : wPara('[No spoken words / actuality runs]', false, '777777')
+    ];
+
+    return `<w:tr>
+      <w:tc><w:tcPr><w:tcW w:w="4500" w:type="dxa"/><w:tcMar><w:top w:w="120" w:type="dxa"/><w:bottom w:w="120" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tcMar></w:tcPr>${leftParas.join('')}</w:tc>
+      <w:tc><w:tcPr><w:tcW w:w="5100" w:type="dxa"/><w:tcMar><w:top w:w="120" w:type="dxa"/><w:bottom w:w="120" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tcMar></w:tcPr>${rightParas.join('')}</w:tc>
+    </w:tr>`;
+  }).join('');
+
+  const leftHeader = medium === 'video' ? 'STRUCTURE / VISION / SOUND' : 'STRUCTURE / SOUND';
+  const docXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p><w:r><w:rPr><w:b/><w:sz w:val="30"/></w:rPr><w:t>STORYTAPE BROADCAST SCRIPT (${xmlEsc(MEDIA_CONFIG[medium].name.toUpperCase())})</w:t></w:r></w:p>
+    <w:p><w:pPr><w:spacing w:after="200"/></w:pPr><w:r><w:rPr><w:color w:val="5E5A50"/><w:sz w:val="18"/></w:rPr><w:t>Generated ${new Date().toLocaleDateString('en-GB')} · Two-Column Production Outline</w:t></w:r></w:p>
+    <w:tbl>
+      <w:tblPr>
+        <w:tblW w:w="9600" w:type="dxa"/>
+        <w:tblBorders>
+          <w:top w:val="single" w:sz="6" w:space="0" w:color="CCCCCC"/>
+          <w:bottom w:val="single" w:sz="6" w:space="0" w:color="CCCCCC"/>
+          <w:left w:val="single" w:sz="6" w:space="0" w:color="CCCCCC"/>
+          <w:right w:val="single" w:sz="6" w:space="0" w:color="CCCCCC"/>
+          <w:insideH w:val="single" w:sz="4" w:space="0" w:color="DDDDDD"/>
+          <w:insideV w:val="single" w:sz="6" w:space="0" w:color="CCCCCC"/>
+        </w:tblBorders>
+      </w:tblPr>
+      <w:tr>
+        <w:tc><w:tcPr><w:tcW w:w="4500" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="EFEBE1"/><w:tcMar><w:top w:w="100" w:type="dxa"/><w:bottom w:w="100" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tcMar></w:tcPr>${wPara(leftHeader, true)}</w:tc>
+        <w:tc><w:tcPr><w:tcW w:w="5100" w:type="dxa"/><w:shd w:val="clear" w:color="auto" w:fill="EFEBE1"/><w:tcMar><w:top w:w="100" w:type="dxa"/><w:bottom w:w="100" w:type="dxa"/><w:left w:w="140" w:type="dxa"/><w:right w:w="140" w:type="dxa"/></w:tcMar></w:tcPr>${wPara('EDITORIAL / SPOKEN WORDS & CLIPS', true)}</w:tc>
+      </w:tr>
+      ${tableRowsXml}
+    </w:tbl>
+    <w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr>
+  </w:body>
+</w:document>`;
+
+  const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+  const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+  const blob = createStoredZip([
+    { name: '[Content_Types].xml', data: contentTypesXml },
+    { name: '_rels/.rels', data: relsXml },
+    { name: 'word/document.xml', data: docXml }
+  ]);
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `storytape-script-${medium}-${new Date().toISOString().slice(0,10)}.docx`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  notify('Downloaded ' + a.download);
+}
+
+/* ---------------- DRAG, TEAR & TRIM INTERACTIONS ---------------- */
+let dragState = null;
+
+document.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  if (e.target.closest('.marker-input') || e.target.closest('.sbar') || e.target.closest('.modal')) return;
+
+  const trimEl = e.target.closest('.trim-handle');
+  const stripEl = e.target.closest('.strip');
+  const trackEl = e.target.closest('.lane-track');
+
+  if (trimEl && stripEl) {
+    e.stopPropagation();
+    const s = strips.find(x => x.id === stripEl.dataset.id);
+    if (!s) return;
+    selectedId = s.id;
+    finishEditing();
+    dragState = { kind: 'trim', id: s.id, startX: e.clientX, origDur: s.dur, before: copy(strips) };
+    render();
+    return;
+  }
+
+  if (stripEl) {
+    const s = strips.find(x => x.id === stripEl.dataset.id);
+    if (!s) return;
+    if (editingId && editingId !== s.id) finishEditing();
+    selectedId = s.id;
+    dragState = {
+      kind: 'move',
+      id: s.id,
+      lane: s.lane,
+      startX: e.clientX,
+      origStart: s.start,
+      snapshot: JSON.parse(JSON.stringify(strips)),
+      moved: false
+    };
+    render();
+    return;
+  }
+
+  if (trackEl) {
+    selectedId = null;
+    finishEditing();
+    const rect = trackEl.getBoundingClientRect();
+    const startSec = snap((e.clientX - rect.left) / PX_PER_SEC);
+    const laneKey = trackEl.dataset.lane;
+    const rollKey =
+      laneKey === 'structure' ? 'structure' :
+      laneKey === 'editorial' ? (activeRoll === 'contrib' ? 'contrib' : 'reporter') :
+      laneKey === 'sound' ? 'sound' :
+      (activeRoll === 'graphic' ? 'graphic' : 'picture');
+
+    dragState = {
+      kind: 'tear',
+      lane: laneKey,
+      roll: rollKey,
+      rectLeft: rect.left,
+      anchorSec: startSec,
+      curSec: startSec + 4
+    };
+    render();
+  }
+});
+
+window.addEventListener('pointermove', e => {
+  if (!dragState) return;
+  const dx = e.clientX - dragState.startX;
+
+  if (dragState.kind === 'trim') {
+    const s = strips.find(x => x.id === dragState.id);
+    if (!s) return;
+    s.dur = Math.max(SNAP_SEC, snap(dragState.origDur + dx / PX_PER_SEC));
+    render();
+  } else if (dragState.kind === 'move') {
+    if (Math.abs(dx) > 4) dragState.moved = true;
+    if (!dragState.moved) return;
+    const deltaSec = snap(dx / PX_PER_SEC);
+    const nextStart = Math.max(0, dragState.origStart + deltaSec);
+    const base = JSON.parse(JSON.stringify(dragState.snapshot));
+    const target = base.find(x => x.id === dragState.id);
+    if (!target) return;
+    target.start = nextStart;
+
+    if (e.shiftKey && deltaSec > 0) {
+      base.forEach(other => {
+        if (other.id !== target.id && other.lane === target.lane && other.start >= dragState.origStart) {
+          other.start += deltaSec;
+        }
+      });
+    }
+    strips = base;
+    render();
+  } else if (dragState.kind === 'tear') {
+    const ptrSec = snap((e.clientX - dragState.rectLeft) / PX_PER_SEC);
+    dragState.curSec = ptrSec === dragState.anchorSec ? dragState.anchorSec + 4 : ptrSec;
+    render();
+  }
+});
+
+window.addEventListener('pointerup', () => {
+  if (!dragState) return;
+  if (dragState.kind === 'tear') {
+    const s0 = Math.min(dragState.anchorSec, dragState.curSec);
+    const s1 = Math.max(dragState.anchorSec, dragState.curSec);
+    const dur = Math.max(SNAP_SEC, s1 - s0);
+    const id = 'st_' + (++seq);
+    remember();
+    strips.push({ id, lane: dragState.lane, roll: dragState.roll, start: s0, dur, note: '' });
+    selectedId = id;
+    editingId = id;
+    saveStrips();
+  } else if (dragState.kind === 'move' && dragState.moved) {
+    if (JSON.stringify(strips) !== JSON.stringify(dragState.snapshot)) remember(dragState.snapshot);
+    saveStrips();
+  } else if (dragState.kind === 'trim') {
+    if (JSON.stringify(strips) !== JSON.stringify(dragState.before)) remember(dragState.before);
+    saveStrips();
+  }
+  dragState = null;
+  render();
+});
+
+document.addEventListener('dblclick', e => {
+  const stripEl = e.target.closest('.strip');
+  if (stripEl) {
+    selectedId = stripEl.dataset.id;
+    editingId = stripEl.dataset.id;
+    render();
+  }
+});
+
+/* Keyboard: everything the pointer does to a strip can be done from the keys.
+   On a strip: Enter writes on it, ← → move it a square, [ ] shorten or lengthen it, Delete removes it.
+   Anywhere: Cmd/Ctrl+Z undoes, with Shift redoes. */
+function keyEdit(id, change) {
+  const s = strips.find(x => x.id === id); if (!s) return;
+  const before = copy(strips);
+  change(s);
+  if (JSON.stringify(strips) === JSON.stringify(before)) return;
+  remember(before); selectedId = id; focusId = id; saveStrips(); render();
+  const live = document.getElementById('live'); if (live) live.textContent = describe(s);
+}
+document.addEventListener('keydown', e => {
+  if (editingId) {
+    if (e.key === 'Escape' || (e.key === 'Enter' && !e.shiftKey)) {
+      e.preventDefault();
+      focusId = editingId;
+      finishEditing(); render();
+    }
+    return;
+  }
+  if (modalOpen) { if (e.key === 'Escape') { modalOpen = false; render(); } return; }
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key.toLowerCase() === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  const el = e.target.closest && e.target.closest('.strip');
+  if (el) {
+    const id = el.dataset.id;
+    if (e.key === 'Enter' || e.key === 'F2') { e.preventDefault(); selectedId = id; editingId = id; render(); return; }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); const d = e.key === 'ArrowLeft' ? -SNAP_SEC : SNAP_SEC; keyEdit(id, s => { s.start = Math.max(0, s.start + d); }); return; }
+    if (e.key === '[' || e.key === ']') { e.preventDefault(); const d = e.key === '[' ? -SNAP_SEC : SNAP_SEC; keyEdit(id, s => { s.dur = Math.max(SNAP_SEC, s.dur + d); }); return; }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); selectedId = id; deleteSelected(); return; }
+  }
+  if (e.key === 'Escape' && selectedId) { const id = selectedId; selectedId = null; focusId = id; render(); }
+});
+/* Focusing a strip selects it, so its toolbar appears. */
+document.addEventListener('focusin', e => {
+  const el = e.target.closest && e.target.closest('.strip');
+  if (el && selectedId !== el.dataset.id && !dragState) { selectedId = el.dataset.id; focusId = el.dataset.id; render(); }
+});
+/* What a strip is, in words: for its button's name and for announcements. */
+function describe(s) {
+  const r = TAPE_ROLLS[s.roll] || TAPE_ROLLS.structure;
+  return `${r.label} strip, ${plSq(s.dur)}${s.note ? ': ' + s.note : ', not written on yet'}`;
+}
+/* The board as text, for screen readers: each lane left to right, with its gaps. */
+function orderText(cfg) {
+  const end = Math.max(0, ...strips.map(s => s.start + s.dur));
+  const lanes = cfg.lanes.map(lane => {
+    let cur = 0, items = '';
+    strips.filter(s => s.lane === lane.key).sort((a, b) => a.start - b.start).forEach(s => {
+      if (s.start > cur) items += `<li>Gap, ${plSq(s.start - cur)}</li>`;
+      items += `<li>${s.start < cur ? 'Overlapping the strip before it. ' : ''}${esc(describe(s))}</li>`;
+      cur = Math.max(cur, s.start + s.dur);
+    });
+    if (cur && cur < end) items += `<li>Gap to the end, ${plSq(end - cur)}</li>`;
+    return `<h3>${esc(lane.name)}</h3>${items ? `<ol>${items}</ol>` : '<p>Nothing here yet.</p>'}`;
+  }).join('');
+  return `<section class="sr-only" aria-labelledby="orderHead"><h2 id="orderHead">Running order</h2><p>Each lane, top to bottom, read left to right.</p>${lanes}</section>`;
+}
+
+/* ---------------- RENDER ---------------- */
+function render() {
+  const app = document.getElementById('app');
+  const cfg = MEDIA_CONFIG[medium];
+  const maxStripEnd = strips.reduce((m, s) => Math.max(m, s.start + s.dur), 0);
+  const totalSecs = Math.max(BOARD_SECONDS, maxStripEnd + 16);
+  const trackWidth = totalSecs * PX_PER_SEC;
+
+  // Header
+  const headerHTML = `
+    <header>
+      <div class="brand">
+        <div class="logo-mark" aria-hidden="true">
+          <span style="background:#FFDB45;width:100%"></span>
+          <span style="background:#4A8FDF;width:78%"></span>
+          <span style="background:#F2493D;width:90%"></span>
+        </div>
+        <div>
+          <h1>StoryTape</h1>
+          <p>Magnetic storyboard &amp; dry-wipe marker board</p>
+        </div>
+      </div>
+      <div class="medium" role="radiogroup" aria-label="Medium">
+        <button role="radio" aria-checked="${medium==='video'}" onclick="setMedium('video')">Video</button>
+        <button role="radio" aria-checked="${medium==='audio'}" onclick="setMedium('audio')">Audio</button>
+      </div>
+      <div class="spacer"></div>
+      <button class="tbtn" onclick="undo()" ${past.length ? '' : 'disabled'}>Undo</button>
+      <button class="tbtn" onclick="redo()" ${future.length ? '' : 'disabled'}>Redo</button>
+      <button class="tbtn" onclick="clearBoard()" ${strips.length ? '' : 'disabled'}>Clear Board</button>
+      <span class="hsep"></span>
+      <button class="tbtn" onclick="exportJSON()" title="Save board layout as JSON">Save JSON</button>
+      <button class="tbtn" onclick="document.getElementById('jsonIn').click()" title="Open saved StoryTape JSON">Load JSON</button>
+      <input type="file" id="jsonIn" accept=".json,application/json" hidden onchange="if(this.files[0]){importJSON(this.files[0]);this.value='';}">
+      <span class="hsep"></span>
+      <button class="tbtn primary" onclick="modalOpen=true;render()">Export Script</button>
+    </header>
+  `;
+
+  // Tape Roll Dispensers
+  const rollsHTML = `
+    <div class="dispensers" role="group" aria-label="Tape rolls">
+      <span class="dlabel">Tape Rolls</span>
+      ${cfg.rolls.map(rk => {
+        const r = TAPE_ROLLS[rk];
+        return `
+          <button class="roll" onclick="addStripFromRoll('${rk}')" title="Add ${esc(r.label)} strip (${esc(r.hint)})">
+            <span class="swatch" style="background:${r.bg}"></span>
+            <span class="roll-txt">
+              <b>${esc(r.label)}</b>
+              <small>${esc(r.hint)}</small>
+            </span>
+          </button>
+        `;
+      }).join('')}
+      <span class="tip">Drag along a lane to tear tape · Double-click a strip to write · Hold <kbd>Shift</kbd> to ripple · Keys: <kbd>←</kbd><kbd>→</kbd> move, <kbd>[</kbd><kbd>]</kbd> length</span>
+    </div>
+  `;
+
+  // Swimlanes
+  const lanesHTML = cfg.lanes.map(lane => {
+    const laneStrips = strips.filter(s => s.lane === lane.key);
+    const stripsHTML = laneStrips.map(s => {
+      const r = TAPE_ROLLS[s.roll] || TAPE_ROLLS.structure;
+      const isSel = s.id === selectedId;
+      const isEdit = s.id === editingId;
+      const isDrag = dragState && dragState.kind === 'move' && dragState.id === s.id && dragState.moved;
+      const left = s.start * PX_PER_SEC;
+      const width = s.dur * PX_PER_SEC;
+
+      return `
+        <${isEdit ? 'div' : 'button'} class="strip ${isSel ? 'selected' : ''} ${isDrag ? 'dragging' : ''}"
+             data-id="${s.id}" ${isEdit ? '' : `aria-pressed="${isSel}" aria-label="${esc(describe(s))}"`}
+             style="left:${left}px;width:${width}px;background:${r.bg};color:${r.ink}">
+          ${isEdit ? `
+            <textarea class="marker-input" aria-label="Write on the ${esc(r.label.toLowerCase())} strip" placeholder="Write shot, clip or beat note..."
+              onblur="if (!rendering) { finishEditing(); render(); }">${esc(s.note)}</textarea>
+          ` : `
+            <span class="strip-top" aria-hidden="true">
+              <span class="strip-role">${esc(r.role)}</span>
+            </span>
+            <span class="strip-note ${s.note ? '' : 'empty'}" aria-hidden="true">${s.note ? esc(s.note) : 'Double-click to write…'}</span>
+          `}
+          <span class="trim-handle" aria-hidden="true" title="Drag the edge to change its length"></span>
+        </${isEdit ? 'div' : 'button'}>
+      `;
+    }).join('');
+
+    let ghostHTML = '';
+    if (dragState && dragState.kind === 'tear' && dragState.lane === lane.key) {
+      const s0 = Math.min(dragState.anchorSec, dragState.curSec);
+      const s1 = Math.max(dragState.anchorSec, dragState.curSec);
+      const dur = Math.max(SNAP_SEC, s1 - s0);
+      const r = TAPE_ROLLS[dragState.roll];
+      ghostHTML = `<div class="tear-ghost" aria-hidden="true" style="left:${s0 * PX_PER_SEC}px;width:${dur * PX_PER_SEC}px;background:${r.bg};color:${r.ink}">${plSq(dur)}</div>`;
+    }
+
+    return `
+      <div class="lane" role="group" aria-label="${esc(lane.name)} lane" style="height:${lane.height}px">
+        <div class="lane-head">
+          <h2>${esc(lane.name)}</h2>
+          <p>${esc(lane.desc)}</p>
+        </div>
+        <div class="lane-track" data-lane="${lane.key}" style="width:${trackWidth}px;background-size:${SNAP_SEC * PX_PER_SEC}px 100%">
+          ${stripsHTML}
+          ${ghostHTML}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Floating Toolbar for Selected Strip
+  let floatingBarHTML = '';
+  const selStrip = selectedId && !editingId && strips.find(s => s.id === selectedId);
+  if (selStrip) {
+    const sw = cfg.rolls.map(rk => {
+      const r = TAPE_ROLLS[rk];
+      return `<button class="c-dot" style="background:${r.bg}" aria-label="Change to ${esc(r.label)} tape" aria-pressed="${selStrip.roll === rk}" title="Change to ${esc(r.label)} tape" onclick="changeStripRoll('${selStrip.id}','${rk}')"></button>`;
+    }).join('');
+    floatingBarHTML = `
+      <div class="sbar" role="toolbar" aria-label="Selected strip" style="bottom:24px;right:24px">
+        <span style="padding:0 6px">${plSq(selStrip.dur)}</span>
+        <button onclick="editingId='${selStrip.id}';render()">✎ Write</button>
+        <button onclick="duplicateSelected()">Duplicate</button>
+        <div style="display:flex;gap:4px;padding:0 4px">${sw}</div>
+        <button class="del" onclick="deleteSelected()">Remove</button>
+      </div>
+    `;
+  }
+
+  // Export Modal
+  const modalHTML = !modalOpen ? '' : `
+    <div class="modal-bg" onclick="if(event.target===this){modalOpen=false;render();}">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="Export Broadcast Script">
+        <div class="modal-head">
+          <h3>Export Broadcast Script (${esc(cfg.name)})</h3>
+          <button class="tbtn" onclick="modalOpen=false;render()">Close</button>
+        </div>
+        <div class="modal-body">
+          <p style="margin:0 0 10px;font-size:13px;color:var(--muted)">
+            Reads your strips left to right and turns them into a running order, one part each time a strip starts or ends. Download a ready-to-edit two-column Word file or copy the Markdown below.
+          </p>
+          <textarea class="script-box mono" id="mdOut" readonly aria-label="Script outline as Markdown">${esc(buildMarkdownScript())}</textarea>
+        </div>
+        <div class="modal-foot">
+          <button class="tbtn" onclick="navigator.clipboard.writeText(document.getElementById('mdOut').value);notify('Copied Markdown to clipboard')">Copy Markdown</button>
+          <button class="tbtn primary" onclick="downloadBroadcastDocx()">Download Two-Column .docx</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  rendering = true;
+  app.innerHTML = `
+    ${headerHTML}
+    <main>
+    ${rollsHTML}
+    <div class="board-wrap" tabindex="0" role="region" aria-label="Board">
+      ${strips.length ? '' : '<p class="empty-hint"><b>Your board is empty.</b> Take a strip from a tape roll above, or drag along an empty lane to tear one off. Then write on it.</p>'}
+      <div class="board" style="width:${trackWidth + 170}px">
+        ${lanesHTML}
+      </div>
+      ${orderText(cfg)}
+    </div>
+    ${floatingBarHTML}
+    </main>
+    ${modalHTML}
+    ${toastMsg ? `<div class="toast" aria-hidden="true">${esc(toastMsg)}</div>` : ''}
+  `;
+  rendering = false;
+
+  if (editingId) {
+    const inp = document.querySelector('.marker-input');
+    if (inp) {
+      inp.focus();
+      inp.setSelectionRange(inp.value.length, inp.value.length);
+    }
+  } else if (focusId) {
+    const el = document.querySelector(`.strip[data-id="${focusId}"]`);
+    focusId = null;
+    if (el && document.activeElement !== el) el.focus({ preventScroll: false });
+  }
+}
+
+render();
+</script>
+</body>
+</html>

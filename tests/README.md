@@ -27,6 +27,7 @@ From the project folder:
 ```
 python tests/run_tests.py          # headless
 python tests/run_tests.py --show   # watch it in a browser window
+python tests/storytape_check.py     # StoryTape: no time, keyboard, undo and axe checks
 ```
 
 It prints `ok` or `FAIL` for each check, and exits with 1 if anything failed.
