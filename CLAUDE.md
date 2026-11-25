@@ -51,10 +51,10 @@ Rough order, top to bottom:
 
 ### Rendering
 
-- The view is an orthographic projection with turn (`az`, 45° = isometric), tilt (`el`) and roll. The turn is limited to about ±20° **on purpose**: beyond that the painter's-order drawing and the three visible faces stop being correct.
+- The view is an orthographic projection with turn (`az`, 45° = isometric) and tilt (`el`); no roll. The scale is fitted to the isometric view, so turning never resizes the build. The turn is limited to about ±20° **on purpose**: beyond that the painter's-order drawing and the three visible faces stop being correct.
 - Bricks are drawn left to right within a layer, layers bottom to top. Don't change that order.
-- While dragging, redraw only the stage (`scheduleStage`); the full `render()` happens once, on release.
-- Brick drag follows the pointer's **horizontal** movement only, corrected for roll. Don't return to the diagonal projection: it felt laggy.
+- While turning or resizing, redraw only the stage (`scheduleStage`). Moving a brick redraws nothing: `startHold()` lifts it once, then the held brick, its drop outline and the shoved bricks are moved by position (`brickAt()`), so they can slide. The full `render()` happens once, on release, after the brick settles.
+- Brick drag follows the pointer's **horizontal** movement only. Dropping uses `put(…, byHalf)`: a brick's first half means in front, its second half means after. Don't return to the diagonal projection: it felt laggy.
 
 ## Don't break existing work
 

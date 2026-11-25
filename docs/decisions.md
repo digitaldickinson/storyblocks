@@ -20,8 +20,11 @@ Decisions already made, with the reason. Reverse one only deliberately, and reco
 | **The running order is for screen readers only**: hidden on screen, plain text (no buttons), under a "Running order" heading. | A visible list added little for sighted students; the bricks already show it. No buttons, because hidden controls would take keyboard focus out of sight. |
 | **The layer key is fixed bottom-left** and doubles as a solo control. | Floating labels overlapped the board. The bottom-left corner is always empty in isometric. Solo fades higher layers and makes them click-through. |
 | **Faded bricks don't catch clicks.** | The brick you can see through the fade is the one you get. |
-| **View can turn ±20°, tilt ±15°, roll ±10°.** | Beyond that the drawing order and visible faces stop being correct. |
+| **View can turn ±20° and tilt ±15°. No roll** (removed Nov 2026). | Beyond that the drawing order and visible faces stop being correct. Roll only spun the flat picture, which looked distorted. |
+| **The build keeps its size while it's turned.** The stage fits to the isometric view; at Fit a turned build may run past the edges until it's turned back. | Refitting on every frame of a turn made the model shrink and grow, which read as wobble. |
+| **Labels are printed on the brick face**: baseline along the bottom edge, letters upright, never stretched. Studs are the true projection of a circle at any angle. | Slanted, stretched labels and studs that didn't lean with the view made the turned model look distorted. |
 | **Drag follows horizontal pointer movement only.** | Projecting onto the diagonal axis felt laggy, especially dragging left. |
+| **A dragged brick is held and follows the pointer smoothly**, with a dashed outline where it will land; shoved bricks slide, and it settles into place on release. Landing in a brick's first half goes in front of it (shoving it along); in its second half, after it. | Jumping a whole stud at a time, and always landing after a brick, felt clunky. Clicks and the toolbar still use the plain "goes after" rule. |
 | **Plain Notice first; no "that's deliberate" flag or reason capture yet.** | Avoid anything that feels like marking. See how students use it before adding flags or a "since last time" line. |
 | **No notice without a relationship in *this* build.** | Generic "Evidence" and "Meaning" prompts were dropped as margin-comment nags. |
 | **Vox pop MCUs aren't "repeated shots".** | `repeat-mid` on VOX: a string of MCUs is the grammar of a vox pop. |
