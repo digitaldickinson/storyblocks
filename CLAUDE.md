@@ -35,6 +35,7 @@ Rough order, top to bottom:
 5. Projection and geometry: `makeView`, `project`, `geom`, `svgBox`, `fitScale`
 6. Rendering: `renderStage` (bricks, gaps, highlight bands, grip, toolbar), `layerKey`, `render`, `redrawStage`
 7. Notice: `noticeContext`, `NOTICE_RULES`, `runNotice`, `noticePanel`
+7½. Plan the shoot: `PLAN_ON_LOCATION`, `planSheet` (the worksheet, built from the build), `actions.plan`/`planClose`/`planClear`. It lives in `#plan`, outside `#app`, so `render()` never touches it; typing is saved under `storystack.ws.<medium>`, keyed by brick id.
 8. Interaction: click, pointer drag (move, resize, orbit), keyboard, import and export
 
 ### The model
@@ -65,7 +66,7 @@ Rough order, top to bottom:
 
 ## Pedagogy guard-rails (read `docs/notice-principles.md`)
 
-- **No time.** No seconds, clocks, durations or targets anywhere.
+- **No time.** No seconds, clocks, durations or targets anywhere in the build or Notice. (Plan the shoot may ask for real-world dates, a deadline or a booking, because those are about the shoot, not the story's length.)
 - **No judgement.** No scores, percentages of "good", ticks, traffic lights, pass/fail, "fixes" or model answers. A build with no notices is not "good"; say so if it comes up.
 - **Noticing is chosen.** Nothing is analysed while the student builds. Notice runs when pressed; changing the build makes notices stale rather than updating them live.
 - **Messages state only what the build shows**: lengths in studs, which bricks, "at the start" / "at the end". No stud numbers (students never see numbers on the board). Interpretive notices are questions, never instructions.

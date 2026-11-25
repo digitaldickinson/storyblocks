@@ -48,6 +48,10 @@ with sync_playwright() as p:
     page.evaluate(f"ui.sel = '{brick}'; render()"); page.click('[data-act="notice"]'); page.wait_for_timeout(200)
     run(page, "Brick selected, Notice open")
 
+    page.evaluate("ui.sel = null; render()"); page.click('[data-act="plan"]'); page.wait_for_timeout(200)
+    run(page, "Plan the shoot open")
+    page.keyboard.press("Escape")
+
     page.evaluate("ui.sel = null; ui.notice = null; render()")
     page.set_input_files("#importInput", os.path.join(ROOT, "fixtures", "example-audio-pumpkins.json")); page.wait_for_timeout(150)
     page.evaluate("ui.msg = ''; render()")

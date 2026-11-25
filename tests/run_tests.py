@@ -113,6 +113,47 @@ with sync_playwright() as p:
     page.mouse.click(*spot); page.wait_for_timeout(100)
     check(page.evaluate("ui.sel") is None, "clicking the baseplate lets a new brick go")
 
+    print("\nPlan the shoot")
+    page.evaluate("actions.clear()"); page.wait_for_timeout(50)
+    check(page.is_disabled('[data-act="plan"]'), "the plan button is off for an empty build")
+    page.evaluate("""(() => { const s = emptyStory(); let x = 0;
+      s.editorial = [['NEWS',8],['BECAUSE',10],['PERSON',10]].map(([c,l]) => { const b = newBlock(c, l, x); x += l; return b; });
+      s.picture = [newBlock('WS', 8, 0), newBlock('MCU', 10, 18)]; s.sound = [newBlock('NAT', 8, 0)]; s.script = [newBlock('SOT', 10, 18)];
+      commit(s); })()""")
+    page.click('[data-act="plan"]'); page.wait_for_timeout(100)
+    sheet = lambda: page.inner_text(".sheet")
+    check(page.is_visible("#plan") and page.evaluate("document.activeElement.classList.contains('pclose')"), "the plan opens with focus on its close button")
+    check("Interview 1\nA person explains" in sheet(), "an interview row names the beat it sits under")
+    heads = page.evaluate("[...document.querySelectorAll('.pghead')].map(h => h.innerText.split('\\n')[0])")
+    check(heads == ["NEWS", "PERSON"], "on-location bricks are grouped under the beat they start in", heads)
+    check("Back at base" not in sheet(), "nothing for back at base when the build doesn't call for it")
+    check("Press Notice on the board" in sheet(), "notices are listed only once the student has pressed Notice")
+    # before typing anything: with something typed, the browser's own undo (rightly) undoes the typing instead
+    before = page.evaluate(LAYERS_NOW); page.keyboard.press("Control+z"); page.keyboard.press("Meta+z")
+    check(page.evaluate(LAYERS_NOW) == before and page.is_visible("#plan"), "undo shortcuts leave the build alone while the plan is open")
+    page.fill('[aria-label="Interview 1: name and role"]', "Sam Jones, driver")
+    page.keyboard.press("Escape")
+    check(page.is_hidden("#plan") and page.evaluate("document.activeElement.dataset.act") == "plan", "Escape closes it and focus goes back to the button")
+    page.evaluate("actions.select(story.script[0].id); actions.nudge(1); actions.deselect()")
+    page.click('[data-act="plan"]'); page.wait_for_timeout(100)
+    check(page.input_value('[aria-label="Interview 1: name and role"]') == "Sam Jones, driver" and "Interview (sync) · Sam Jones, driver" in sheet(),
+          "a typed name survives an edit to the build and shows on the interview's row")
+    page.mouse.click(40, 400); page.wait_for_timeout(50)
+    check(page.is_hidden("#plan"), "clicking the dimmed backdrop closes it")
+    page.click('[data-act="notice"]'); page.click('[data-act="plan"]'); page.wait_for_timeout(100)
+    check("Still to decide, from Notice" in sheet() or "Press Notice" not in sheet(), "after Notice, its items (if any) replace the prompt")
+    page.emulate_media(media="print")
+    check(page.evaluate("getComputedStyle(document.getElementById('app')).display") == "none" and page.is_visible(".sheet") and page.is_hidden(".planbar"),
+          "printing shows only the sheet")
+    page.emulate_media(media="screen")
+    page.once("dialog", lambda d: d.accept()); page.click('[data-act="planClear"]'); page.wait_for_timeout(50)
+    check(page.input_value('[aria-label="Interview 1: name and role"]') == "" and page.evaluate("localStorage.getItem('storystack.ws.video')") is None, "Clear empties the plan and its saved entries")
+    page.keyboard.press("Escape")
+    load(page, "example-audio-pumpkins.json"); page.click('[data-act="plan"]'); page.wait_for_timeout(100)
+    check("Recorder or phone charged" in sheet() and "What's in the shot" not in page.inner_html(".sheet") and "Write the track for the ear" in sheet(),
+          "audio: the audio kit list, no picture rows, and the track to write")
+    page.keyboard.press("Escape")
+
     print("\nNo JavaScript errors")
     check(not errors, "page ran without errors", "; ".join(errors))
     browser.close()

@@ -40,3 +40,7 @@ Decisions already made, with the reason. Reverse one only deliberately, and reco
 | **One person to the next reads PERSON beats only**, never voice bricks. | Falling back to voices would fire on every two-interview build, even one that never used the structure layer. |
 | **IV renamed inVIZ** (code `INVIZ`; script trait `inviz`). | House terminology. Old saves and exports are translated via `CODE_ALIASES`. |
 | **GV, DET, WALL, BACK, LINK and SIGN taken out of the brick box** (Nov 2026). | A smaller box. Retired, not deleted: they keep their traits so older work and the lecture fixtures still open and behave the same. |
+| **Plan the shoot**: a worksheet made from the build (contacts, location, kit, what to come back with, what's left for base). Printable; typing saved under `storystack.ws.<medium>`, keyed by brick id. | Turns the build into a practical plan. Called "Plan the shoot", not "What next", so it isn't confused with the NEXT beat ("What next"). |
+| **The plan lists notices only if the student has pressed Notice on this build** (and it's still current); otherwise it says Notice can help. | Noticing is chosen: opening the plan must not run Notice for them. |
+| **The plan may ask for real-world dates** (deadline, booked for, travel and timing). | "No time" is about the story's length, not the calendar of the shoot. |
+| **Clear on the plan asks first**, and only empties the plan, never the build. | A stray click would otherwise wipe everything a student had typed, with no undo. |
