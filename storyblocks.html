@@ -214,6 +214,8 @@ body.moving,body.moving *{cursor:grabbing!important}
 .lines{display:grid;grid-template-columns:76px 1fr;align-items:end;gap:2px 10px;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px}
 .pghead{display:flex;align-items:center;gap:8px;margin:18px 0 2px;font-size:13px;font-weight:700}
 .pnote{font-size:13px;color:var(--muted);margin:4px 0}
+.prisk{margin-left:30px;overflow-wrap:anywhere}
+.prisk a{color:#1D5FAE}
 @media (max-width:700px){
   .plan{padding:0 0 24px}
   .planbar{flex-wrap:wrap;border-radius:0}
@@ -1172,6 +1174,7 @@ function layerKey() {
    (b12.name, b12.got) or a fixed id (kit.0, loc.1, notice.<rule>), so it follows a brick when the
    build changes. Notice items appear only if the student has pressed Notice on this build:
    noticing stays their choice. */
+const RISK_FORM = 'https://digitaldickinson.github.io/VJUtilities/Risk_Assessment.html';   // the course's location health and safety template
 const PLAN_ON_LOCATION = new Set(['WS','MS','MCU','CU','GV','DET','PTC','NAT','ACT','ATM','SOT','CLIP','VOX','PTM']);
 const planKey = () => 'storystack.ws.' + MEDIUM;
 let planData = {}, planScroll = 0;
@@ -1226,6 +1229,8 @@ function planSheet() {
     <div><h4>Book and check kit</h4>
       <div class="lines"><span>Booked for</span>${line('kit.when', 'Kit booked for')}</div>
       ${kit.map((t, i) => tick('kit.' + i, t)).join('')}${tick('kit.tested', 'All of it tested')}</div></div>`);
+  one.push(`<h4>Health and safety</h4>${tick('safety.form', 'A risk assessment filled in for every location')}
+    <p class="pnote prisk">Use the template: <a href="${RISK_FORM}" target="_blank" rel="noopener">${RISK_FORM.replace(/^https:\/\//, '')}</a></p>`);
   const pre = [ints.length && tick('write.q', 'Questions for each interview'), has('PTC') && tick('write.ptc', 'A draft of your piece to camera'), has('PTM') && tick('write.ptm', 'A draft of your piece to mic')].filter(Boolean);
   if (pre.length) one.push(`<h4>Write before you go</h4>${pre.join('')}`);
   const noticed = ui.notice && !noticeStale();

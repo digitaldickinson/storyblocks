@@ -127,6 +127,8 @@ with sync_playwright() as p:
     heads = page.evaluate("[...document.querySelectorAll('.pghead')].map(h => h.innerText.split('\\n')[0])")
     check(heads == ["NEWS", "PERSON"], "on-location bricks are grouped under the beat they start in", heads)
     check("Back at base" not in sheet(), "nothing for back at base when the build doesn't call for it")
+    check(page.locator('.sheet a[href="https://digitaldickinson.github.io/VJUtilities/Risk_Assessment.html"]').count() == 1 and "A risk assessment filled in" in sheet(),
+          "the plan asks for a risk assessment and links the template")
     check("Press Notice on the board" in sheet(), "notices are listed only once the student has pressed Notice")
     # before typing anything: with something typed, the browser's own undo (rightly) undoes the typing instead
     before = page.evaluate(LAYERS_NOW); page.keyboard.press("Control+z"); page.keyboard.press("Meta+z")
