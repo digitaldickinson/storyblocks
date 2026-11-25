@@ -1,6 +1,6 @@
 # StoryBlocks
 
-A browser toy for teaching broadcast story structure. Students build a story as courses of isometric bricks: picture, sound, script and the story's structure (video), or sound, script and structure (audio). The structure layer holds the course's story beats; its internal key is still `editorial`. Brick length is relative (studs), never time. A **Notice** button surfaces observations about the build when the student asks for them.
+A browser toy for teaching broadcast story structure. Students build a story as courses of isometric bricks: picture, sound, editorial and the story's structure (video), or sound, editorial and structure (audio). Sound is the place (natural sound, atmos, music, silence); Editorial is everyone who speaks (script, interviews, vox pops). Internal keys are older than the names: Editorial's key is `script`, and Structure's key is `editorial`. Don't confuse them. Brick length is relative (studs), never time. A **Notice** button surfaces observations about the build when the student asks for them.
 
 It's a teaching tool for journalism students at MMU. It is **not** a video editor, a marker or an AI tutor.
 
@@ -96,6 +96,4 @@ Rules that apply to every change:
 - Keep changes small and say what changed. Don't refactor untouched parts in passing.
 - If a request conflicts with a decision in `docs/decisions.md`, say so and ask; don't quietly reverse it.
 
-## Environment notes
-
-Developed on a managed MMU Mac: standard user, no admin, no Homebrew. Python (pyenv) and Node (nvm) are available. System git may refuse to run until the Xcode licence is accepted, which needs admin. Don't suggest installs that need `sudo`.
+Backend: none (offline, `localStorage` only). Machine constraints and UK spelling are in the global `~/.claude/CLAUDE.md`.
