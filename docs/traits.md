@@ -77,6 +77,8 @@ Both media. The story's beats, from the lectures: the basic structure (NEWS, BEC
 
 **Retired bricks.** RUN (Clip runs) is retired from the editorial layer: an interview now sits there itself. Older work that contains RUN opens without it (see *Older builds* below).
 
+GV, DET and WALL (picture) and BACK, LINK and SIGN (editorial) are no longer in the brick box, to keep it small. They stay in `BRICK_ROWS` and keep their traits, so older work containing them opens, draws and is noticed exactly as before.
+
 CONTEXT, CLAIM, EVIDENCE, CONSEQ and EXPLAIN are no longer in the brick box (the `RETIRED` set), but stay in `BRICK_ROWS` so older saves and exports open and draw. CLAIM keeps its `claim` trait, so the Claim rule still works on older work; the others have none. The new "More context" beat has the code `MORE`, not `CONTEXT`: old CONTEXT meant "what the viewer needs to know first", so reusing the code would have changed what older work shows.
 
 ## Trait vocabulary

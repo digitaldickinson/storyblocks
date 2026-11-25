@@ -36,3 +36,4 @@ Decisions already made, with the reason. Reverse one only deliberately, and reco
 | **Where it ends only fires when there's a pivot**, and looks for NEXT anywhere after it. | The basic structure legitimately ends on the person; a NEXT followed by BREATHE or ? is fine. |
 | **One person to the next reads PERSON beats only**, never voice bricks. | Falling back to voices would fire on every two-interview build, even one that never used the structure layer. |
 | **IV renamed inVIZ** (code `INVIZ`; script trait `inviz`). | House terminology. Old saves and exports are translated via `CODE_ALIASES`. |
+| **GV, DET, WALL, BACK, LINK and SIGN taken out of the brick box** (Nov 2026). | A smaller box. Retired, not deleted: they keep their traits so older work and the lecture fixtures still open and behave the same. |
